@@ -58,6 +58,7 @@ CPredictEdDlg::CPredictEdDlg(CWnd* pParent /*=NULL*/)
 void CPredictEdDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_RICHEDIT21, m_Ed);
 }
 
 BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
@@ -99,6 +100,7 @@ BOOL CPredictEdDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	InitEd();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -150,5 +152,41 @@ void CPredictEdDlg::OnPaint()
 HCURSOR CPredictEdDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
+}
+
+
+void CPredictEdDlg::InitEd()
+{
+	CHARFORMAT2 cf = {};
+	CString fontname = L"Georgia";
+	cf.dwMask = CFM_FACE | CFM_SIZE;
+	for (int n = 0; n < fontname.GetLength(); n++) cf.szFaceName[n] = fontname.GetAt(n);
+	cf.yHeight = 22 * 10;
+	m_Ed.SetDefaultCharFormat(cf);
+
+	m_Ed.SetAutoURLDetect(TRUE);
+
+}
+
+
+void CPredictEdDlg::InsertText(CString text, COLORREF color, bool bold, bool italic)
+{
+	CHARFORMAT2 cf = {};
+	int txtLen = m_Ed.GetTextLength();
+
+	cf.cbSize = sizeof(cf);
+	//	cf.dwMask = (bold ? CFM_BOLD : 0) | (italic ? CFM_ITALIC : 0) | CFM_COLOR;
+	cf.dwMask = CFM_BOLD | CFM_ITALIC | CFM_COLOR;
+	//	cf.dwEffects = (bold ? CFE_BOLD : 0) | (italic ? CFE_ITALIC : 0) | ~CFE_AUTOCOLOR;
+	cf.dwEffects = (bold ? CFE_BOLD : 0) | (italic ? CFE_ITALIC : 0);
+	cf.crTextColor = color;
+
+	m_Ed.SetSel(txtLen, -1); // Set the cursor to the end of the text area and deselect everything.
+	m_Ed.ReplaceSel((txtLen < 1 ? L"" : L"\r\n") + text); // Inserts when nothing is selected.
+
+														   // Apply formating to the just inserted text.
+	m_Ed.SetSel(txtLen, m_Ed.GetTextLength());
+	m_Ed.SetSelectionCharFormat(cf);
+	m_Ed.SendMessage(WM_VSCROLL, SB_BOTTOM);
 }
 
