@@ -45,35 +45,41 @@ void CPredictEdCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void CPredictEdCtrl::UpdateQueue()
 {
-	int nLineLength, nLineLengthBuf, nLineIndex, nLineCount = GetLineCount();
-	CString strText, str;
+	//GetLine won't get the newline char so getwindowtext is used
 
-	for (int i = nLineCount-1; i >=0 ; i--)
-	{
-		nLineIndex = LineIndex(i);
-		nLineLength = LineLength(nLineIndex);
-		nLineLengthBuf = nLineLength;
-		if (nLineLength < 2)nLineLengthBuf = 2;
-		GetLine(i, strText.GetBufferSetLength(nLineLengthBuf + 1), nLineLengthBuf);
+	//int nLineLength, nLineLengthBuf, nLineIndex, nLineCount = GetLineCount();
+	//CString strText, str;
 
-		strText.SetAt(nLineLength, _T('\0')); // null terminate
-		strText.ReleaseBuffer(nLineLength + 1);
+	//for (int i = nLineCount-1; i >=0 ; i--)
+	//{
+	//	nLineIndex = LineIndex(i);
+	//	nLineLength = LineLength(nLineIndex);
+	//	nLineLengthBuf = nLineLength;
+	//	if (nLineLength < 2)nLineLengthBuf = 2;
+	//	GetLine(i, strText.GetBufferSetLength(nLineLengthBuf + 1), nLineLengthBuf);
 
-		CString t(strText.GetBuffer()); //length correction
-		str = t + str;
-		//int len1 = t.GetLength();
-		int len = str.GetLength();
+	//	strText.SetAt(nLineLength, _T('\0')); // null terminate
+	//	strText.ReleaseBuffer(nLineLength + 1);
 
-		m_CharQueue.Clear();
-		m_CharQueue.InsertString(str);
-		TRACE(_T("line %d: '%s'\r\n"), i, strText);
-		if (len > MAX_QUEUE_CHARS)
-		{
-			break;
-		}
+	//	CString t(strText.GetBuffer()); //length correction
+	//	str = t + str;
+	//	//int len1 = t.GetLength();
+	//	int len = str.GetLength();
 
-	}
+	//	m_CharQueue.Clear();
+	//	m_CharQueue.InsertString(str);
+	//	TRACE(_T("line %d: '%s'\r\n"), i, strText);
+	//	if (len > MAX_QUEUE_CHARS)
+	//	{
+	//		break;
+	//	}
 
+	//}
+
+	CString str;
+	GetWindowText(str);
+	m_CharQueue.Clear();
+	m_CharQueue.InsertString(str.Right(MAX_QUEUE_CHARS));
 }
 
 void CPredictEdCtrl::Process(TCHAR c)
@@ -99,7 +105,13 @@ CString CPredictEdCtrl::SentenceCase(TCHAR c)
 		if (c1 == L'.')
 		{
 			str.MakeUpper();
-			if (c1 != L' ') str = _T(" ") + str;
+			//insert newline at para break, 
+			//sending second '\r' won't work so use replacesel without selection
+			if (c == L'\r') ReplaceSel(_T("\r\n")); 
+			else
+			{
+				if (c1 != L' ') str = _T(" ") + str;
+			}
 		}
 
 		if (c1 == L' ')
@@ -110,6 +122,11 @@ CString CPredictEdCtrl::SentenceCase(TCHAR c)
 		if (c1 == L'#')
 		{
 			if (c2 == L'#') str.MakeUpper();
+		}
+
+		if (c1 == L'\n')
+		{
+			str.MakeUpper();
 		}
 
 	}
