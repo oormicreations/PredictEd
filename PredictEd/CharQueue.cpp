@@ -17,7 +17,7 @@ void CCharQueue::Clear()
 {
 	for (int i = 0; i < MAX_QUEUE_CHARS; i++)
 	{
-		m_Queue[i] = L' ';
+		m_Queue[i] = L'#';
 	}
 }
 
@@ -47,9 +47,15 @@ CString CCharQueue::FormString()
 
 void CCharQueue::InsertString(CString str)
 {
-	for (int i = 0; i < str.GetLength(); i++)
+	int len = str.GetLength();
+	for (int i = 0; i < len; i++)
 	{
 		Insert(str.GetAt(i));
 	}
 
+}
+
+TCHAR CCharQueue::GetLast(int pos)
+{
+	return m_Queue[MAX_QUEUE_CHARS - 1 - pos];
 }

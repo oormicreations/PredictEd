@@ -30,29 +30,93 @@ END_MESSAGE_MAP()
 
 void CPredictEdCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	m_CharQueue.Insert((TCHAR)nChar);
+	//DEL key press is not detected, so can't process that
 
-	if (nChar == 22) //ctrl-v
+	if (nRepCnt != 999)
 	{
-		CString pasted = m_SysHelper.GetClipboardText();
-		m_CharQueue.InsertString(pasted);
+		Process((TCHAR)nChar);
+		return;
 	}
 
-	if (nChar == 32) //space
-	{
-		Train();
-		Predict();
-	}
-
-	if (nChar == 46) //dot
-	{
-		//PostMessage(WM_CHAR, L' ', 0);
-		//return;
-	}
-
-	m_CharQueue.Dump();
 	CRichEditCtrl::OnChar(nChar, nRepCnt, nFlags);
+	UpdateQueue();
+	m_CharQueue.Dump();
 }
+
+void CPredictEdCtrl::UpdateQueue()
+{
+	int nLineLength, nLineLengthBuf, nLineIndex, nLineCount = GetLineCount();
+	CString strText, str;
+
+	for (int i = nLineCount-1; i >=0 ; i--)
+	{
+		nLineIndex = LineIndex(i);
+		nLineLength = LineLength(nLineIndex);
+		nLineLengthBuf = nLineLength;
+		if (nLineLength < 2)nLineLengthBuf = 2;
+		GetLine(i, strText.GetBufferSetLength(nLineLengthBuf + 1), nLineLengthBuf);
+
+		strText.SetAt(nLineLength, _T('\0')); // null terminate
+		strText.ReleaseBuffer(nLineLength + 1);
+
+		CString t(strText.GetBuffer()); //length correction
+		str = t + str;
+		//int len1 = t.GetLength();
+		int len = str.GetLength();
+
+		m_CharQueue.Clear();
+		m_CharQueue.InsertString(str);
+		TRACE(_T("line %d: '%s'\r\n"), i, strText);
+		if (len > MAX_QUEUE_CHARS)
+		{
+			break;
+		}
+
+	}
+
+}
+
+void CPredictEdCtrl::Process(TCHAR c)
+{
+	CString str = SentenceCase(c);
+
+	for (int i = 0; i < str.GetLength(); i++)
+	{
+		PostMessage(WM_CHAR, str.GetAt(i), 999); //999 is sent as repcount
+	}
+}
+
+
+CString CPredictEdCtrl::SentenceCase(TCHAR c)
+{
+	CString str(c);
+	TCHAR c1, c2;
+	c1 = m_CharQueue.GetLast(0);
+	c2 = m_CharQueue.GetLast(1);
+
+	if (c != L' ')
+	{
+		if (c1 == L'.')
+		{
+			str.MakeUpper();
+			if (c1 != L' ') str = _T(" ") + str;
+		}
+
+		if (c1 == L' ')
+		{
+			if (c2 == L'.') str.MakeUpper();
+		}
+
+		if (c1 == L'#')
+		{
+			if (c2 == L'#') str.MakeUpper();
+		}
+
+	}
+
+	return str;
+}
+
 
 void CPredictEdCtrl::Train()
 {
@@ -64,3 +128,17 @@ CString CPredictEdCtrl::Predict()
 
 	return preStr;
 }
+
+//if (nChar == 32) //space
+//{
+//	Train();
+//	Predict();
+//}
+
+//if (nChar == 46) //dot
+//{
+//	//PostMessage(WM_CHAR, L' ', 0);
+//	//return;
+//}
+
+

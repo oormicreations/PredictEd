@@ -14,10 +14,13 @@ public:
 	virtual ~CPredictEdCtrl();
 
 	CCharQueue m_CharQueue;
-	CSysHelper m_SysHelper;
+	//CSysHelper m_SysHelper;
 
 	void Train();
 	CString Predict();
+	void Process(TCHAR c);
+	CString SentenceCase(TCHAR c);
+	void UpdateQueue();
 
 protected:
 	DECLARE_MESSAGE_MAP()

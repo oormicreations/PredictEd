@@ -52,4 +52,5 @@ public:
 
 
 
+	afx_msg void OnBnClickedButton1();
 };

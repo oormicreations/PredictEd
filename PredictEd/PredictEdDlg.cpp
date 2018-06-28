@@ -65,6 +65,7 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BUTTON1, &CPredictEdDlg::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
 
@@ -190,3 +191,24 @@ void CPredictEdDlg::InsertText(CString text, COLORREF color, bool bold, bool ita
 	m_Ed.SendMessage(WM_VSCROLL, SB_BOTTOM);
 }
 
+
+
+void CPredictEdDlg::OnBnClickedButton1()
+{
+	int nLineLength, nLineLengthBuf, nLineIndex, nLineCount = m_Ed.GetLineCount();
+	CString strText;
+
+	// Dump every line of text of the rich edit control.
+	for (int i = 0; i < nLineCount; i++)
+	{
+		nLineIndex = m_Ed.LineIndex(i);
+		nLineLength = m_Ed.LineLength(nLineIndex);
+		nLineLengthBuf = nLineLength;
+		if (nLineLength < 2)nLineLengthBuf = 2;
+		m_Ed.GetLine(i, strText.GetBufferSetLength(nLineLengthBuf + 1), nLineLengthBuf);
+		strText.SetAt(nLineLength, _T('\0')); // null terminate
+		strText.ReleaseBuffer(nLineLength + 1);
+
+		TRACE(_T("line %d: '%s'\r\n"), i, strText);
+	}
+}

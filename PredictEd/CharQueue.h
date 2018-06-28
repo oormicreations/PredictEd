@@ -15,5 +15,6 @@ public:
 	void Insert(TCHAR c);
 	CString FormString();
 	void InsertString(CString str);
+	TCHAR GetLast(int pos);
 };
 
