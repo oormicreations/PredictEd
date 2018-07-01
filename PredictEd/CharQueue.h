@@ -13,8 +13,10 @@ public:
 	void Clear();
 	void Dump();
 	void Insert(TCHAR c);
+	void ReverseInsert(TCHAR c);
 	CString FormString();
 	void InsertString(CString str);
+	void ReverseInsertString(CString str);
 	TCHAR GetLast(int pos);
 };
 

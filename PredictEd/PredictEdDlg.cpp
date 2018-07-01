@@ -195,20 +195,30 @@ void CPredictEdDlg::InsertText(CString text, COLORREF color, bool bold, bool ita
 
 void CPredictEdDlg::OnBnClickedButton1()
 {
-	int nLineLength, nLineLengthBuf, nLineIndex, nLineCount = m_Ed.GetLineCount();
-	CString strText;
+	//int nLineLength, nLineLengthBuf, nLineIndex, nLineCount = m_Ed.GetLineCount();
+	//CString strText;
 
-	// Dump every line of text of the rich edit control.
-	for (int i = 0; i < nLineCount; i++)
-	{
-		nLineIndex = m_Ed.LineIndex(i);
-		nLineLength = m_Ed.LineLength(nLineIndex);
-		nLineLengthBuf = nLineLength;
-		if (nLineLength < 2)nLineLengthBuf = 2;
-		m_Ed.GetLine(i, strText.GetBufferSetLength(nLineLengthBuf + 1), nLineLengthBuf);
-		strText.SetAt(nLineLength, _T('\0')); // null terminate
-		strText.ReleaseBuffer(nLineLength + 1);
+	//// Dump every line of text of the rich edit control.
+	//for (int i = 0; i < nLineCount; i++)
+	//{
+	//	nLineIndex = m_Ed.LineIndex(i);
+	//	nLineLength = m_Ed.LineLength(nLineIndex);
+	//	nLineLengthBuf = nLineLength;
+	//	if (nLineLength < 2)nLineLengthBuf = 2;
+	//	m_Ed.GetLine(i, strText.GetBufferSetLength(nLineLengthBuf + 1), nLineLengthBuf);
+	//	strText.SetAt(nLineLength, _T('\0')); // null terminate
+	//	strText.ReleaseBuffer(nLineLength + 1);
 
-		TRACE(_T("line %d: '%s'\r\n"), i, strText);
-	}
+	//	TRACE(_T("line %d: '%s'\r\n"), i, strText);
+	//}
+	//long c1, c2;
+	//m_Ed.GetSel(c1, c2);
+	//m_Ed.SetSel(0, 8);
+	//m_Ed.ReplaceSel(_T("xxxx"));
+	//CHARRANGE cr;
+	//cr.cpMax = 10;
+	//cr.cpMin = 0;
+	//SendMessageW(EM_SETSEL, 0, (LPARAM)&cr);
+
+	long len = m_Ed.GetTextLength();
 }

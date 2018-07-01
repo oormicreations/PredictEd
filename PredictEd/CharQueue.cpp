@@ -36,6 +36,17 @@ void CCharQueue::Insert(TCHAR c)
 	m_Queue[MAX_QUEUE_CHARS - 1] = c;
 }
 
+void CCharQueue::ReverseInsert(TCHAR c)
+{
+	for (int i = MAX_QUEUE_CHARS-1; i > 0; i--)
+	{
+		m_Queue[i] = m_Queue[i-1];
+	}
+
+	m_Queue[0] = c;
+}
+
+
 CString CCharQueue::FormString()
 {
 	CString str;
@@ -54,6 +65,17 @@ void CCharQueue::InsertString(CString str)
 	}
 
 }
+
+void CCharQueue::ReverseInsertString(CString str)
+{
+	int len = str.GetLength();
+	for (int i = 0; i < len; i++)
+	{
+		m_Queue[i] = (str.GetAt(i));
+	}
+
+}
+
 
 TCHAR CCharQueue::GetLast(int pos)
 {
