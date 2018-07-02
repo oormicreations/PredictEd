@@ -81,3 +81,37 @@ TCHAR CCharQueue::GetLast(int pos)
 {
 	return m_Queue[MAX_QUEUE_CHARS - 1 - pos];
 }
+
+CString CCharQueue::GetWord(int wordpos)
+{
+	CString str;
+	int pos = 0;
+	int count = 0;
+
+	for (int i = MAX_QUEUE_CHARS - 1; i >= 0; i--)
+	{
+		TCHAR c = m_Queue[i];
+		if ((c == ' ') || (c == '#'))
+		{
+			count++;
+			pos = i;
+		}
+		if (count == (wordpos + 1))
+		{
+			break;
+		}
+	}
+
+	if (count != (wordpos + 1)) return str;
+
+	for (int i = pos + 1; i < MAX_QUEUE_CHARS; i++)
+	{
+		TCHAR c = m_Queue[i];
+		if (c == '#')continue;
+		if (c == ' ')break;
+		str.AppendChar(c);
+	}
+
+	return str;
+
+}

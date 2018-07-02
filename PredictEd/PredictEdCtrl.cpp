@@ -33,7 +33,6 @@ END_MESSAGE_MAP()
 
 void CPredictEdCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	//DEL key press is not detected, so can't process that
 	if (nRepCnt != 999)
 	{
 		Process((TCHAR)nChar);
@@ -70,6 +69,8 @@ void CPredictEdCtrl::Process(TCHAR c)
 	str = SentenceCase(c);
 
 	if(Format(c)) str = _T("");
+
+	Train(c);
 
 	for (int i = 0; i < str.GetLength(); i++)
 	{
@@ -224,29 +225,6 @@ CString CPredictEdCtrl::SentenceCase(TCHAR c)
 }
 
 
-void CPredictEdCtrl::Train()
-{
-}
-
-CString CPredictEdCtrl::Predict()
-{
-	CString preStr = _T("");
-
-	return preStr;
-}
-
-//if (nChar == 32) //space
-//{
-//	Train();
-//	Predict();
-//}
-
-//if (nChar == 46) //dot
-//{
-//	//PostMessage(WM_CHAR, L' ', 0);
-//	//return;
-//}
-
 void CPredictEdCtrl::SetCharStyle(BOOL bold, BOOL italic, BOOL underline)
 {
 	CHARFORMAT2 cf = {};
@@ -318,3 +296,27 @@ CHARFORMAT CPredictEdCtrl::GetCharFormat(DWORD dwMask)
 
 	return cf;
 }
+
+void CPredictEdCtrl::Train(TCHAR c)
+{
+	if (c != ' ') return;
+
+
+	CString dispstr;
+	for (int i = 0; i < MAX_WORDS; i++)
+	{
+		m_InWords[i] = m_CharQueue.GetWord(i);
+		dispstr = dispstr + _T(" ") + m_InWords[i];
+	}
+	
+	CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_WORDS);
+	wnd->SetWindowText(dispstr);
+}
+
+CString CPredictEdCtrl::Predict()
+{
+	CString preStr = _T("");
+
+	return preStr;
+}
+

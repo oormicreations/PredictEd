@@ -5,7 +5,7 @@
 #define FMT_BOLD 1
 #define FMT_ITALICS 2
 #define FMT_UNDERLINE 3
-
+#define MAX_WORDS 5
 
 // CPredictEdCtrl
 
@@ -21,8 +21,9 @@ public:
 	//CSysHelper m_SysHelper;
 	int m_FormatterPos;
 	TCHAR m_BoldChar, m_ItalicChar, m_UnderlineChar;
+	CString m_InWords[MAX_WORDS];
 
-	void Train();
+	void Train(TCHAR c);
 	CString Predict();
 	void Process(TCHAR c);
 	CString SentenceCase(TCHAR c);

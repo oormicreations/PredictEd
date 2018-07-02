@@ -18,5 +18,7 @@ public:
 	void InsertString(CString str);
 	void ReverseInsertString(CString str);
 	TCHAR GetLast(int pos);
+	CString GetWord(int wordpos);
+
 };
 
