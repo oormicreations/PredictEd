@@ -82,36 +82,122 @@ TCHAR CCharQueue::GetLast(int pos)
 	return m_Queue[MAX_QUEUE_CHARS - 1 - pos];
 }
 
-CString CCharQueue::GetWord(int wordpos)
+//CString CCharQueue::GetWord(int wordpos)
+//{
+//	CString str;
+//	int pos = 0;
+//	int count = 0;
+//
+//	if(GetLast(0)==' ') return str;
+//
+//	for (int i = MAX_QUEUE_CHARS - 1; i >= 0; i--)
+//	{
+//		TCHAR c = m_Queue[i];
+//
+//		if (c == '#')
+//		{
+//			if (i > 0)
+//			{
+//				if (m_Queue[i - 1] == '#')
+//				{
+//					if (m_Queue[i + 1] != '#')
+//					{
+//						count++;
+//						pos = i;
+//					}
+//				}
+//			}
+//		}
+//
+//		if ((c == ' ') || (c == '\r'))
+//		{
+//			count++;
+//			pos = i;
+//		}
+//		if (count == (wordpos + 1))
+//		{
+//			break;
+//		}
+//	}
+//
+//	if (count != (wordpos + 1)) return str;
+//
+//	for (int i = pos + 1; i < MAX_QUEUE_CHARS; i++)
+//	{
+//		TCHAR c = m_Queue[i];
+//		if (c == '#')continue;
+//		if (c == ' ')break;
+//		str.AppendChar(c);
+//	}
+//
+//	return FilterWord(str);
+//
+//}
+//
+//CString CCharQueue::FilterWord(CString str)
+//{
+//	if (str.IsEmpty()) return str;
+//
+//	str.MakeLower();
+//
+//	TCHAR filtered[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+//		'~', '`', '!', '@', '#', '$', '%', '^', '&', '*',
+//		'(', ')', '-', '_', '+', '=', '|', '\\', '{', '[', '}', ']',
+//		':', ';', '\"', '\'', '<', ',', '>', '.', '?', '/' }; //42
+//
+//	for (int i = 0; i < 42; i++)
+//	{
+//		int pos = str.Find(filtered[i]);
+//		if (pos >= 0)
+//		{
+//			str.Delete(pos, 1);
+//		}
+//	}
+//
+//	return str;
+//}
+
+void CCharQueue::GetWords()
 {
 	CString str;
 	int pos = 0;
 	int count = 0;
 
-	for (int i = MAX_QUEUE_CHARS - 1; i >= 0; i--)
+	str = CString(m_Queue, MAX_QUEUE_CHARS);
+	str.MakeLower();
+
+	TCHAR filtered[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+		'~', '`', '!', '@', '#', '$', '%', '^', '&', '*',
+		'(', ')', '-', '_', '+', '=', '|', '\\', '{', '[', '}', ']',
+		':', ';', '\"', '\'', '<', ',', '>', '.', '?', '/' }; //42
+
+	for (int i = 0; i < 42; i++)
 	{
-		TCHAR c = m_Queue[i];
-		if ((c == ' ') || (c == '#'))
-		{
-			count++;
-			pos = i;
-		}
-		if (count == (wordpos + 1))
-		{
-			break;
-		}
+		str.Replace(filtered[i], '=');
 	}
 
-	if (count != (wordpos + 1)) return str;
+	str.Replace(_T("="), _T(""));
+	str.Replace(_T("\r"), _T(" "));
 
-	for (int i = pos + 1; i < MAX_QUEUE_CHARS; i++)
+	int spcount = 1;
+	while (spcount)
 	{
-		TCHAR c = m_Queue[i];
-		if (c == '#')continue;
-		if (c == ' ')break;
-		str.AppendChar(c);
+		spcount = str.Replace(_T("  "), _T(" "));
 	}
 
-	return str;
+	str.Trim();
+
+	spcount = 0;
+	while (spcount < 5)
+	{
+		int pos = str.ReverseFind(' ');
+		if (pos < 0) break;
+
+		m_Words[spcount] = str.Right(str.GetLength() - pos - 1);
+		str = str.Left(pos);
+		spcount++;
+	}
+
+	if (spcount < 5) m_Words[spcount] = str;
 
 }

@@ -299,18 +299,19 @@ CHARFORMAT CPredictEdCtrl::GetCharFormat(DWORD dwMask)
 
 void CPredictEdCtrl::Train(TCHAR c)
 {
-	if (c != ' ') return;
-
-
-	CString dispstr;
-	for (int i = 0; i < MAX_WORDS; i++)
+	if ((c == ' ') || (c == '\r'))
 	{
-		m_InWords[i] = m_CharQueue.GetWord(i);
-		dispstr = dispstr + _T(" ") + m_InWords[i];
+		m_CharQueue.GetWords();
+
+		CString dispstr;
+		for (int i = 0; i < MAX_WORDS; i++)
+		{
+			dispstr = dispstr + _T(" ") + m_CharQueue.m_Words[i];
+		}
+
+		CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_WORDS);
+		wnd->SetWindowText(dispstr);
 	}
-	
-	CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_WORDS);
-	wnd->SetWindowText(dispstr);
 }
 
 CString CPredictEdCtrl::Predict()
