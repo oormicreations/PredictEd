@@ -13,6 +13,7 @@ IMPLEMENT_DYNAMIC(CPredictEdCtrl, CRichEditCtrl)
 CPredictEdCtrl::CPredictEdCtrl()
 {
 	SetFmtChars('*', '/', '_');
+	m_TabCount = 0;
 }
 
 CPredictEdCtrl::~CPredictEdCtrl()
@@ -71,12 +72,12 @@ void CPredictEdCtrl::Process(TCHAR c)
 	if(Format(c)) str = _T("");
 
 	Train(c);
+	/*str = */Predict(c);
 
 	for (int i = 0; i < str.GetLength(); i++)
 	{
 		PostMessage(WM_CHAR, str.GetAt(i), 999); //999 is sent as repcount
 	}
-
 
 }
 
@@ -302,8 +303,11 @@ void CPredictEdCtrl::Train(TCHAR c)
 	if ((c == ' ') || (c == '\r'))
 	{
 		m_CharQueue.GetWords();
+		m_KnowledgeMap.AddKeyWord(m_CharQueue.m_Words[0]);
+		m_KnowledgeMap.CreateRelation(m_CharQueue.m_Words[1], m_CharQueue.m_Words[0]);
 
 		CString dispstr;
+		dispstr.Format(_T("KW Count:%d | "), m_KnowledgeMap.m_LastKeyWordIndex);
 		for (int i = 0; i < MAX_WORDS; i++)
 		{
 			dispstr = dispstr + _T(" ") + m_CharQueue.m_Words[i];
@@ -311,13 +315,29 @@ void CPredictEdCtrl::Train(TCHAR c)
 
 		CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_WORDS);
 		wnd->SetWindowText(dispstr);
+
 	}
 }
 
-CString CPredictEdCtrl::Predict()
+CString CPredictEdCtrl::Predict(TCHAR c)
 {
-	CString preStr = _T("");
+	CString prediction;
 
-	return preStr;
+	if ((c == ' ') || (c == '\r'))
+	{
+		CString dispstr;
+		dispstr = m_KnowledgeMap.GetPredictions(m_CharQueue.m_Words[0]);
+		CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_PRE);
+		wnd->SetWindowText(dispstr);
+		prediction = _T("");
+	}
+
+	if (c == '\t')
+	{
+		if (m_TabCount >= MAX_PREDICTION_COUNT)m_TabCount = 0;
+		//prediction = m_KnowledgeMap.GetPredictionAt(m_CharQueue.m_Words[0], m_TabCount);
+	}
+	
+	return prediction;
 }
 

@@ -182,6 +182,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CharQueue.h" />
+    <ClInclude Include="KeyWordMap.h" />
     <ClInclude Include="PredictEd.h" />
     <ClInclude Include="PredictEdCtrl.h" />
     <ClInclude Include="PredictEdDlg.h" />
@@ -189,9 +190,11 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SysHelper.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="WordList.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CharQueue.cpp" />
+    <ClCompile Include="KeyWordMap.cpp" />
     <ClCompile Include="PredictEd.cpp" />
     <ClCompile Include="PredictEdCtrl.cpp" />
     <ClCompile Include="PredictEdDlg.cpp" />
@@ -202,6 +205,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SysHelper.cpp" />
+    <ClCompile Include="WordList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PredictEd.rc" />

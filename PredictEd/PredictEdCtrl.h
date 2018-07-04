@@ -1,6 +1,7 @@
 #pragma once
 #include "CharQueue.h"
 #include "SysHelper.h"
+#include "WordList.h"
 
 // CPredictEdCtrl
 
@@ -12,14 +13,16 @@ public:
 	CPredictEdCtrl();
 	virtual ~CPredictEdCtrl();
 
-	CCharQueue m_CharQueue, m_FwdCharQueue;
 	//CSysHelper m_SysHelper;
-	int m_FormatterPos;
-	TCHAR m_BoldChar, m_ItalicChar, m_UnderlineChar;
 	//CString m_InWords[MAX_WORDS];
 
+	CCharQueue m_CharQueue, m_FwdCharQueue;
+	int m_FormatterPos, m_TabCount;
+	TCHAR m_BoldChar, m_ItalicChar, m_UnderlineChar;
+	CWordList m_KnowledgeMap;
+
 	void Train(TCHAR c);
-	CString Predict();
+	CString Predict(TCHAR c);
 	void Process(TCHAR c);
 	CString SentenceCase(TCHAR c);
 	void UpdateQueue();
