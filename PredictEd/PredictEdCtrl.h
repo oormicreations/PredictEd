@@ -20,9 +20,11 @@ public:
 	int m_FormatterPos, m_TabCount;
 	TCHAR m_BoldChar, m_ItalicChar, m_UnderlineChar;
 	CWordList m_KnowledgeMap;
+	long m_PreCaretPos;
+	BOOL m_IsWordCommitted;
 
 	void Train(TCHAR c);
-	CString Predict(TCHAR c);
+	void Predict(TCHAR c);
 	void Process(TCHAR c);
 	CString SentenceCase(TCHAR c);
 	void UpdateQueue();

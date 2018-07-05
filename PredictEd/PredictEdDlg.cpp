@@ -62,10 +62,12 @@ void CPredictEdDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
-	ON_WM_SYSCOMMAND()
+//	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1, &CPredictEdDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDCANCEL, &CPredictEdDlg::OnBnClickedCancel)
+	ON_WM_SYSCOMMAND()
 END_MESSAGE_MAP()
 
 
@@ -106,18 +108,18 @@ BOOL CPredictEdDlg::OnInitDialog()
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
-void CPredictEdDlg::OnSysCommand(UINT nID, LPARAM lParam)
-{
-	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
-	{
-		CAboutDlg dlgAbout;
-		dlgAbout.DoModal();
-	}
-	else
-	{
-		CDialogEx::OnSysCommand(nID, lParam);
-	}
-}
+//void CPredictEdDlg::OnSysCommand(UINT nID, LPARAM lParam)
+//{
+//	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
+//	{
+//		CAboutDlg dlgAbout;
+//		dlgAbout.DoModal();
+//	}
+//	else
+//	{
+//		CDialogEx::OnSysCommand(nID, lParam);
+//	}
+//}
 
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
@@ -221,4 +223,30 @@ void CPredictEdDlg::OnBnClickedButton1()
 	//SendMessageW(EM_SETSEL, 0, (LPARAM)&cr);
 
 	long len = m_Ed.GetTextLength();
+}
+
+
+void CPredictEdDlg::OnBnClickedCancel()
+{
+	// disable close by ESC
+	//CDialogEx::OnCancel();
+}
+
+
+void CPredictEdDlg::OnSysCommand(UINT nID, LPARAM lParam)
+{
+	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
+	{
+		CAboutDlg dlgAbout;  
+
+		dlgAbout.DoModal();
+	}
+	else if ((nID & 0xFFF0) == SC_CLOSE)
+	{
+		EndDialog(IDOK);   
+	}
+	else
+	{
+		CDialogEx::OnSysCommand(nID, lParam);
+	}
 }

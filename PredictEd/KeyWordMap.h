@@ -18,5 +18,6 @@ public:
 	void InitMap();
 	void AddPrediction(CString prediction);
 	CString GetPredictionStr();
+	void SortPrediction();
 };
 

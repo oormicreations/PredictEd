@@ -33,21 +33,25 @@ void CKeyWordMap::AddPrediction(CString prediction)
 			//already exists, so update weight
 			m_Weights[i]++; 
 			exists = TRUE;
-			return;
+			break;
 		}
 	}
 
-	for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
+	if (!exists)
 	{
-		if (m_Predictions[i].IsEmpty())
+		for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
 		{
-			//add and update weight
-			m_Predictions[i] = prediction;
-			m_Weights[i]++; 
-			return;
+			if (m_Predictions[i].IsEmpty())
+			{
+				//add and update weight
+				m_Predictions[i] = prediction;
+				m_Weights[i]++;
+				break;
+			}
 		}
 	}
 
+	SortPrediction();
 
 }
 
@@ -61,4 +65,27 @@ CString CKeyWordMap::GetPredictionStr()
 		prestr = prestr + _T(" | ") + tmp;
 	}
 	return prestr;
+}
+
+void CKeyWordMap::SortPrediction()
+{
+	CString prestr, tmp;
+	UINT w;
+
+	for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
+	{
+
+		if (m_Weights[i + 1] > m_Weights[i])
+		{
+			w = m_Weights[i];
+			m_Weights[i] = m_Weights[i+1];
+			m_Weights[i + 1] = w;
+
+			tmp = m_Predictions[i];
+			m_Predictions[i] = m_Predictions[i + 1];
+			m_Predictions[i + 1] = tmp;
+		}
+
+		
+	}
 }

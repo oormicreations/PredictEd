@@ -71,3 +71,20 @@ CString CWordList::GetPredictions(CString keyword)
 
 	return predictions;
 }
+
+CString CWordList::GetPredictionAt(CString keyword, int nprediction)
+{
+	CString prediction;
+
+	for (int i = 0; i < MAX_LIST_COUNT; i++)
+	{
+		if (m_WordList[i].m_KeyWord == keyword)
+		{
+			prediction = m_WordList[i].m_Predictions[nprediction];
+			return prediction;
+		}
+	}
+
+	return prediction;
+
+}

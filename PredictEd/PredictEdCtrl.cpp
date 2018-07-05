@@ -14,6 +14,8 @@ CPredictEdCtrl::CPredictEdCtrl()
 {
 	SetFmtChars('*', '/', '_');
 	m_TabCount = 0;
+	m_PreCaretPos = 0;
+	m_IsWordCommitted = FALSE;
 }
 
 CPredictEdCtrl::~CPredictEdCtrl()
@@ -319,7 +321,7 @@ void CPredictEdCtrl::Train(TCHAR c)
 	}
 }
 
-CString CPredictEdCtrl::Predict(TCHAR c)
+void CPredictEdCtrl::Predict(TCHAR c)
 {
 	CString prediction;
 
@@ -327,6 +329,11 @@ CString CPredictEdCtrl::Predict(TCHAR c)
 	{
 		CString dispstr;
 		dispstr = m_KnowledgeMap.GetPredictions(m_CharQueue.m_Words[0]);
+		m_TabCount = 0;
+		long nStartChar/*, nEndChar*/;
+		GetSel(nStartChar, m_PreCaretPos);
+		m_IsWordCommitted = TRUE;
+
 		CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_PRE);
 		wnd->SetWindowText(dispstr);
 		prediction = _T("");
@@ -334,10 +341,35 @@ CString CPredictEdCtrl::Predict(TCHAR c)
 
 	if (c == '\t')
 	{
-		if (m_TabCount >= MAX_PREDICTION_COUNT)m_TabCount = 0;
-		//prediction = m_KnowledgeMap.GetPredictionAt(m_CharQueue.m_Words[0], m_TabCount);
+		if(m_IsWordCommitted) SetSel(m_PreCaretPos+1, -1);
+		else
+		{
+			SetSel(-1, -1);//set cursor to end, avoid selection of whole text
+			return;
+		}
+
+		if (m_TabCount >= MAX_PREDICTION_COUNT) m_TabCount = 0;
+
+		prediction = m_KnowledgeMap.GetPredictionAt(m_CharQueue.m_Words[0], m_TabCount);
+		m_TabCount++;
+
+		if (prediction.IsEmpty())
+		{
+			m_TabCount = 0;
+			prediction = m_KnowledgeMap.GetPredictionAt(m_CharQueue.m_Words[0], m_TabCount);
+			m_TabCount++;
+		}
+
+		if(!prediction.IsEmpty()) prediction = prediction + _T(" ");
+
+		for (int i = 0; i < prediction.GetLength(); i++)
+		{
+			PostMessage(WM_CHAR, prediction.GetAt(i), 999); //999 is sent as repcount
+		}
+
 	}
-	
-	return prediction;
+
+	if (!((c == '\t') || (c == ' ') || (c == '\r'))) m_IsWordCommitted = FALSE;
+
 }
 

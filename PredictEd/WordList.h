@@ -17,5 +17,7 @@ public:
 	void AddKeyWord(CString keyword);
 	void CreateRelation(CString before, CString after);
 	CString GetPredictions(CString keyword);
+	CString GetPredictionAt(CString keyword, int nprediction);
+
 };
 
