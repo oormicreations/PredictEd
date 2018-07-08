@@ -59,10 +59,12 @@ CString CKeyWordMap::GetPredictionStr()
 {
 	CString prestr, tmp;
 
+	prestr.Format(_T("KW=%s[F=%d] | "), m_KeyWord, m_Frequency);
+
 	for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
 	{
-		tmp.Format(_T("%s[%d]"), m_Predictions[i], m_Weights[i]);
-		prestr = prestr + _T(" | ") + tmp;
+		tmp.Format(_T(" | %s[%d]"), m_Predictions[i], m_Weights[i]);
+		prestr = prestr /*+ _T(" | ")*/ + tmp;
 	}
 	return prestr;
 }
@@ -72,7 +74,7 @@ void CKeyWordMap::SortPrediction()
 	CString prestr, tmp;
 	UINT w;
 
-	for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
+	for (int i = 0; i < MAX_PREDICTION_COUNT-1; i++)
 	{
 
 		if (m_Weights[i + 1] > m_Weights[i])
@@ -89,3 +91,23 @@ void CKeyWordMap::SortPrediction()
 		
 	}
 }
+
+CString CKeyWordMap::GetPredictionCsvStr()
+{
+	CString prestr, tmp;
+	prestr = m_KeyWord;
+
+	for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
+	{
+		prestr = prestr + _T(",") + m_Predictions[i];
+	}
+
+	for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
+	{
+		tmp.Format(_T(",%d"), m_Weights[i]);
+		prestr = prestr + tmp;
+	}
+
+	return prestr;
+}
+

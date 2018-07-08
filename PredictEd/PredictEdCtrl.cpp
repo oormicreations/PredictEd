@@ -20,6 +20,13 @@ CPredictEdCtrl::CPredictEdCtrl()
 	m_LastPreLength = 0;
 	m_CaretStartPos = 0;
 	m_CaretEndPos = 0;
+
+	m_AutoBackupFileName = m_SysHelper.GetAutoBackupFileName();
+	m_KnowledgeMapFileName = m_SysHelper.GetKnowledgeMapFileName();
+	if (!m_KnowledgeMapFileName.IsEmpty())
+	{
+		if(!m_SysHelper.CreateFileAndInit(m_KnowledgeMapFileName, _T("PredictEd Knowledge Map, Version, 1\r\n"))) m_KnowledgeMapFileName = _T("");
+	}
 }
 
 CPredictEdCtrl::~CPredictEdCtrl()
@@ -83,6 +90,7 @@ void CPredictEdCtrl::Process(TCHAR c)
 
 	Train(c);
 	Predict(c);
+	Save(c);
 
 	for (int i = 0; i < str.GetLength(); i++)
 	{
@@ -324,10 +332,14 @@ void CPredictEdCtrl::Train(TCHAR c)
 			dispstr = dispstr + _T(" ") + m_CharQueue.m_Words[i];
 		}
 
-		CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_WORDS);
-		wnd->SetWindowText(dispstr);
-
+		UpdateStatusMessage(dispstr);
 	}
+}
+
+void CPredictEdCtrl::UpdateStatusMessage(CString msg)
+{
+	CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_WORDS);
+	wnd->SetWindowText(msg);
 }
 
 void CPredictEdCtrl::Predict(TCHAR c)
@@ -357,7 +369,8 @@ void CPredictEdCtrl::Predict(TCHAR c)
 		}
 		else
 		{
-			SetSel(m_CaretStartPos, m_CaretEndPos);//set cursor to end to avoid selection of whole text(default behaviour)
+			//set cursor to end to avoid selection of whole text(default behaviour of CRicheditctrl)
+			SetSel(m_CaretStartPos, m_CaretEndPos);
 			return;
 		}
 
@@ -450,4 +463,28 @@ DWORD CALLBACK CPredictEdCtrl::CBStreamOut(DWORD dwCookie, LPBYTE pbBuff, LONG c
 	*psEntry += tmpEntry.Left(cb);
 
 	return 0;
+}
+
+void CPredictEdCtrl::Save(TCHAR c)
+{
+	if ((c == '\n')|| (c == '\r'))
+	{
+		CString msg;
+
+		if (!m_AutoBackupFileName.IsEmpty())
+		{
+			BOOL res = m_SysHelper.SaveString(m_AutoBackupFileName, GetRTF());
+			if (res) msg = _T("Auto Saved...");
+			else msg = _T("Error: Auto Save of text failed.");
+		}
+
+		if (!m_KnowledgeMapFileName.IsEmpty())
+		{
+			BOOL res = m_KnowledgeMap.SaveMap(m_KnowledgeMapFileName);
+			if (res) msg += _T(" | Auto Saved KMap...");
+			else msg += _T(" | Error: Auto Save of KMap failed.");
+		}
+
+		if (!msg.IsEmpty()) UpdateStatusMessage(msg);
+	}
 }

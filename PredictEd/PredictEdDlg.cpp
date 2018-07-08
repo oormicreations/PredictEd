@@ -276,7 +276,7 @@ void CPredictEdDlg::OnFileOpen32771()
 	{
 		if (!m_Saved)
 		{
-			int ex = AfxMessageBox(_T("Do you wish to save this composition before loading another one ??"), MB_YESNOCANCEL | MB_ICONQUESTION);
+			int ex = AfxMessageBox(_T("Do you wish to save your work before loading another file??"), MB_YESNOCANCEL | MB_ICONQUESTION);
 			if (ex == IDCANCEL)	return;
 			if (ex == IDYES)	OnFileSave32772();
 		}

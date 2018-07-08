@@ -136,19 +136,28 @@ BOOL CSysHelper::SetFileContent(CString content)
 	CFileDialog DataFileOpenDialog(false, _T("rtf"), _T(""), OFN_HIDEREADONLY, _T("Rich text Files (*.rtf)|*.rtf|All Files (*.*)|*.*||"));
 	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Save an RTF File ...");
 	//DataFileOpenDialog.m_ofn.lpstrInitialDir = GetUserDocumentPath(PREDICTED_FOLDER);
+
 	INT_PTR res = DataFileOpenDialog.DoModal();
 	if (res == IDCANCEL) return FALSE;
 	m_FileName = DataFileOpenDialog.GetPathName();
 	if (m_FileName.IsEmpty()) return FALSE;
 	//if (DataFileOpenDialog.GetFileExt() != _T("rtf")) return;
 
+	if(!SaveString(m_FileName, content)) m_FileName = _T("");
+	
+	return TRUE;
+
+}
+
+BOOL CSysHelper::SaveString(CString filename, CString content)
+{
+	if (filename.IsEmpty()) return FALSE;
 
 	CFile file;
-	BOOL res1 = file.Open(m_FileName, CFile::modeWrite|CFile::modeCreate);
+	BOOL res1 = file.Open(filename, CFile::modeWrite|CFile::modeCreate);
 	if (!res1)
 	{
 		AfxMessageBox(_T("Error : Failed to save the file"));
-		m_FileName = _T("");
 		return FALSE;
 	}
 
@@ -160,6 +169,80 @@ BOOL CSysHelper::SetFileContent(CString content)
 
 	file.Write(outputString, ::strlen(outputString));
 	file.Close();
+	free(outputString);
 
 	return TRUE;
+
+}
+
+CString CSysHelper::GetAutoBackupFileName()
+{
+	CString path = GetUserDocumentPath(PREDICTED_USER_FOLDER);
+	if (!path.IsEmpty())
+	{
+		path = path + _T("\\PredicEd_AutoBackup.rtf");
+		return path;
+	}
+	return _T("");
+}
+
+CString CSysHelper::GetKnowledgeMapFileName()
+{
+	CString path = GetUserDocumentPath(PREDICTED_USER_FOLDER);
+	if (!path.IsEmpty())
+	{
+		path = path + _T("\\PredicEd_KnowledgeMap.txt");
+		return path;
+	}
+	return _T("");
+}
+
+CString CSysHelper::GetUserDocumentPath(UINT type)
+{
+	TCHAR my_documents[MAX_PATH];
+	HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+
+	if (result != S_OK)
+	{
+		return _T("");
+	}
+	else
+	{
+		CString str;
+		str.SetString(my_documents);
+
+		if (type == PREDICTED_USER_FOLDER)
+		{
+			str = str + _T("\\Oormi Creations\\PredictEd");
+		}
+
+		if (GetFileAttributes(str) == INVALID_FILE_ATTRIBUTES)
+		{
+			//path doesn't exist, attempt creation
+			if (SHCreateDirectoryEx(NULL, str, NULL) == ERROR_SUCCESS)
+			{
+				return str;
+			}
+			else
+			{
+				return _T("");
+			}
+		}
+
+		//path is valid
+		return str;
+	}
+
+}
+
+BOOL CSysHelper::CreateFileAndInit(CString filename, CString content)
+{
+	if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(filename) && GetLastError() == ERROR_FILE_NOT_FOUND)
+	{
+		SaveString(filename, content);
+		return TRUE;
+	}
+	else return TRUE;
+
+	return FALSE;
 }

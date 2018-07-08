@@ -13,9 +13,7 @@ public:
 	CPredictEdCtrl();
 	virtual ~CPredictEdCtrl();
 
-	//CSysHelper m_SysHelper;
-	//CString m_InWords[MAX_WORDS];
-
+	CSysHelper m_SysHelper;
 	CCharQueue m_CharQueue, m_FwdCharQueue;
 	int m_FormatterPos, m_TabCount;
 	TCHAR m_BoldChar, m_ItalicChar, m_UnderlineChar;
@@ -24,12 +22,17 @@ public:
 	long m_CaretStartPos, m_CaretEndPos;
 	BOOL m_IsWordCommitted;
 	UINT m_LastPreLength;
+	CString m_AutoBackupFileName;
+	CString m_KnowledgeMapFileName;
 
+	void UpdateQueue();
 	void Train(TCHAR c);
 	void Predict(TCHAR c);
 	void Process(TCHAR c);
+	void Save(TCHAR c);
+
 	CString SentenceCase(TCHAR c);
-	void UpdateQueue();
+
 	BOOL Format(TCHAR c);
 	void SetCharStyle(BOOL bold, BOOL italic, BOOL underline);
 	int FindOpenFmtTag(TCHAR fc);
@@ -41,6 +44,9 @@ public:
 
 	void SetRTF(CString sRTF);
 	CString GetRTF();
+
+	void UpdateStatusMessage(CString msg);
+
 
 private:
 	static DWORD CALLBACK CBStreamIn(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb);

@@ -11,6 +11,7 @@ public:
 
 	CKeyWordMap m_WordList[MAX_LIST_COUNT];
 	UINT m_LastKeyWordIndex;
+	UINT m_LastEntrySaved;
 
 
 	void InitList();
@@ -18,6 +19,7 @@ public:
 	void CreateRelation(CString before, CString after);
 	CString GetPredictions(CString keyword);
 	CString GetPredictionAt(CString keyword, int nprediction);
+	BOOL SaveMap(CString filename);
 
 };
 
