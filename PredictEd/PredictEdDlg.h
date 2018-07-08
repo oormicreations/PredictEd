@@ -5,6 +5,7 @@
 #pragma once
 #include "afxcmn.h"
 #include "PredictEdCtrl.h"
+#include "SysHelper.h"
 
 
 // CPredictEdDlg dialog
@@ -36,8 +37,10 @@ protected:
 
 public:
 	CPredictEdCtrl m_Ed;
-
-
+	CMenu m_Menu;
+	BOOL m_IsShellOpen, m_Saved;
+	CString m_FileName;
+	CSysHelper m_SysHelper;
 
 
 
@@ -55,4 +58,8 @@ public:
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+	afx_msg void OnFileExit();
+	afx_msg void OnFileOpen32771();
+	afx_msg void OnFileSave32772();
+	afx_msg void OnHelpAboutpredicted();
 };

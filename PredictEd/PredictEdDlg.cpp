@@ -68,6 +68,10 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON1, &CPredictEdDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDCANCEL, &CPredictEdDlg::OnBnClickedCancel)
 	ON_WM_SYSCOMMAND()
+	ON_COMMAND(ID_FILE_EXIT, &CPredictEdDlg::OnFileExit)
+	ON_COMMAND(ID_FILE_OPEN32771, &CPredictEdDlg::OnFileOpen32771)
+	ON_COMMAND(ID_FILE_SAVE32772, &CPredictEdDlg::OnFileSave32772)
+	ON_COMMAND(ID_HELP_ABOUTPREDICTED, &CPredictEdDlg::OnHelpAboutpredicted)
 END_MESSAGE_MAP()
 
 
@@ -103,6 +107,12 @@ BOOL CPredictEdDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	m_Menu.LoadMenu(IDR_MENU_TOP);
+	SetMenu(&m_Menu);
+
+	m_IsShellOpen = FALSE;
+	m_Saved = TRUE;
+
 	InitEd();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -249,4 +259,45 @@ void CPredictEdDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	{
 		CDialogEx::OnSysCommand(nID, lParam);
 	}
+}
+
+
+void CPredictEdDlg::OnFileExit()
+{
+	EndDialog(IDOK);
+}
+
+
+void CPredictEdDlg::OnFileOpen32771()
+{
+	CString content;
+
+	if (!m_IsShellOpen)
+	{
+		if (!m_Saved)
+		{
+			int ex = AfxMessageBox(_T("Do you wish to save this composition before loading another one ??"), MB_YESNOCANCEL | MB_ICONQUESTION);
+			if (ex == IDCANCEL)	return;
+			if (ex == IDYES)	OnFileSave32772();
+		}
+
+		content = m_SysHelper.GetFileContent();
+	}
+
+	m_Ed.SetRTF(content);
+}
+
+
+void CPredictEdDlg::OnFileSave32772()
+{
+	CString content;
+	content = m_Ed.GetRTF();
+	m_SysHelper.SetFileContent(content);
+}
+
+
+void CPredictEdDlg::OnHelpAboutpredicted()
+{
+	CAboutDlg dlgAbout;
+	dlgAbout.DoModal();
 }

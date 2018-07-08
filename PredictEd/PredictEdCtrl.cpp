@@ -14,8 +14,12 @@ CPredictEdCtrl::CPredictEdCtrl()
 {
 	SetFmtChars('*', '/', '_');
 	m_TabCount = 0;
-	m_PreCaretPos = 0;
+	m_PreCaretStartPos = 0;
+	m_PreCaretEndPos = 0;
 	m_IsWordCommitted = FALSE;
+	m_LastPreLength = 0;
+	m_CaretStartPos = 0;
+	m_CaretEndPos = 0;
 }
 
 CPredictEdCtrl::~CPredictEdCtrl()
@@ -57,13 +61,17 @@ void CPredictEdCtrl::UpdateQueue()
 	GetSel(nStartChar, nEndChar);
 	int from = nStartChar - MAX_QUEUE_CHARS;
 	if (from < 0)from = 0;
-	m_CharQueue.InsertString(str.Mid(from, nStartChar));
+	str = str.Mid(from, nStartChar-from);
+	int len = str.GetLength();
+	m_CharQueue.InsertString(str);
 	m_CharQueue.Dump();
 
-	m_FwdCharQueue.Clear();
-	m_FwdCharQueue.ReverseInsertString(str.Mid(nEndChar, MAX_QUEUE_CHARS));
-	m_FwdCharQueue.Dump();
+	//m_FwdCharQueue.Clear();
+	//m_FwdCharQueue.ReverseInsertString(str.Mid(nEndChar, MAX_QUEUE_CHARS));
+	//m_FwdCharQueue.Dump();
 
+	m_CaretStartPos = nStartChar;
+	m_CaretEndPos = nEndChar;
 }
 
 void CPredictEdCtrl::Process(TCHAR c)
@@ -74,7 +82,7 @@ void CPredictEdCtrl::Process(TCHAR c)
 	if(Format(c)) str = _T("");
 
 	Train(c);
-	/*str = */Predict(c);
+	Predict(c);
 
 	for (int i = 0; i < str.GetLength(); i++)
 	{
@@ -118,6 +126,7 @@ int CPredictEdCtrl::FindOpenFmtTag(TCHAR fc)
 				if (from >= len) break;
 			}
 		}
+		else break;
 
 	}
 
@@ -330,8 +339,8 @@ void CPredictEdCtrl::Predict(TCHAR c)
 		CString dispstr;
 		dispstr = m_KnowledgeMap.GetPredictions(m_CharQueue.m_Words[0]);
 		m_TabCount = 0;
-		long nStartChar/*, nEndChar*/;
-		GetSel(nStartChar, m_PreCaretPos);
+
+		GetSel(m_PreCaretStartPos, m_PreCaretEndPos);
 		m_IsWordCommitted = TRUE;
 
 		CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_PRE);
@@ -341,10 +350,14 @@ void CPredictEdCtrl::Predict(TCHAR c)
 
 	if (c == '\t')
 	{
-		if(m_IsWordCommitted) SetSel(m_PreCaretPos+1, -1);
+		if (m_IsWordCommitted)
+		{
+			SetSel(m_PreCaretStartPos + 1, m_PreCaretEndPos + 1);
+			m_PreCaretEndPos = m_PreCaretStartPos;
+		}
 		else
 		{
-			SetSel(-1, -1);//set cursor to end, avoid selection of whole text
+			SetSel(m_CaretStartPos, m_CaretEndPos);//set cursor to end to avoid selection of whole text(default behaviour)
 			return;
 		}
 
@@ -360,7 +373,9 @@ void CPredictEdCtrl::Predict(TCHAR c)
 			m_TabCount++;
 		}
 
-		if(!prediction.IsEmpty()) prediction = prediction + _T(" ");
+		m_LastPreLength = prediction.GetLength();
+		m_PreCaretEndPos = m_PreCaretEndPos + m_LastPreLength;
+
 
 		for (int i = 0; i < prediction.GetLength(); i++)
 		{
@@ -373,3 +388,66 @@ void CPredictEdCtrl::Predict(TCHAR c)
 
 }
 
+
+
+CString CPredictEdCtrl::GetRTF()
+{
+	EDITSTREAM es;
+	es.dwError = 0;
+	es.pfnCallback = CBStreamOut;	
+
+	CString sRTF = _T("");
+	es.dwCookie = (DWORD)&sRTF;
+	StreamOut(SF_RTF, es);
+
+	return sRTF;
+
+}
+
+void CPredictEdCtrl::SetRTF(CString sRTF)
+{
+	EDITSTREAM es;
+	es.dwError = 0;
+	es.pfnCallback = CBStreamIn;
+	es.dwCookie = (DWORD)&sRTF;
+	StreamIn(SF_RTF, es);
+
+}
+
+/*
+Callback function to stream an RTF string into the rich edit control.
+*/
+DWORD CALLBACK CPredictEdCtrl::CBStreamIn(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
+{
+	CString *pstr = (CString *)dwCookie;
+
+	int len = pstr->GetLength();
+	if (cb > len) cb = len;
+
+	for (int i = 0; i<cb; i++)
+	{
+		*(pbBuff + i) = pstr->GetAt(i);
+	}
+
+	*pcb = cb;
+	*pstr = pstr->Mid(cb);
+
+	return 0;
+}
+
+/*
+Callback function to stream the RTF string out of the rich edit control.
+*/
+DWORD CALLBACK CPredictEdCtrl::CBStreamOut(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
+{
+	// Address of our string var is in psEntry
+	CString *psEntry = (CString*)dwCookie;
+
+
+	CString tmpEntry = _T("");
+	tmpEntry = (CString)pbBuff;
+
+	*psEntry += tmpEntry.Left(cb);
+
+	return 0;
+}

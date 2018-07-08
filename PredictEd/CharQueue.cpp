@@ -34,6 +34,12 @@ void CCharQueue::Insert(TCHAR c)
 	}
 
 	m_Queue[MAX_QUEUE_CHARS - 1] = c;
+
+	//for (int i = 0; i < MAX_QUEUE_CHARS; i++)
+	//{
+	//	m_Queue[i] = c;
+	//}
+
 }
 
 void CCharQueue::ReverseInsert(TCHAR c)
