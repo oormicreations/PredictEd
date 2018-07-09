@@ -18,5 +18,6 @@ public:
 	CString GetKnowledgeMapFileName();
 	CString GetUserDocumentPath(UINT type);
 	BOOL CreateFileAndInit(CString filename, CString content);
+	CString ReadStringFromFile(CString filename);
 };
 

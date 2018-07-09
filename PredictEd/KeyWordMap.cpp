@@ -95,7 +95,9 @@ void CKeyWordMap::SortPrediction()
 CString CKeyWordMap::GetPredictionCsvStr()
 {
 	CString prestr, tmp;
-	prestr = m_KeyWord;
+	tmp.Format(_T(",%d"), m_Frequency);
+
+	prestr = m_KeyWord + tmp;
 
 	for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
 	{
@@ -109,5 +111,18 @@ CString CKeyWordMap::GetPredictionCsvStr()
 	}
 
 	return prestr;
+}
+
+void CKeyWordMap::Set(CString * data)
+{
+	m_KeyWord = data[0];
+	m_Frequency = StrToInt(data[1]);
+
+	for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
+	{
+		m_Predictions[i] = data[i+2];
+		m_Weights[i] = StrToInt(data[i + 2 + MAX_PREDICTION_COUNT]);
+	}
+
 }
 

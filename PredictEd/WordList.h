@@ -20,6 +20,7 @@ public:
 	CString GetPredictions(CString keyword);
 	CString GetPredictionAt(CString keyword, int nprediction);
 	BOOL SaveMap(CString filename);
+	BOOL LoadMap(CString filename);
 
 };
 

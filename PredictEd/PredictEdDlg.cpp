@@ -72,6 +72,8 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_FILE_OPEN32771, &CPredictEdDlg::OnFileOpen32771)
 	ON_COMMAND(ID_FILE_SAVE32772, &CPredictEdDlg::OnFileSave32772)
 	ON_COMMAND(ID_HELP_ABOUTPREDICTED, &CPredictEdDlg::OnHelpAboutpredicted)
+	ON_COMMAND(ID_OPTIONS_ERASEMEMORIES, &CPredictEdDlg::OnOptionsErasememories)
+	ON_COMMAND(ID_OPTIONS_TRAIN, &CPredictEdDlg::OnOptionsTrain)
 END_MESSAGE_MAP()
 
 
@@ -300,4 +302,16 @@ void CPredictEdDlg::OnHelpAboutpredicted()
 {
 	CAboutDlg dlgAbout;
 	dlgAbout.DoModal();
+}
+
+
+void CPredictEdDlg::OnOptionsErasememories()
+{
+	m_Ed.Erase();
+}
+
+
+void CPredictEdDlg::OnOptionsTrain()
+{
+	m_Ed.TrainFromFiles();
 }

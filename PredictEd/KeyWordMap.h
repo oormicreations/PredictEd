@@ -1,6 +1,7 @@
 #pragma once
 #define MAX_PREDICTION_COUNT 5
 #define MAX_PRECEEDING_COUNT 3
+#define MAX_MAP_LEN MAX_PREDICTION_COUNT*2 + 2
 
 
 class CKeyWordMap
@@ -20,5 +21,6 @@ public:
 	CString GetPredictionStr();
 	void SortPrediction();
 	CString GetPredictionCsvStr();
+	void Set(CString * data);
 };
 

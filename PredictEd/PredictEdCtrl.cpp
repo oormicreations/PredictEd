@@ -21,12 +21,18 @@ CPredictEdCtrl::CPredictEdCtrl()
 	m_CaretStartPos = 0;
 	m_CaretEndPos = 0;
 
+
 	m_AutoBackupFileName = m_SysHelper.GetAutoBackupFileName();
 	m_KnowledgeMapFileName = m_SysHelper.GetKnowledgeMapFileName();
 	if (!m_KnowledgeMapFileName.IsEmpty())
 	{
 		if(!m_SysHelper.CreateFileAndInit(m_KnowledgeMapFileName, _T("PredictEd Knowledge Map, Version, 1\r\n"))) m_KnowledgeMapFileName = _T("");
 	}
+	if (!m_KnowledgeMapFileName.IsEmpty())
+	{
+		if (!m_KnowledgeMap.LoadMap(m_KnowledgeMapFileName)) AfxMessageBox(_T("Error: PredictEd Knowledge Map could not be loaded!"));
+	}
+
 }
 
 CPredictEdCtrl::~CPredictEdCtrl()
@@ -79,6 +85,8 @@ void CPredictEdCtrl::UpdateQueue()
 
 	m_CaretStartPos = nStartChar;
 	m_CaretEndPos = nEndChar;
+
+	m_CaretCoords = GetCaretPos();
 }
 
 void CPredictEdCtrl::Process(TCHAR c)
@@ -317,6 +325,25 @@ CHARFORMAT CPredictEdCtrl::GetCharFormat(DWORD dwMask)
 	return cf;
 }
 
+CString CPredictEdCtrl::FilterString(CString str)
+{
+	str.MakeLower();
+
+	TCHAR filtered[] = 		{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+							'~', '`', '!', '@', '#', '$', '%', '^', '&', '*',
+							'(', ')', '-', '_', '+', '=', '|', '\\', '{', '[', 
+							'}', ']', ':', ';', '\"', '\'', '<', ',', '>', '.', 
+							'?', '/', '\r', '\n'}; //44
+
+	for (int i = 0; i < 44; i++)
+	{
+		str.Replace(filtered[i], '=');
+	}
+
+	str.Replace(_T("="), _T(""));
+	return str;
+}
+
 void CPredictEdCtrl::Train(TCHAR c)
 {
 	if ((c == ' ') || (c == '\r'))
@@ -358,6 +385,7 @@ void CPredictEdCtrl::Predict(TCHAR c)
 		CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_PRE);
 		wnd->SetWindowText(dispstr);
 		prediction = _T("");
+
 	}
 
 	if (c == '\t')
@@ -482,9 +510,70 @@ void CPredictEdCtrl::Save(TCHAR c)
 		{
 			BOOL res = m_KnowledgeMap.SaveMap(m_KnowledgeMapFileName);
 			if (res) msg += _T(" | Auto Saved KMap...");
-			else msg += _T(" | Error: Auto Save of KMap failed.");
+			else msg += _T(" | Error: Auto Save of KMap failed!");
 		}
 
 		if (!msg.IsEmpty()) UpdateStatusMessage(msg);
 	}
 }
+
+void CPredictEdCtrl::Erase()
+{
+	INT_PTR res = AfxMessageBox(_T("Do you really wish to erase all knowledge?"), MB_YESNO);
+	if (res == IDYES)
+	{
+		if (!m_KnowledgeMapFileName.IsEmpty())
+		{
+			if (DeleteFile(m_KnowledgeMapFileName))
+			{
+				if (!m_SysHelper.CreateFileAndInit(m_KnowledgeMapFileName, _T("PredictEd Knowledge Map, Version, 1\r\n"))) m_KnowledgeMapFileName = _T("");
+				else UpdateStatusMessage(_T("PredictEd Memories were erased."));
+			}
+			else UpdateStatusMessage(_T("Error: Erasure failed!"));
+		}
+	}
+
+}
+
+void CPredictEdCtrl::TrainFromFiles()
+{
+	CString filelist[20];
+	filelist[0] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train01.txt");
+
+	for (int i = 0; i < 20; i++)
+	{
+		if (!filelist[i].IsEmpty())
+		{
+			CString content = m_SysHelper.ReadStringFromFile(filelist[i]);
+			if (!content.IsEmpty())
+			{
+				UINT len = content.GetLength();
+				CString word, lastword;
+
+				for (UINT p = 0; p < len; p++)
+				{
+					TCHAR c = content.GetAt(p);
+					if ((c != ' ') && (c != '\r') && (c != '\n') && (c != '\t'))
+					{
+						word.AppendChar(c);
+					}
+					else
+					{
+						word = FilterString(word);
+						m_KnowledgeMap.AddKeyWord(word);
+						m_KnowledgeMap.CreateRelation(lastword, word);
+						lastword = word;
+						word = _T("");
+					}
+
+				}
+
+			}
+		}
+	}
+
+	m_KnowledgeMap.m_LastEntrySaved = 0;
+	if (m_KnowledgeMap.SaveMap(m_KnowledgeMapFileName)) UpdateStatusMessage(_T("Training complete..."));
+	else UpdateStatusMessage(_T("Error: Knowledge file could not be saved!"));
+}
+

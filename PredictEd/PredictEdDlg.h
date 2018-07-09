@@ -62,4 +62,6 @@ public:
 	afx_msg void OnFileOpen32771();
 	afx_msg void OnFileSave32772();
 	afx_msg void OnHelpAboutpredicted();
+	afx_msg void OnOptionsErasememories();
+	afx_msg void OnOptionsTrain();
 };

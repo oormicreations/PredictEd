@@ -24,6 +24,8 @@ public:
 	UINT m_LastPreLength;
 	CString m_AutoBackupFileName;
 	CString m_KnowledgeMapFileName;
+	CPoint m_CaretCoords;
+
 
 	void UpdateQueue();
 	void Train(TCHAR c);
@@ -46,7 +48,9 @@ public:
 	CString GetRTF();
 
 	void UpdateStatusMessage(CString msg);
-
+	void Erase();
+	void TrainFromFiles();
+	CString FilterString(CString str);
 
 private:
 	static DWORD CALLBACK CBStreamIn(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb);

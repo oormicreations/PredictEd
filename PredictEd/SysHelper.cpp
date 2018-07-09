@@ -100,6 +100,29 @@ BOOL CSysHelper::SetClipboardText(CString text)
 	return TRUE;
 }
 
+CString CSysHelper::ReadStringFromFile(CString filename)
+{
+	CFile file;
+	BOOL res1 = file.Open(filename, CFile::modeRead);
+	if (!res1)
+	{
+		AfxMessageBox(_T("Error : Failed to open the file"));
+		return _T("");
+	}
+
+	UINT len = (UINT)file.GetLength();
+	CHAR *buf = new CHAR[len + 1];
+	ZeroMemory(buf, len + 1);
+
+	file.Read(buf, len);
+	file.Close();
+	
+	CString content(buf);
+	delete [] buf;
+
+	return content;
+}
+
 CString CSysHelper::GetFileContent()
 {
 	CFileDialog DataFileOpenDialog(true, _T("rtf"), _T(""), OFN_HIDEREADONLY, _T("Rich text Files (*.rtf)|*.rtf|All Files (*.*)|*.*||"));
@@ -111,24 +134,7 @@ CString CSysHelper::GetFileContent()
 	if (m_FileName.IsEmpty()) return _T("");
 	//if (DataFileOpenDialog.GetFileExt() != _T("rtf")) return;
 
-
-	CFile file;
-	BOOL res1 = file.Open(m_FileName, CFile::modeRead);
-	if (!res1)
-	{
-		AfxMessageBox(_T("Error : Failed to open the file"));
-		m_FileName = _T("");
-		return _T("");
-	}
-
-	UINT len = (UINT)file.GetLength();
-	CHAR *buf = new CHAR[len + 1];
-	ZeroMemory(buf, len + 1);
-
-	file.Read(buf, len);
-	file.Close();
-	CString content(buf);
-	return content;
+	ReadStringFromFile(m_FileName);
 }
 
 BOOL CSysHelper::SetFileContent(CString content)
