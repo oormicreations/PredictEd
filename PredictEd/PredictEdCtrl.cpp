@@ -21,6 +21,10 @@ CPredictEdCtrl::CPredictEdCtrl()
 	m_CaretStartPos = 0;
 	m_CaretEndPos = 0;
 
+	m_pDialog = NULL;
+
+
+
 
 	m_AutoBackupFileName = m_SysHelper.GetAutoBackupFileName();
 	m_KnowledgeMapFileName = m_SysHelper.GetKnowledgeMapFileName();
@@ -44,6 +48,7 @@ BEGIN_MESSAGE_MAP(CPredictEdCtrl, CRichEditCtrl)
 	ON_WM_CHAR()
 	ON_WM_LBUTTONUP()
 	ON_WM_KEYUP()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -77,7 +82,7 @@ void CPredictEdCtrl::UpdateQueue()
 	str = str.Mid(from, nStartChar-from);
 	int len = str.GetLength();
 	m_CharQueue.InsertString(str);
-	m_CharQueue.Dump();
+	//m_CharQueue.Dump();
 
 	//m_FwdCharQueue.Clear();
 	//m_FwdCharQueue.ReverseInsertString(str.Mid(nEndChar, MAX_QUEUE_CHARS));
@@ -269,6 +274,7 @@ void CPredictEdCtrl::SetCharStyle(BOOL bold, BOOL italic, BOOL underline)
 void CPredictEdCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	UpdateQueue();
+	if(m_pDialog) m_pDialog->ShowWindow(SW_HIDE);
 
 	CRichEditCtrl::OnLButtonUp(nFlags, point);
 }
@@ -277,6 +283,7 @@ void CPredictEdCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 void CPredictEdCtrl::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	UpdateQueue();
+	if(nChar == VK_ESCAPE) if (m_pDialog) m_pDialog->ShowWindow(SW_HIDE);
 
 	CRichEditCtrl::OnKeyUp(nChar, nRepCnt, nFlags);
 }
@@ -375,16 +382,54 @@ void CPredictEdCtrl::Predict(TCHAR c)
 
 	if ((c == ' ') || (c == '\r'))
 	{
-		CString dispstr;
-		dispstr = m_KnowledgeMap.GetPredictions(m_CharQueue.m_Words[0]);
+		//CString dispstr[MAX_PREDICTION_COUNT];
+		CKeyWordMap tmap;
+		tmap = m_KnowledgeMap.GetPredictions(m_CharQueue.m_Words[0]);
 		m_TabCount = 0;
 
 		GetSel(m_PreCaretStartPos, m_PreCaretEndPos);
 		m_IsWordCommitted = TRUE;
 
-		CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_PRE);
-		wnd->SetWindowText(dispstr);
+		//CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_PRE);
+		//wnd->SetWindowText(dispstr);
 		prediction = _T("");
+
+		if (m_pDialog == NULL)
+		{
+			m_pDialog = new CPreWordsDlg;
+			if (!m_pDialog->Create(IDD_DIALOG_PREWORDS))
+			{
+				delete m_pDialog;
+				m_pDialog = NULL;
+			}
+		}
+		
+		if (m_pDialog)
+		{
+			if (c != '\r') m_pDialog->ShowWindow(SW_SHOW);
+			else m_pDialog->ShowWindow(SW_HIDE);
+
+			CRect rect, dlgrect;
+			GetClientRect(rect);
+
+			m_pDialog->GetWindowRect(dlgrect);
+			int sz = dlgrect.Width();
+			int padding = 32;
+
+			if (m_CaretCoords.x > (rect.right - sz)) m_CaretCoords.x = rect.right - sz;
+			//if (m_CaretCoords.y > (rect.bottom - sz - padding)) m_CaretCoords.y -= sz + padding;
+
+			m_pDialog->MoveWindow(m_CaretCoords.x, m_CaretCoords.y + padding, sz, sz);
+			m_pDialog->SetWords(tmap);
+			
+		}
+
+		Invalidate();
+		SetFocus();
+		if (m_pDialog)m_pDialog->Invalidate();
+
+
+
 
 	}
 
@@ -423,6 +468,7 @@ void CPredictEdCtrl::Predict(TCHAR c)
 			PostMessage(WM_CHAR, prediction.GetAt(i), 999); //999 is sent as repcount
 		}
 
+		m_pDialog->ShiftWords();
 	}
 
 	if (!((c == '\t') || (c == ' ') || (c == '\r'))) m_IsWordCommitted = FALSE;
@@ -538,7 +584,7 @@ void CPredictEdCtrl::Erase()
 void CPredictEdCtrl::TrainFromFiles()
 {
 	CString filelist[20];
-	filelist[0] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train01.txt");
+	filelist[0] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train00.txt");
 
 	for (int i = 0; i < 20; i++)
 	{
@@ -577,3 +623,16 @@ void CPredictEdCtrl::TrainFromFiles()
 	else UpdateStatusMessage(_T("Error: Knowledge file could not be saved!"));
 }
 
+
+
+void CPredictEdCtrl::OnDestroy()
+{
+	CRichEditCtrl::OnDestroy();
+
+	if (m_pDialog)
+	{
+		m_pDialog->DestroyWindow();
+		delete m_pDialog;
+		m_pDialog = NULL;
+	}
+}

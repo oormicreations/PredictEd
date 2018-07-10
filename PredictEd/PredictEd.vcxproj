@@ -186,6 +186,7 @@
     <ClInclude Include="PredictEd.h" />
     <ClInclude Include="PredictEdCtrl.h" />
     <ClInclude Include="PredictEdDlg.h" />
+    <ClInclude Include="PreWordsDlg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SysHelper.h" />
@@ -198,6 +199,7 @@
     <ClCompile Include="PredictEd.cpp" />
     <ClCompile Include="PredictEdCtrl.cpp" />
     <ClCompile Include="PredictEdDlg.cpp" />
+    <ClCompile Include="PreWordsDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

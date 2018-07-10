@@ -17,7 +17,7 @@ public:
 	void InitList();
 	void AddKeyWord(CString keyword);
 	void CreateRelation(CString before, CString after);
-	CString GetPredictions(CString keyword);
+	CKeyWordMap GetPredictions(CString keyword);
 	CString GetPredictionAt(CString keyword, int nprediction);
 	BOOL SaveMap(CString filename);
 	BOOL LoadMap(CString filename);

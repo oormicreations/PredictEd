@@ -68,22 +68,19 @@ void CWordList::CreateRelation(CString before, CString after)
 
 }
 
-CString CWordList::GetPredictions(CString keyword)
+CKeyWordMap CWordList::GetPredictions(CString keyword)
 {
-	//can be computed in addkeyword
-
-	CString predictions;
+	CKeyWordMap tmap;
 
 	for (int i = 0; i < MAX_LIST_COUNT; i++)
 	{
 		if (m_WordList[i].m_KeyWord == keyword)
 		{
-			predictions = m_WordList[i].GetPredictionStr();
-			return predictions;
+			return m_WordList[i];
 		}
 	}
 
-	return predictions;
+	return tmap; //blank
 }
 
 CString CWordList::GetPredictionAt(CString keyword, int nprediction)
@@ -180,14 +177,10 @@ BOOL CWordList::LoadMap(CString filename)
 		}
 
 		row++;
-		if (row > MAX_LIST_COUNT)break;
+		if (row >= MAX_LIST_COUNT)break;
 	}
 
-
-
-
-
-
+	m_LastKeyWordIndex = row;
 
 	file.Close();
 
