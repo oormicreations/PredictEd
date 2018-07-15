@@ -22,20 +22,30 @@ CPredictEdCtrl::CPredictEdCtrl()
 	m_CaretEndPos = 0;
 
 	m_pDialog = NULL;
+	m_Saved = TRUE;
 
+	m_AutoBackupFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_AUTOBK_FILE);
 
-
-
-	m_AutoBackupFileName = m_SysHelper.GetAutoBackupFileName();
-	m_KnowledgeMapFileName = m_SysHelper.GetKnowledgeMapFileName();
-	if (!m_KnowledgeMapFileName.IsEmpty())
+	m_LTMFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_LTM_FILE);
+	if (!m_LTMFileName.IsEmpty())
 	{
-		if(!m_SysHelper.CreateFileAndInit(m_KnowledgeMapFileName, _T("PredictEd Knowledge Map, Version, 1\r\n"))) m_KnowledgeMapFileName = _T("");
+		if(!m_SysHelper.CreateFileAndInit(m_LTMFileName, _T("PredictEd Knowledge Map,Version,1,LTM\r\n"))) m_LTMFileName = _T("");
 	}
-	if (!m_KnowledgeMapFileName.IsEmpty())
+	if (!m_LTMFileName.IsEmpty())
 	{
-		if (!m_KnowledgeMap.LoadMap(m_KnowledgeMapFileName)) AfxMessageBox(_T("Error: PredictEd Knowledge Map could not be loaded!"));
+		if (!m_LTM.LoadMap(m_LTMFileName)) AfxMessageBox(_T("Error: LTM could not be loaded!"));
 	}
+
+	m_STMFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_STM_FILE);
+	if (!m_STMFileName.IsEmpty())
+	{
+		if (!m_SysHelper.CreateFileAndInit(m_STMFileName, _T("PredictEd Knowledge Map,Version,1,STM\r\n"))) m_STMFileName = _T("");
+	}
+	if (!m_STMFileName.IsEmpty())
+	{
+		if (!m_STM.LoadMap(m_STMFileName)) AfxMessageBox(_T("Error: STM could not be loaded!"));
+	}
+
 
 }
 
@@ -92,6 +102,7 @@ void CPredictEdCtrl::UpdateQueue()
 	m_CaretEndPos = nEndChar;
 
 	m_CaretCoords = GetCaretPos();
+	m_Saved = FALSE;
 }
 
 void CPredictEdCtrl::Process(TCHAR c)
@@ -103,7 +114,7 @@ void CPredictEdCtrl::Process(TCHAR c)
 
 	Train(c);
 	Predict(c);
-	Save(c);
+	AutoSave(c);
 
 	for (int i = 0; i < str.GetLength(); i++)
 	{
@@ -356,11 +367,15 @@ void CPredictEdCtrl::Train(TCHAR c)
 	if ((c == ' ') || (c == '\r'))
 	{
 		m_CharQueue.GetWords();
-		m_KnowledgeMap.AddKeyWord(m_CharQueue.m_Words[0]);
-		m_KnowledgeMap.CreateRelation(m_CharQueue.m_Words[1], m_CharQueue.m_Words[0]);
+		if (!m_LTM.HasKeyWord(m_CharQueue.m_Words[0]))
+		{
+			m_STM.AddKeyWord(m_CharQueue.m_Words[0]);
+		}
+		m_LTM.CreateRelation(m_CharQueue.m_Words[1], m_CharQueue.m_Words[0]);
+		m_STM.CreateRelation(m_CharQueue.m_Words[1], m_CharQueue.m_Words[0]);
 
 		CString dispstr;
-		dispstr.Format(_T("KW Count:%d | "), m_KnowledgeMap.m_LastKeyWordIndex);
+		dispstr.Format(_T("KW Count LTM:%d | STM:%d | Queue: "), m_LTM.m_LastKeyWordIndex, m_STM.m_LastKeyWordIndex);
 		for (int i = 0; i < MAX_WORDS; i++)
 		{
 			dispstr = dispstr + _T(" ") + m_CharQueue.m_Words[i];
@@ -382,54 +397,18 @@ void CPredictEdCtrl::Predict(TCHAR c)
 
 	if ((c == ' ') || (c == '\r'))
 	{
-		//CString dispstr[MAX_PREDICTION_COUNT];
-		CKeyWordMap tmap;
-		tmap = m_KnowledgeMap.GetPredictions(m_CharQueue.m_Words[0]);
+		//try stm first then ltm
+		m_PredictionMap = m_STM.GetPredictions(m_CharQueue.m_Words[0]);
+		if(m_PredictionMap.m_KeyWord.IsEmpty()) m_PredictionMap = m_LTM.GetPredictions(m_CharQueue.m_Words[0]);
+
 		m_TabCount = 0;
 
 		GetSel(m_PreCaretStartPos, m_PreCaretEndPos);
 		m_IsWordCommitted = TRUE;
 
-		//CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_PRE);
-		//wnd->SetWindowText(dispstr);
 		prediction = _T("");
 
-		if (m_pDialog == NULL)
-		{
-			m_pDialog = new CPreWordsDlg;
-			if (!m_pDialog->Create(IDD_DIALOG_PREWORDS))
-			{
-				delete m_pDialog;
-				m_pDialog = NULL;
-			}
-		}
-		
-		if (m_pDialog)
-		{
-			if (c != '\r') m_pDialog->ShowWindow(SW_SHOW);
-			else m_pDialog->ShowWindow(SW_HIDE);
-
-			CRect rect, dlgrect;
-			GetClientRect(rect);
-
-			m_pDialog->GetWindowRect(dlgrect);
-			int sz = dlgrect.Width();
-			int padding = 32;
-
-			if (m_CaretCoords.x > (rect.right - sz)) m_CaretCoords.x = rect.right - sz;
-			//if (m_CaretCoords.y > (rect.bottom - sz - padding)) m_CaretCoords.y -= sz + padding;
-
-			m_pDialog->MoveWindow(m_CaretCoords.x, m_CaretCoords.y + padding, sz, sz);
-			m_pDialog->SetWords(tmap);
-			
-		}
-
-		Invalidate();
-		SetFocus();
-		if (m_pDialog)m_pDialog->Invalidate();
-
-
-
+		ShowPredictions(c);
 
 	}
 
@@ -449,13 +428,13 @@ void CPredictEdCtrl::Predict(TCHAR c)
 
 		if (m_TabCount >= MAX_PREDICTION_COUNT) m_TabCount = 0;
 
-		prediction = m_KnowledgeMap.GetPredictionAt(m_CharQueue.m_Words[0], m_TabCount);
+		prediction = m_PredictionMap.m_Predictions[m_TabCount];// m_LTM.GetPredictionAt(m_CharQueue.m_Words[0], m_TabCount);
 		m_TabCount++;
 
 		if (prediction.IsEmpty())
 		{
 			m_TabCount = 0;
-			prediction = m_KnowledgeMap.GetPredictionAt(m_CharQueue.m_Words[0], m_TabCount);
+			prediction = m_PredictionMap.m_Predictions[m_TabCount];//m_LTM.GetPredictionAt(m_CharQueue.m_Words[0], m_TabCount);
 			m_TabCount++;
 		}
 
@@ -475,7 +454,44 @@ void CPredictEdCtrl::Predict(TCHAR c)
 
 }
 
+void CPredictEdCtrl::ShowPredictions(TCHAR c)
+{
 
+	if (m_pDialog == NULL)
+	{
+		m_pDialog = new CPreWordsDlg;
+		if (!m_pDialog->Create(IDD_DIALOG_PREWORDS))
+		{
+			delete m_pDialog;
+			m_pDialog = NULL;
+		}
+	}
+
+	if (m_pDialog)
+	{
+		if (c != '\r') m_pDialog->ShowWindow(SW_SHOW);
+		else m_pDialog->ShowWindow(SW_HIDE);
+
+		CRect rect, dlgrect;
+		GetClientRect(rect);
+
+		m_pDialog->GetWindowRect(dlgrect);
+		int sz = dlgrect.Width();
+		int padding = 32;
+
+		if (m_CaretCoords.x > (rect.right - sz)) m_CaretCoords.x = rect.right - sz;
+		//if (m_CaretCoords.y > (rect.bottom - sz - padding)) m_CaretCoords.y -= sz + padding;
+
+		m_pDialog->MoveWindow(m_CaretCoords.x, m_CaretCoords.y + padding, sz, sz);
+		m_pDialog->SetWords(m_PredictionMap);
+
+	}
+
+	Invalidate();
+	SetFocus();
+	if (m_pDialog)m_pDialog->Invalidate();
+
+}
 
 CString CPredictEdCtrl::GetRTF()
 {
@@ -539,10 +555,13 @@ DWORD CALLBACK CPredictEdCtrl::CBStreamOut(DWORD dwCookie, LPBYTE pbBuff, LONG c
 	return 0;
 }
 
-void CPredictEdCtrl::Save(TCHAR c)
+void CPredictEdCtrl::AutoSave(TCHAR c)
 {
 	if ((c == '\n')|| (c == '\r'))
 	{
+		TCHAR c1 = m_CharQueue.GetLast(0);
+		if ((c1 == '\n') || (c1 == '\r')) return; //already saved
+
 		CString msg;
 
 		if (!m_AutoBackupFileName.IsEmpty())
@@ -552,12 +571,12 @@ void CPredictEdCtrl::Save(TCHAR c)
 			else msg = _T("Error: Auto Save of text failed.");
 		}
 
-		if (!m_KnowledgeMapFileName.IsEmpty())
-		{
-			BOOL res = m_KnowledgeMap.SaveMap(m_KnowledgeMapFileName);
-			if (res) msg += _T(" | Auto Saved KMap...");
-			else msg += _T(" | Error: Auto Save of KMap failed!");
-		}
+		//if (!m_KnowledgeMapFileName.IsEmpty())
+		//{
+		//	BOOL res = m_KnowledgeMap.SaveMap(m_KnowledgeMapFileName);
+		//	if (res) msg += _T(" | Auto Saved KMap...");
+		//	else msg += _T(" | Error: Auto Save of KMap failed!");
+		//}
 
 		if (!msg.IsEmpty()) UpdateStatusMessage(msg);
 	}
@@ -568,15 +587,17 @@ void CPredictEdCtrl::Erase()
 	INT_PTR res = AfxMessageBox(_T("Do you really wish to erase all knowledge?"), MB_YESNO);
 	if (res == IDYES)
 	{
-		if (!m_KnowledgeMapFileName.IsEmpty())
+		if (!m_LTMFileName.IsEmpty())
 		{
-			if (DeleteFile(m_KnowledgeMapFileName))
+			if (DeleteFile(m_LTMFileName))
 			{
-				if (!m_SysHelper.CreateFileAndInit(m_KnowledgeMapFileName, _T("PredictEd Knowledge Map, Version, 1\r\n"))) m_KnowledgeMapFileName = _T("");
+				if (!m_SysHelper.CreateFileAndInit(m_LTMFileName, _T("PredictEd Knowledge Map, Version, 1\r\n"))) m_LTMFileName = _T("");
 				else UpdateStatusMessage(_T("PredictEd Memories were erased."));
 			}
 			else UpdateStatusMessage(_T("Error: Erasure failed!"));
 		}
+
+		m_LTM.InitList();
 	}
 
 }
@@ -606,20 +627,18 @@ void CPredictEdCtrl::TrainFromFiles()
 					else
 					{
 						word = FilterString(word);
-						m_KnowledgeMap.AddKeyWord(word);
-						m_KnowledgeMap.CreateRelation(lastword, word);
+						m_LTM.AddKeyWord(word);
+						m_LTM.CreateRelation(lastword, word);
 						lastword = word;
 						word = _T("");
 					}
-
 				}
-
 			}
 		}
 	}
 
-	m_KnowledgeMap.m_LastEntrySaved = 0;
-	if (m_KnowledgeMap.SaveMap(m_KnowledgeMapFileName)) UpdateStatusMessage(_T("Training complete..."));
+	m_LTM.m_LastEntrySaved = 0;
+	if (m_LTM.SaveMap(m_LTMFileName, _T("PredictEd Knowledge Map,Version,1,LTM\r\n"))) UpdateStatusMessage(_T("Training complete..."));
 	else UpdateStatusMessage(_T("Error: Knowledge file could not be saved!"));
 }
 
@@ -629,10 +648,23 @@ void CPredictEdCtrl::OnDestroy()
 {
 	CRichEditCtrl::OnDestroy();
 
+	SavePredictions();
+
 	if (m_pDialog)
 	{
 		m_pDialog->DestroyWindow();
 		delete m_pDialog;
 		m_pDialog = NULL;
 	}
+}
+
+void CPredictEdCtrl::SavePredictions()
+{
+	if (!m_STMFileName.IsEmpty())
+	{
+		BOOL res = m_STM.SaveMap(m_STMFileName, _T("PredictEd Knowledge Map,Version,1,STM\r\n"));
+		if (res) UpdateStatusMessage(_T("Saved STM..."));
+		else UpdateStatusMessage(_T("Error: Save STM failed!"));
+	}
+
 }

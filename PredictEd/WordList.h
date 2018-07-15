@@ -2,6 +2,7 @@
 #include "KeyWordMap.h"
 
 #define MAX_LIST_COUNT 100
+#define MAX_LONG_TERM_MEM_COUNT 70
 
 class CWordList
 {
@@ -15,11 +16,12 @@ public:
 
 
 	void InitList();
+	BOOL HasKeyWord(CString keyword);
 	void AddKeyWord(CString keyword);
 	void CreateRelation(CString before, CString after);
 	CKeyWordMap GetPredictions(CString keyword);
 	CString GetPredictionAt(CString keyword, int nprediction);
-	BOOL SaveMap(CString filename);
+	BOOL SaveMap(CString filename, CString header);
 	BOOL LoadMap(CString filename);
 
 };

@@ -13,10 +13,12 @@ CKeyWordMap::~CKeyWordMap()
 
 void CKeyWordMap::InitMap()
 {
+	m_KeyWord = _T("");
 	m_Frequency = 0;
 
 	for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
 	{
+		m_Predictions[i] = _T("");
 		m_Weights[i] = 0;
 	}
 

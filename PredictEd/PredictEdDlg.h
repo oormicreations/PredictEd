@@ -38,7 +38,7 @@ protected:
 public:
 	CPredictEdCtrl m_Ed;
 	CMenu m_Menu;
-	BOOL m_IsShellOpen, m_Saved;
+	BOOL m_IsShellOpen, m_Saved, m_SaveCanceled;
 	CString m_FileName;
 	CSysHelper m_SysHelper;
 
@@ -64,4 +64,5 @@ public:
 	afx_msg void OnHelpAboutpredicted();
 	afx_msg void OnOptionsErasememories();
 	afx_msg void OnOptionsTrain();
+	afx_msg void OnFileSavepredictions();
 };

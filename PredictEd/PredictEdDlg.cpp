@@ -74,6 +74,7 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_HELP_ABOUTPREDICTED, &CPredictEdDlg::OnHelpAboutpredicted)
 	ON_COMMAND(ID_OPTIONS_ERASEMEMORIES, &CPredictEdDlg::OnOptionsErasememories)
 	ON_COMMAND(ID_OPTIONS_TRAIN, &CPredictEdDlg::OnOptionsTrain)
+	ON_COMMAND(ID_FILE_SAVEPREDICTIONS, &CPredictEdDlg::OnFileSavepredictions)
 END_MESSAGE_MAP()
 
 
@@ -114,6 +115,7 @@ BOOL CPredictEdDlg::OnInitDialog()
 
 	m_IsShellOpen = FALSE;
 	m_Saved = TRUE;
+	m_SaveCanceled = FALSE;
 
 	InitEd();
 
@@ -255,7 +257,7 @@ void CPredictEdDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 	else if ((nID & 0xFFF0) == SC_CLOSE)
 	{
-		EndDialog(IDOK);   
+		OnFileExit();
 	}
 	else
 	{
@@ -266,6 +268,18 @@ void CPredictEdDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void CPredictEdDlg::OnFileExit()
 {
+	if ((!m_Saved)|| (!m_Ed.m_Saved))
+	{
+		int ex = AfxMessageBox(_T("Do you wish to save your work before closing??"), MB_YESNOCANCEL | MB_ICONQUESTION);
+		if (ex == IDCANCEL)	return;
+		if (ex == IDYES) OnFileSave32772();
+		if (m_SaveCanceled)
+		{
+			m_SaveCanceled = FALSE;
+			return;
+		}
+	}
+
 	EndDialog(IDOK);
 }
 
@@ -280,7 +294,7 @@ void CPredictEdDlg::OnFileOpen32771()
 		{
 			int ex = AfxMessageBox(_T("Do you wish to save your work before loading another file??"), MB_YESNOCANCEL | MB_ICONQUESTION);
 			if (ex == IDCANCEL)	return;
-			if (ex == IDYES)	OnFileSave32772();
+			if (ex == IDYES) OnFileSave32772();
 		}
 
 		content = m_SysHelper.GetFileContent();
@@ -294,7 +308,13 @@ void CPredictEdDlg::OnFileSave32772()
 {
 	CString content;
 	content = m_Ed.GetRTF();
-	m_SysHelper.SetFileContent(content);
+	if (m_SysHelper.SetFileContent(content))
+	{
+		m_Saved = TRUE;
+		m_Ed.m_Saved = TRUE;
+	}
+	else m_SaveCanceled = TRUE;
+
 }
 
 
@@ -314,4 +334,10 @@ void CPredictEdDlg::OnOptionsErasememories()
 void CPredictEdDlg::OnOptionsTrain()
 {
 	m_Ed.TrainFromFiles();
+}
+
+
+void CPredictEdDlg::OnFileSavepredictions()
+{
+	m_Ed.SavePredictions();
 }

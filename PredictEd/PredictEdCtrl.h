@@ -18,21 +18,26 @@ public:
 	CCharQueue m_CharQueue, m_FwdCharQueue;
 	int m_FormatterPos, m_TabCount;
 	TCHAR m_BoldChar, m_ItalicChar, m_UnderlineChar;
-	CWordList m_KnowledgeMap;
+
+	CWordList m_LTM; //long term memory
+	CWordList m_STM; //short term memory
+
 	long m_PreCaretStartPos, m_PreCaretEndPos;
 	long m_CaretStartPos, m_CaretEndPos;
 	BOOL m_IsWordCommitted;
 	UINT m_LastPreLength;
 	CString m_AutoBackupFileName;
-	CString m_KnowledgeMapFileName;
+	CString m_LTMFileName, m_STMFileName;
 	CPoint m_CaretCoords;
+	CKeyWordMap m_PredictionMap;
 	CPreWordsDlg *m_pDialog;
+	BOOL m_Saved;
 
 	void UpdateQueue();
 	void Train(TCHAR c);
 	void Predict(TCHAR c);
 	void Process(TCHAR c);
-	void Save(TCHAR c);
+	void AutoSave(TCHAR c);
 
 	CString SentenceCase(TCHAR c);
 
@@ -52,6 +57,8 @@ public:
 	void Erase();
 	void TrainFromFiles();
 	CString FilterString(CString str);
+	void ShowPredictions(TCHAR c);
+	void SavePredictions();
 
 private:
 	static DWORD CALLBACK CBStreamIn(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb);

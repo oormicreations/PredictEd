@@ -24,31 +24,37 @@ void CWordList::InitList()
 
 }
 
-void CWordList::AddKeyWord(CString keyword)
+BOOL CWordList::HasKeyWord(CString keyword)
 {
-	if (keyword.IsEmpty()) return;
+	if (keyword.IsEmpty()) return FALSE;
 
 	//search and if found update frequency
 	for (int i = 0; i < MAX_LIST_COUNT; i++)
 	{
+		if (m_WordList[i].m_KeyWord.IsEmpty()) return FALSE; //rest of the list must be blank
+
 		if (m_WordList[i].m_KeyWord == keyword)
 		{
 			m_WordList[i].m_Frequency++;
-			return;
+			return TRUE;
 		}
 	}
+	return FALSE;
+}
 
-	//detect overflow
-	if (m_LastKeyWordIndex >= MAX_LIST_COUNT)
+void CWordList::AddKeyWord(CString keyword)
+{
+	if (keyword.IsEmpty()) return;
+	if (HasKeyWord(keyword)) return;
+
+	//detect overflow and add it at the end
+	if (m_LastKeyWordIndex < MAX_LIST_COUNT)
 	{
-		//AfxMessageBox(_T("Error: Keyword list is full!"));
-		return;
+		m_WordList[m_LastKeyWordIndex].m_KeyWord = keyword;
+		m_WordList[m_LastKeyWordIndex].m_Frequency = 1;
+		m_LastKeyWordIndex++;
 	}
 
-	//add it at the end
-	m_WordList[m_LastKeyWordIndex].m_KeyWord = keyword;
-	m_WordList[m_LastKeyWordIndex].m_Frequency = 1;
-	m_LastKeyWordIndex++;
 }
 
 void CWordList::CreateRelation(CString before, CString after)
@@ -100,19 +106,19 @@ CString CWordList::GetPredictionAt(CString keyword, int nprediction)
 
 }
 
-BOOL CWordList::SaveMap(CString filename)
+BOOL CWordList::SaveMap(CString filename, CString header)
 {
 	if (filename.IsEmpty()) return FALSE;
 
 	CFile file;
-	BOOL res1 = file.Open(filename, CFile::modeWrite | CStdioFile::modeNoTruncate);
+	BOOL res1 = file.Open(filename, CFile::modeWrite | CStdioFile::modeCreate);
 	if (!res1)
 	{
 		//AfxMessageBox(_T("Error : Failed to save the file"));
 		return FALSE;
 	}
 
-	CString content;
+	CString content = header;
 	int i;
 	for (i = m_LastEntrySaved; i < MAX_LIST_COUNT; i++)
 	{
@@ -127,7 +133,7 @@ BOOL CWordList::SaveMap(CString filename)
 
 	len = WideCharToMultiByte(CP_UTF8, NULL, content, -1, outputString, len, NULL, NULL);
 
-	file.SeekToEnd();
+	//file.SeekToEnd();
 	file.Write(outputString, ::strlen(outputString));
 	file.Close();
 	free(outputString);
@@ -148,7 +154,7 @@ BOOL CWordList::LoadMap(CString filename)
 
 	res1 = file.ReadString(line);
 	if (!res1) return FALSE;
-	if (line != _T("PredictEd Knowledge Map, Version, 1"))
+	if (line.Find(_T("PredictEd Knowledge Map,Version,1")) < 0)
 	{
 		return FALSE;
 	}
@@ -177,7 +183,7 @@ BOOL CWordList::LoadMap(CString filename)
 		}
 
 		row++;
-		if (row >= MAX_LIST_COUNT)break;
+		if (row >= MAX_LONG_TERM_MEM_COUNT)break; //leave rest blank for short term mem
 	}
 
 	m_LastKeyWordIndex = row;

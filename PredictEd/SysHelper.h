@@ -1,5 +1,8 @@
 #pragma once
 #define PREDICTED_USER_FOLDER 1
+#define PREDICTED_AUTOBK_FILE 1
+#define PREDICTED_LTM_FILE 2
+#define PREDICTED_STM_FILE 3
 
 class CSysHelper
 {
@@ -14,8 +17,8 @@ public:
 	CString GetFileContent();
 	BOOL SetFileContent(CString content);
 	BOOL SaveString(CString filename, CString content);
-	CString GetAutoBackupFileName();
-	CString GetKnowledgeMapFileName();
+	//CString GetAutoBackupFileName();
+	CString GetPredictEdFileName(UINT type);
 	CString GetUserDocumentPath(UINT type);
 	BOOL CreateFileAndInit(CString filename, CString content);
 	CString ReadStringFromFile(CString filename);

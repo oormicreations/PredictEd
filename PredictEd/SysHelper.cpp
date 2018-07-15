@@ -134,7 +134,7 @@ CString CSysHelper::GetFileContent()
 	if (m_FileName.IsEmpty()) return _T("");
 	//if (DataFileOpenDialog.GetFileExt() != _T("rtf")) return;
 
-	ReadStringFromFile(m_FileName);
+	return ReadStringFromFile(m_FileName);
 }
 
 BOOL CSysHelper::SetFileContent(CString content)
@@ -181,25 +181,34 @@ BOOL CSysHelper::SaveString(CString filename, CString content)
 
 }
 
-CString CSysHelper::GetAutoBackupFileName()
-{
-	CString path = GetUserDocumentPath(PREDICTED_USER_FOLDER);
-	if (!path.IsEmpty())
-	{
-		path = path + _T("\\PredicEd_AutoBackup.rtf");
-		return path;
-	}
-	return _T("");
-}
+//CString CSysHelper::GetAutoBackupFileName()
+//{
+//	CString path = GetUserDocumentPath(PREDICTED_USER_FOLDER);
+//	if (!path.IsEmpty())
+//	{
+//		path = path + _T("\\PredicEd_AutoBackup.rtf");
+//		return path;
+//	}
+//	return _T("");
+//}
 
-CString CSysHelper::GetKnowledgeMapFileName()
+CString CSysHelper::GetPredictEdFileName(UINT type)
 {
 	CString path = GetUserDocumentPath(PREDICTED_USER_FOLDER);
+
 	if (!path.IsEmpty())
 	{
-		path = path + _T("\\PredicEd_KnowledgeMap.txt");
+		CString fname;
+		if (type == PREDICTED_AUTOBK_FILE)	fname = _T("\\PredicEd_AutoBackup.rtf");
+		if (type == PREDICTED_LTM_FILE)		fname = _T("\\PredicEd_LTM.txt");
+		if (type == PREDICTED_STM_FILE)		fname = _T("\\PredicEd_STM.txt");
+
+		if (fname.IsEmpty()) return _T("");
+
+		path = path + fname;
 		return path;
 	}
+
 	return _T("");
 }
 
