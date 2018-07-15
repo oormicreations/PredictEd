@@ -18,7 +18,7 @@ void CKeyWordMap::InitMap()
 
 	for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
 	{
-		m_Predictions[i] = _T("");
+		m_Predictions[i] = _T("#");
 		m_Weights[i] = 0;
 	}
 
@@ -43,7 +43,7 @@ void CKeyWordMap::AddPrediction(CString prediction)
 	{
 		for (int i = 0; i < MAX_PREDICTION_COUNT; i++)
 		{
-			if (m_Predictions[i].IsEmpty())
+			if (m_Predictions[i] == _T("#"))
 			{
 				//add and update weight
 				m_Predictions[i] = prediction;

@@ -2,7 +2,6 @@
 #include "KeyWordMap.h"
 
 #define MAX_LIST_COUNT 100
-#define MAX_LONG_TERM_MEM_COUNT 70
 
 class CWordList
 {

@@ -183,7 +183,7 @@ BOOL CWordList::LoadMap(CString filename)
 		}
 
 		row++;
-		if (row >= MAX_LONG_TERM_MEM_COUNT)break; //leave rest blank for short term mem
+		if (row >= MAX_LIST_COUNT)break; 
 	}
 
 	m_LastKeyWordIndex = row;

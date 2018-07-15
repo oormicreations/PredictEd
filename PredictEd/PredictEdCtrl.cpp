@@ -428,15 +428,17 @@ void CPredictEdCtrl::Predict(TCHAR c)
 
 		if (m_TabCount >= MAX_PREDICTION_COUNT) m_TabCount = 0;
 
-		prediction = m_PredictionMap.m_Predictions[m_TabCount];// m_LTM.GetPredictionAt(m_CharQueue.m_Words[0], m_TabCount);
+		prediction = m_PredictionMap.m_Predictions[m_TabCount];
 		m_TabCount++;
 
-		if (prediction.IsEmpty())
+		if (prediction == _T("#"))
 		{
 			m_TabCount = 0;
-			prediction = m_PredictionMap.m_Predictions[m_TabCount];//m_LTM.GetPredictionAt(m_CharQueue.m_Words[0], m_TabCount);
+			prediction = m_PredictionMap.m_Predictions[m_TabCount];
 			m_TabCount++;
 		}
+
+		if (prediction == _T("#")) prediction = _T("");
 
 		m_LastPreLength = prediction.GetLength();
 		m_PreCaretEndPos = m_PreCaretEndPos + m_LastPreLength;
@@ -570,13 +572,6 @@ void CPredictEdCtrl::AutoSave(TCHAR c)
 			if (res) msg = _T("Auto Saved...");
 			else msg = _T("Error: Auto Save of text failed.");
 		}
-
-		//if (!m_KnowledgeMapFileName.IsEmpty())
-		//{
-		//	BOOL res = m_KnowledgeMap.SaveMap(m_KnowledgeMapFileName);
-		//	if (res) msg += _T(" | Auto Saved KMap...");
-		//	else msg += _T(" | Error: Auto Save of KMap failed!");
-		//}
 
 		if (!msg.IsEmpty()) UpdateStatusMessage(msg);
 	}
