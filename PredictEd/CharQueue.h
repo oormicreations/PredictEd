@@ -17,6 +17,7 @@ public:
 	void Insert(TCHAR c);
 	void ReverseInsert(TCHAR c);
 	CString FormString();
+	CString GetPartialWord(TCHAR c);
 	void InsertString(CString str);
 	void ReverseInsertString(CString str);
 	TCHAR GetLast(int pos);

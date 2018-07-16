@@ -52,6 +52,21 @@ void CCharQueue::ReverseInsert(TCHAR c)
 	m_Queue[0] = c;
 }
 
+CString CCharQueue::GetPartialWord(TCHAR c)
+{
+	CString str;
+	for (int i = MAX_QUEUE_CHARS - 1; i > 0; i--)
+	{
+		if ((m_Queue[i] == ' ') || (m_Queue[i] == '#')) break;
+		else str.AppendChar(m_Queue[i]);
+	}
+
+	str.MakeReverse();
+	str.AppendChar(c);
+	str.MakeLower();
+
+	return str;
+}
 
 CString CCharQueue::FormString()
 {

@@ -512,13 +512,7 @@ void CPredictEdCtrl::AutoComplete(TCHAR c)
 		TCHAR c1 = m_CharQueue.GetLast(0);
 		if ((c1 != ' ') || (c1 != '\r'))
 		{
-			m_PartialWord = m_CharQueue.FormString();
-			int pos = m_PartialWord.ReverseFind(' ');
-			if (pos < 0) pos = m_PartialWord.ReverseFind('#');
-
-			m_PartialWord = m_PartialWord.Right(MAX_QUEUE_CHARS - pos - 1);
-			m_PartialWord.AppendChar(c);
-			m_PartialWord.MakeLower();
+			m_PartialWord = m_CharQueue.GetPartialWord(c);
 		}
 
 		//get suggestions from LTM and fill up the blanks from STM, if any
