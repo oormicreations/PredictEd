@@ -25,22 +25,24 @@ public:
 	CWordList m_LTM; //long term memory
 	CWordList m_STM; //short term memory
 
-	long m_PreCaretStartPos, m_PreCaretEndPos;
+	long m_PreCaretStartPos, m_PreCaretEndPos, m_AcCaretStartPos, m_AcCaretEndPos;
 	long m_CaretStartPos, m_CaretEndPos;
 	BOOL m_IsWordCommitted;
-	UINT m_LastPreLength;
+	UINT m_LastPreLength, m_LastAcLength;
 	CString m_AutoBackupFileName;
 	CString m_LTMFileName, m_STMFileName;
 	CPoint m_CaretCoords;
 	CKeyWordMap m_PredictionMap;
 	CPreWordsDlg *m_pDialog;
 	BOOL m_Saved;
+	CString m_PartialWord;
 
 	void UpdateQueue();
 	void Train(TCHAR c);
 	void Predict(TCHAR c);
 	void Process(TCHAR c);
 	void AutoSave(TCHAR c);
+	void AutoComplete(TCHAR c);
 
 	CString SentenceCase(TCHAR c);
 

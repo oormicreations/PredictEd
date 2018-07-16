@@ -2,6 +2,7 @@
 #include "KeyWordMap.h"
 
 #define MAX_LIST_COUNT 100
+#define MAX_SUGGESTION_COUNT 5
 
 class CWordList
 {
@@ -23,6 +24,6 @@ public:
 	BOOL SaveMap(CString filename, CString header);
 	BOOL LoadMap(CString filename);
 	void SortList();
-
+	int GetKeyWordStartingWith(CString partstr, CString * match, int start);
 };
 

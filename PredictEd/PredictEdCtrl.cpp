@@ -21,6 +21,10 @@ CPredictEdCtrl::CPredictEdCtrl()
 	m_CaretStartPos = 0;
 	m_CaretEndPos = 0;
 
+	m_AcCaretStartPos = 0;
+	m_AcCaretEndPos = 0;
+	m_LastAcLength = 0;
+
 	m_pDialog = NULL;
 	m_Saved = TRUE;
 
@@ -114,6 +118,7 @@ void CPredictEdCtrl::Process(TCHAR c)
 
 	Train(c);
 	Predict(c);
+	AutoComplete(c);
 	AutoSave(c);
 
 	for (int i = 0; i < str.GetLength(); i++)
@@ -465,6 +470,69 @@ void CPredictEdCtrl::Predict(TCHAR c)
 
 	if (!((c == '\t') || (c == ' ') || (c == '\r'))) m_IsWordCommitted = FALSE;
 
+}
+
+void CPredictEdCtrl::AutoComplete(TCHAR c)
+{
+	if (c == '\t')
+	{
+		if (m_IsWordCommitted) return;
+
+		if (m_TabCount >= MAX_PREDICTION_COUNT) m_TabCount = 0;
+
+		if (m_PredictionMap.m_Predictions[m_TabCount] != _T("#"))
+		{
+			SetSel(m_AcCaretStartPos + 1, m_AcCaretEndPos + 1);
+			m_AcCaretEndPos = m_AcCaretStartPos;
+
+			CString autocompleteword = m_PredictionMap.m_Predictions[m_TabCount].Right(m_PredictionMap.m_Predictions[m_TabCount].GetLength() - m_PartialWord.GetLength());
+
+			if (autocompleteword.IsEmpty()) ReplaceSel(_T(""));
+
+			m_LastAcLength = autocompleteword.GetLength();
+			m_AcCaretEndPos = m_AcCaretEndPos + m_LastAcLength;
+
+			for (int i = 0; i < autocompleteword.GetLength(); i++)
+			{
+				PostMessage(WM_CHAR, autocompleteword.GetAt(i), 999); //999 is sent as repcount
+			}
+		}
+
+		m_TabCount++;
+		m_pDialog->ShiftWords();
+	}
+	else
+	{
+		if ((c == ' ') || (c == '\r'))
+		{
+			m_PartialWord = _T("");
+			return;
+		}
+
+		TCHAR c1 = m_CharQueue.GetLast(0);
+		if ((c1 != ' ') || (c1 != '\r'))
+		{
+			m_PartialWord = m_CharQueue.FormString();
+			int pos = m_PartialWord.ReverseFind(' ');
+			if (pos < 0) pos = m_PartialWord.ReverseFind('#');
+
+			m_PartialWord = m_PartialWord.Right(MAX_QUEUE_CHARS - pos - 1);
+			m_PartialWord.AppendChar(c);
+			m_PartialWord.MakeLower();
+		}
+
+		//get suggestions from LTM and fill up the blanks from STM, if any
+		int count = 0;
+		m_PredictionMap.InitMap();
+		count = m_LTM.GetKeyWordStartingWith(m_PartialWord, m_PredictionMap.m_Predictions, count);
+		count = m_STM.GetKeyWordStartingWith(m_PartialWord, m_PredictionMap.m_Predictions, count);
+
+		m_TabCount = 0;
+		GetSel(m_AcCaretStartPos, m_AcCaretEndPos);
+		ShowPredictions(c);
+
+	}
+	
 }
 
 void CPredictEdCtrl::ShowPredictions(TCHAR c)

@@ -211,3 +211,28 @@ void CWordList::SortList()
 	}
 
 }
+
+
+int CWordList::GetKeyWordStartingWith(CString partstr, CString * match, int start)
+{
+	//CString match[MAX_SUGGESTION_COUNT];
+	//int n = 0;
+	//for (n = 0; n < MAX_SUGGESTION_COUNT; n++)
+	//{
+	//	if (match[n].IsEmpty()) break;
+	//}
+
+	for (int i = 0; (i < MAX_LIST_COUNT) && (start < MAX_SUGGESTION_COUNT); i++)
+	{
+		if (m_WordList[i].m_KeyWord.Find(partstr) == 0)
+		{
+			//if (match[n].IsEmpty())
+			{
+				match[start] = m_WordList[i].m_KeyWord;
+				start++;
+			}
+		}
+	}
+
+	return start;
+}
