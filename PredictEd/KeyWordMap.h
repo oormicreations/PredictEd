@@ -11,10 +11,10 @@ public:
 	~CKeyWordMap();
 
 	CString m_KeyWord;
+	UINT m_Frequency; //to be used for word completion suggestions and sorting the list
 	CString m_Predictions[MAX_PREDICTION_COUNT];
 	//CString m_PreceedingWords[MAX_PREDICTION_COUNT];
 	UINT m_Weights[MAX_PREDICTION_COUNT];
-	UINT m_Frequency; //to be used for word completion suggestions and sorting the list
 
 	void InitMap();
 	void AddPrediction(CString prediction);

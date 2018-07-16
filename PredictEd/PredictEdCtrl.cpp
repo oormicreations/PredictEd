@@ -29,7 +29,7 @@ CPredictEdCtrl::CPredictEdCtrl()
 	m_LTMFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_LTM_FILE);
 	if (!m_LTMFileName.IsEmpty())
 	{
-		if(!m_SysHelper.CreateFileAndInit(m_LTMFileName, _T("PredictEd Knowledge Map,Version,1,LTM\r\n"))) m_LTMFileName = _T("");
+		if(!m_SysHelper.CreateFileAndInit(m_LTMFileName, LTM_HEADER)) m_LTMFileName = _T("");
 	}
 	if (!m_LTMFileName.IsEmpty())
 	{
@@ -39,7 +39,7 @@ CPredictEdCtrl::CPredictEdCtrl()
 	m_STMFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_STM_FILE);
 	if (!m_STMFileName.IsEmpty())
 	{
-		if (!m_SysHelper.CreateFileAndInit(m_STMFileName, _T("PredictEd Knowledge Map,Version,1,STM\r\n"))) m_STMFileName = _T("");
+		if (!m_SysHelper.CreateFileAndInit(m_STMFileName, STM_HEADER)) m_STMFileName = _T("");
 	}
 	if (!m_STMFileName.IsEmpty())
 	{
@@ -347,18 +347,24 @@ CString CPredictEdCtrl::FilterString(CString str)
 {
 	str.MakeLower();
 
-	TCHAR filtered[] = 		{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-							'~', '`', '!', '@', '#', '$', '%', '^', '&', '*',
-							'(', ')', '-', '_', '+', '=', '|', '\\', '{', '[', 
-							'}', ']', ':', ';', '\"', '\'', '<', ',', '>', '.', 
-							'?', '/', '\r', '\n'}; //44
-
-	for (int i = 0; i < 44; i++)
+	//TCHAR filtered[] = 		{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	//						'~', '`', '!', '@', '#', '$', '%', '^', '&', '*',
+	//						'(', ')', '-', '_', '+', '=', '|', '\\', '{', '[', 
+	//						'}', ']', ':', ';', '\"', '\'', '<', ',', '>', '.', 
+	//						'?', '/', '\r', '\n'}; //44
+	int pos = str.FindOneOf(_T("0123456789~!@#$%^&*()-_+=|\\{[}]:;\"\'<,>.?/\r\n"));
+	if (pos >= 0)
 	{
-		str.Replace(filtered[i], '=');
+		str.Truncate(pos);
+		return str;
 	}
 
-	str.Replace(_T("="), _T(""));
+	//for (int i = 0; i < 44; i++)
+	//{
+	//	str.Replace(filtered[i], '=');
+	//}
+
+	//str.Replace(_T("="), _T(""));
 	return str;
 }
 
@@ -366,11 +372,16 @@ void CPredictEdCtrl::Train(TCHAR c)
 {
 	if ((c == ' ') || (c == '\r'))
 	{
+		TCHAR c1 = m_CharQueue.GetLast(0);
+		if ((c1 == ' ') || (c1 == '\r')) return; //already trained
+
 		m_CharQueue.GetWords();
+
 		if (!m_LTM.HasKeyWord(m_CharQueue.m_Words[0]))
 		{
 			m_STM.AddKeyWord(m_CharQueue.m_Words[0]);
 		}
+
 		m_LTM.CreateRelation(m_CharQueue.m_Words[1], m_CharQueue.m_Words[0]);
 		m_STM.CreateRelation(m_CharQueue.m_Words[1], m_CharQueue.m_Words[0]);
 
@@ -579,14 +590,14 @@ void CPredictEdCtrl::AutoSave(TCHAR c)
 
 void CPredictEdCtrl::Erase()
 {
-	INT_PTR res = AfxMessageBox(_T("Do you really wish to erase all knowledge?"), MB_YESNO);
+	INT_PTR res = AfxMessageBox(_T("Do you really wish to erase all knowledge in LTM?"), MB_YESNO);
 	if (res == IDYES)
 	{
 		if (!m_LTMFileName.IsEmpty())
 		{
 			if (DeleteFile(m_LTMFileName))
 			{
-				if (!m_SysHelper.CreateFileAndInit(m_LTMFileName, _T("PredictEd Knowledge Map, Version, 1\r\n"))) m_LTMFileName = _T("");
+				if (!m_SysHelper.CreateFileAndInit(m_LTMFileName, LTM_HEADER)) m_LTMFileName = _T("");
 				else UpdateStatusMessage(_T("PredictEd Memories were erased."));
 			}
 			else UpdateStatusMessage(_T("Error: Erasure failed!"));
@@ -601,11 +612,19 @@ void CPredictEdCtrl::TrainFromFiles()
 {
 	CString filelist[20];
 	filelist[0] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train00.txt");
+	//filelist[1] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train01.txt");
 
 	for (int i = 0; i < 20; i++)
 	{
 		if (!filelist[i].IsEmpty())
 		{
+			UpdateStatusMessage(_T("Training ...") + filelist[i]);
+
+			if (m_LTM.m_LastKeyWordIndex >= MAX_LIST_COUNT)
+			{
+				AfxMessageBox(_T("List is full, only weights and relations will be updated."));
+			}
+
 			CString content = m_SysHelper.ReadStringFromFile(filelist[i]);
 			if (!content.IsEmpty())
 			{
@@ -614,8 +633,13 @@ void CPredictEdCtrl::TrainFromFiles()
 
 				for (UINT p = 0; p < len; p++)
 				{
+
 					TCHAR c = content.GetAt(p);
-					if ((c != ' ') && (c != '\r') && (c != '\n') && (c != '\t'))
+					if (c == '/')
+					{
+						int t=0;
+					}
+					if ((c != ' ') && (c != '\r') && (c != '\n') && (c != '\t') && (c != '/') && (c != '.') && (c != ',')) //word delimiters
 					{
 						word.AppendChar(c);
 					}
@@ -632,9 +656,13 @@ void CPredictEdCtrl::TrainFromFiles()
 		}
 	}
 
-	m_LTM.m_LastEntrySaved = 0;
-	if (m_LTM.SaveMap(m_LTMFileName, _T("PredictEd Knowledge Map,Version,1,LTM\r\n"))) UpdateStatusMessage(_T("Training complete..."));
+	m_LTM.SortList();
+
+	if (m_LTM.SaveMap(m_LTMFileName, LTM_HEADER)) UpdateStatusMessage(_T("Training complete..."));
 	else UpdateStatusMessage(_T("Error: Knowledge file could not be saved!"));
+
+	//refresh
+	m_LTM.LoadMap(m_LTMFileName);
 }
 
 
@@ -655,11 +683,60 @@ void CPredictEdCtrl::OnDestroy()
 
 void CPredictEdCtrl::SavePredictions()
 {
-	if (!m_STMFileName.IsEmpty())
+	CString msg;
+
+	m_LTM.SortList();
+	m_STM.SortList();
+
+	if (!m_LTMFileName.IsEmpty())
 	{
-		BOOL res = m_STM.SaveMap(m_STMFileName, _T("PredictEd Knowledge Map,Version,1,STM\r\n"));
-		if (res) UpdateStatusMessage(_T("Saved STM..."));
-		else UpdateStatusMessage(_T("Error: Save STM failed!"));
+		BOOL res = m_LTM.SaveMap(m_LTMFileName, LTM_HEADER);
+		if (res) msg += (_T("Saved LTM..."));
+		else msg += (_T("Error: Save LTM failed!"));
 	}
 
+	if (!m_STMFileName.IsEmpty())
+	{
+		BOOL res = m_STM.SaveMap(m_STMFileName, STM_HEADER);
+		if (res) msg += (_T("Saved STM..."));
+		else msg += (_T("Error: Save STM failed!"));
+	}
+
+	UpdateStatusMessage(msg);
+
 }
+
+void CPredictEdCtrl::Merge()
+{
+	m_LTM.SortList();
+	m_STM.SortList();
+
+	CWordList tmp;
+	int pos = 0;
+
+	//merge
+	for (int i = 0; (i < MAX_LIST_COUNT) && (pos < MAX_LIST_COUNT); i++)
+	{
+		for (int j = pos; j < MAX_LIST_COUNT; j++)
+		{
+			if (m_LTM.m_WordList[j].m_Frequency >= m_STM.m_WordList[i].m_Frequency)
+			{
+				tmp.m_WordList[j] = m_LTM.m_WordList[j];
+			}
+			else
+			{
+				tmp.m_WordList[j] = m_STM.m_WordList[i];
+				pos = j+1;
+				break;
+			}
+		}
+	}
+
+	m_STM.InitList(); //clear stm
+	m_STM.SaveMap(m_STMFileName, STM_HEADER);
+	tmp.SaveMap(m_LTMFileName, LTM_HEADER); //overwrite with merged list
+	m_LTM.LoadMap(m_LTMFileName); //refresh
+
+	UpdateStatusMessage(_T("Merge complete. STM cleared."));
+}
+

@@ -73,10 +73,10 @@ CString CKeyWordMap::GetPredictionStr()
 
 void CKeyWordMap::SortPrediction()
 {
-	CString prestr, tmp;
+	CString tmp;
 	UINT w;
 
-	for (int i = 0; i < MAX_PREDICTION_COUNT-1; i++)
+	for (int i = 0; i < MAX_PREDICTION_COUNT-1; i++) //not a full sort, incremental
 	{
 
 		if (m_Weights[i + 1] > m_Weights[i])

@@ -75,6 +75,7 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_OPTIONS_ERASEMEMORIES, &CPredictEdDlg::OnOptionsErasememories)
 	ON_COMMAND(ID_OPTIONS_TRAIN, &CPredictEdDlg::OnOptionsTrain)
 	ON_COMMAND(ID_FILE_SAVEPREDICTIONS, &CPredictEdDlg::OnFileSavepredictions)
+	ON_COMMAND(ID_OPTIONS_MERGESTMINLTM, &CPredictEdDlg::OnOptionsMergestminltm)
 END_MESSAGE_MAP()
 
 
@@ -340,4 +341,10 @@ void CPredictEdDlg::OnOptionsTrain()
 void CPredictEdDlg::OnFileSavepredictions()
 {
 	m_Ed.SavePredictions();
+}
+
+
+void CPredictEdDlg::OnOptionsMergestminltm()
+{
+	m_Ed.Merge();
 }

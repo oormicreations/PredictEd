@@ -22,6 +22,7 @@ public:
 	CString GetPredictionAt(CString keyword, int nprediction);
 	BOOL SaveMap(CString filename, CString header);
 	BOOL LoadMap(CString filename);
+	void SortList();
 
 };
 

@@ -120,7 +120,7 @@ BOOL CWordList::SaveMap(CString filename, CString header)
 
 	CString content = header;
 	int i;
-	for (i = m_LastEntrySaved; i < MAX_LIST_COUNT; i++)
+	for (i = 0; i < MAX_LIST_COUNT; i++)
 	{
 		if (m_WordList[i].m_KeyWord.IsEmpty()) break;
 		content = content + m_WordList[i].GetPredictionCsvStr() + _T("\r\n");
@@ -191,4 +191,23 @@ BOOL CWordList::LoadMap(CString filename)
 	file.Close();
 
 	return TRUE;
+}
+
+void CWordList::SortList()
+{
+	CKeyWordMap tmap;
+
+	for (int i = 0; i < MAX_LIST_COUNT; i++)
+	{
+		for (int j = i+1; j < MAX_LIST_COUNT; j++)
+		{
+			if (m_WordList[i].m_Frequency < m_WordList[j].m_Frequency)
+			{
+				tmap = m_WordList[i];
+				m_WordList[i] = m_WordList[j];
+				m_WordList[j] = tmap;
+			}
+		}
+	}
+
 }

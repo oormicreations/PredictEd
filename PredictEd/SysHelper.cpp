@@ -199,9 +199,9 @@ CString CSysHelper::GetPredictEdFileName(UINT type)
 	if (!path.IsEmpty())
 	{
 		CString fname;
-		if (type == PREDICTED_AUTOBK_FILE)	fname = _T("\\PredicEd_AutoBackup.rtf");
-		if (type == PREDICTED_LTM_FILE)		fname = _T("\\PredicEd_LTM.txt");
-		if (type == PREDICTED_STM_FILE)		fname = _T("\\PredicEd_STM.txt");
+		if (type == PREDICTED_AUTOBK_FILE)	fname = _T("\\PredictEd_AutoBackup.rtf");
+		if (type == PREDICTED_LTM_FILE)		fname = _T("\\PredictEd_LTM.txt");
+		if (type == PREDICTED_STM_FILE)		fname = _T("\\PredictEd_STM.txt");
 
 		if (fname.IsEmpty()) return _T("");
 

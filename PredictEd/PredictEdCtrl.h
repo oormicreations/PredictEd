@@ -4,6 +4,9 @@
 #include "WordList.h"
 #include "PreWordsDlg.h"
 
+#define LTM_HEADER _T("PredictEd Knowledge Map,Version,1,LTM\r\n")
+#define STM_HEADER _T("PredictEd Knowledge Map,Version,1,STM\r\n")
+
 // CPredictEdCtrl
 
 class CPredictEdCtrl : public CRichEditCtrl
@@ -59,6 +62,7 @@ public:
 	CString FilterString(CString str);
 	void ShowPredictions(TCHAR c);
 	void SavePredictions();
+	void Merge();
 
 private:
 	static DWORD CALLBACK CBStreamIn(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb);

@@ -65,4 +65,5 @@ public:
 	afx_msg void OnOptionsErasememories();
 	afx_msg void OnOptionsTrain();
 	afx_msg void OnFileSavepredictions();
+	afx_msg void OnOptionsMergestminltm();
 };
