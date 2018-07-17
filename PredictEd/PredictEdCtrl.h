@@ -37,6 +37,9 @@ public:
 	BOOL m_Saved;
 	CString m_PartialWord;
 
+	CString m_ScString;
+	BOOL m_ScCapitalize;
+
 	void UpdateQueue();
 	void Train(TCHAR c);
 	void Predict(TCHAR c);

@@ -57,7 +57,7 @@ CString CCharQueue::GetPartialWord(TCHAR c)
 	CString str;
 	for (int i = MAX_QUEUE_CHARS - 1; i > 0; i--)
 	{
-		if ((m_Queue[i] == ' ') || (m_Queue[i] == '#')) break;
+		if ((m_Queue[i] == ' ') || (m_Queue[i] == '#') || (m_Queue[i] == '\r') || (m_Queue[i] == '.') || (m_Queue[i] == ',')) break;
 		else str.AppendChar(m_Queue[i]);
 	}
 

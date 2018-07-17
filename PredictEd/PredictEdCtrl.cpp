@@ -25,6 +25,8 @@ CPredictEdCtrl::CPredictEdCtrl()
 	m_AcCaretEndPos = 0;
 	m_LastAcLength = 0;
 
+	m_ScCapitalize = FALSE;
+
 	m_pDialog = NULL;
 	m_Saved = TRUE;
 
@@ -78,6 +80,8 @@ void CPredictEdCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		return;
 	}
 
+	TRACE("%c\r\n", nChar);
+
 	CRichEditCtrl::OnChar(nChar, nRepCnt, nFlags);
 	UpdateQueue();
 }
@@ -112,19 +116,22 @@ void CPredictEdCtrl::UpdateQueue()
 void CPredictEdCtrl::Process(TCHAR c)
 {
 	CString str(c);
-	str = SentenceCase(c);
 
 	if(Format(c)) str = _T("");
 
+
+	SentenceCase(c);
 	Train(c);
 	Predict(c);
 	AutoComplete(c);
 	AutoSave(c);
 
+	//str = SentenceCase(c);
 	for (int i = 0; i < str.GetLength(); i++)
 	{
 		PostMessage(WM_CHAR, str.GetAt(i), 999); //999 is sent as repcount
 	}
+
 
 }
 
@@ -236,39 +243,57 @@ CString CPredictEdCtrl::SentenceCase(TCHAR c)
 	c1 = m_CharQueue.GetLast(0);
 	c2 = m_CharQueue.GetLast(1);
 
-	if (c != L' ')
+	if ((c != L'\t') && (c1 != L'.'))
 	{
-		if (c1 == L'.')
-		{
-			str.MakeUpper();
-			//insert newline at para break, 
-			//sending second '\r' won't work so use replacesel without selection
-			if (c == L'\r')
-			{
-				ReplaceSel(_T("\r\n"));
-				SetCharStyle(FALSE, FALSE, FALSE);
-			}
-			else
-			{
-				if (c1 != L' ') str = _T(" ") + str;
-			}
-		}
-
-		if (c1 == L' ')
-		{
-			if (c2 == L'.') str.MakeUpper();
-		}
-
-		if (c1 == L'#')
-		{
-			if (c2 == L'#') str.MakeUpper();
-		}
-
-		if ((c1 == L'\n') || (c1 == L'\r'))
-		{
-			str.MakeUpper();
-		}
+		m_ScString = _T("");
+		m_ScCapitalize = FALSE;
 	}
+
+	if (c == L'.')
+	{
+		m_ScString = _T(" ");
+		m_ScCapitalize = TRUE;
+	}
+
+	if (c == L' ')
+	{
+		if (c1 == L'.') m_ScCapitalize = TRUE;
+	}
+
+
+	//if (c != L' ')
+	//{
+	//	if (c1 == L'.')
+	//	{
+	//		str.MakeUpper();
+	//		//insert newline at para break, 
+	//		//sending second '\r' won't work so use replacesel without selection
+	//		if (c == L'\r')
+	//		{
+	//			//ReplaceSel(_T("\r\n"));
+	//			SetCharStyle(FALSE, FALSE, FALSE);
+	//		}
+	//		else
+	//		{
+	//			if (c1 != L' ') str = _T(" ") + str;
+	//		}
+	//	}
+
+	//	if (c1 == L' ')
+	//	{
+	//		if (c2 == L'.') str.MakeUpper();
+	//	}
+
+	//	if (c1 == L'#')
+	//	{
+	//		if (c2 == L'#') str.MakeUpper();
+	//	}
+
+	//	if ((c1 == L'\n') || (c1 == L'\r'))
+	//	{
+	//		str.MakeUpper();
+	//	}
+	//}
 
 	return str;
 }
@@ -455,6 +480,8 @@ void CPredictEdCtrl::Predict(TCHAR c)
 		}
 
 		if (prediction == _T("#")) prediction = _T("");
+		if(!prediction.IsEmpty()) if (m_ScCapitalize) prediction.SetAt(0, towupper(prediction[0]));
+		prediction = m_ScString + prediction;
 
 		m_LastPreLength = prediction.GetLength();
 		m_PreCaretEndPos = m_PreCaretEndPos + m_LastPreLength;
@@ -482,12 +509,15 @@ void CPredictEdCtrl::AutoComplete(TCHAR c)
 
 		if (m_PredictionMap.m_Predictions[m_TabCount] != _T("#"))
 		{
-			SetSel(m_AcCaretStartPos + 1, m_AcCaretEndPos + 1);
+			SetSel(m_AcCaretStartPos/* + 1*/, m_AcCaretEndPos + 1);
 			m_AcCaretEndPos = m_AcCaretStartPos;
 
-			CString autocompleteword = m_PredictionMap.m_Predictions[m_TabCount].Right(m_PredictionMap.m_Predictions[m_TabCount].GetLength() - m_PartialWord.GetLength());
+			CString autocompleteword = m_PredictionMap.m_Predictions[m_TabCount];// .Right(m_PredictionMap.m_Predictions[m_TabCount].GetLength() - m_PartialWord.GetLength());
 
 			if (autocompleteword.IsEmpty()) ReplaceSel(_T(""));
+
+			if (!autocompleteword.IsEmpty()) if (m_ScCapitalize) autocompleteword.SetAt(0, towupper(autocompleteword[0]));
+			autocompleteword = m_ScString + autocompleteword;
 
 			m_LastAcLength = autocompleteword.GetLength();
 			m_AcCaretEndPos = m_AcCaretEndPos + m_LastAcLength;
@@ -509,11 +539,7 @@ void CPredictEdCtrl::AutoComplete(TCHAR c)
 			return;
 		}
 
-		TCHAR c1 = m_CharQueue.GetLast(0);
-		if ((c1 != ' ') || (c1 != '\r'))
-		{
-			m_PartialWord = m_CharQueue.GetPartialWord(c);
-		}
+		m_PartialWord = m_CharQueue.GetPartialWord(c);
 
 		//get suggestions from LTM and fill up the blanks from STM, if any
 		int count = 0;
