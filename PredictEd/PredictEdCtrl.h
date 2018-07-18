@@ -52,7 +52,7 @@ public:
 
 	BOOL Format(TCHAR c);
 	void SetCharStyle(BOOL bold, BOOL italic, BOOL underline);
-	int FindOpenFmtTag(TCHAR fc);
+	CPoint GetFormatterPos(TCHAR fc);
 	void SetFmtChars(TCHAR b, TCHAR i, TCHAR u);
 	CHARFORMAT GetCharFormat(DWORD dwMask = CFM_COLOR | CFM_FACE | CFM_SIZE | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE);
 	BOOL SelectionIsUnderlined();

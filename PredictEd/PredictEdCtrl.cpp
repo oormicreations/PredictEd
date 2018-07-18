@@ -118,9 +118,9 @@ void CPredictEdCtrl::Process(TCHAR c)
 {
 	CString str(c);
 
+	str = SentenceCase(c);
 	if(Format(c)) str = _T("");
 
-	str = SentenceCase(c);
 	Train(c);
 	Predict(c);
 	AutoComplete(c);
@@ -133,51 +133,50 @@ void CPredictEdCtrl::Process(TCHAR c)
 
 }
 
-int CPredictEdCtrl::FindOpenFmtTag(TCHAR fc)
+CPoint CPredictEdCtrl::GetFormatterPos(TCHAR fc)
 {
-	//check for opening tag
-	CString str;
+	CString str, fpair;
 	GetWindowText(str);
 	str.Replace(_T("\r\n"), _T("\r")); //NL count fix
 
-	//find exactly two instances of formatter char in the str
+	//insert current char in the str
+	long nStartChar, nEndChar;
+	GetSel(nStartChar, nEndChar);
+	str.Insert(nStartChar, fc);
+
 	BOOL found = FALSE;
 	int from = 0;
-	int pos = -1;
-	int len = str.GetLength();
+	int pos1 = -1;
+	int pos2 = -1;
+	CPoint pair;
+	
+	//pair string
+	fpair.AppendChar(fc); 
+	fpair.AppendChar(fc);
 
-	while (!found)
+	//check for opening tag
+	//find exactly two instances of formatter char pair in the str
+	//starting from beginning
+	pos1 = str.Find(fpair, from);
+
+	//if found find closing pair
+	if (pos1 >= 0)
 	{
-		int pos1 = str.Find(fc, from);
-		if (pos1 >= 0)
-		{
-			TCHAR t0, t1, t2;
-			t0 = t1 = t2 = 'x';
-			if ((pos1 - 1) > 0) t0 = str.GetAt(pos1 - 1);
-			if ((pos1 + 1) < len) t1 = str.GetAt(pos1 + 1);
-			if ((pos1 + 2) < len) t2 = str.GetAt(pos1 + 2);
-
-			if ((t0 != fc) && (t2 != fc) && (t1 == fc))
-			{
-				found = TRUE;
-				pos = pos1;
-			}
-			else
-			{
-				from = pos1 + 1;
-				if (from >= len) break;
-			}
-		}
-		else break;
-
+		pos2 = str.Find(fpair, pos1+2);
 	}
 
-	return pos;
+	pair.x = pos1;
+	pair.y = pos2;
+	return pair;
+
 }
 
 BOOL CPredictEdCtrl::Format(TCHAR c)
 {
 	TCHAR fc;
+	TCHAR c1 = m_CharQueue.GetLast(0);
+	TCHAR c2 = m_CharQueue.GetLast(1);
+	if (c1 == L'#') SetCharStyle(FALSE, FALSE, FALSE);
 
 	BOOL isbold = FALSE;
 	BOOL isitalic = FALSE;
@@ -191,8 +190,6 @@ BOOL CPredictEdCtrl::Format(TCHAR c)
 	if (c == fc)
 	{
 		//check if its a formatter
-		TCHAR c1 = m_CharQueue.GetLast(0);
-		TCHAR c2 = m_CharQueue.GetLast(1);
 		if ((c1 == fc) && (c2 == fc)) return FALSE;
 
 		if (c1 == fc)
@@ -201,32 +198,33 @@ BOOL CPredictEdCtrl::Format(TCHAR c)
 			long nStartChar, nEndChar;
 			GetSel(nStartChar, nEndChar);
 
-			int pos = FindOpenFmtTag(fc);
+			CPoint pospair = GetFormatterPos(fc);
 
-			if (pos >= 0)
-			{
-				//check current style
-				SetSel(pos+2, nEndChar-1);
-				BOOL curbold = SelectionIsBold();
-				BOOL curitalic = SelectionIsItalic();
-				BOOL curunderline = SelectionIsUnderlined();
+			if ((pospair.x < 0) || (pospair.y < 0)) return FALSE;
+			int pos1 = pospair.x + 1 + (int)(pospair.y < nStartChar);
+			int pos2 = pospair.y - (int)(pospair.y > nStartChar);
+			if (pos1 == pos2) return FALSE;
 
-				//select to the current cursor from opening pos and set style
-				SetSel(pos, nEndChar);
-				SetCharStyle(isbold | curbold, isitalic | curitalic, isunderline | curunderline);
+			//select to the current cursor from opening pos
+			SetSel(pos1, pos2);
 
-				//delete opening and closing tags (DEL key won't work so replace with nothing)
-				SetSel(pos, pos + 2);
-				ReplaceSel(_T(""));
+			//check current style and set new style
+			SetCharStyle(isbold | SelectionIsBold(), isitalic | SelectionIsItalic(), isunderline | SelectionIsUnderlined());
 
-				long len = GetTextLength();
-				SetSel(nEndChar - 2 - 1, nEndChar - 2);
-				ReplaceSel(_T(""));
+			//delete opening and closing tags (DEL key won't work so replace with nothing)
+			int nfc = 1 + (int)(pospair.y < nStartChar);
 
-				SetCharStyle(FALSE, FALSE, FALSE);//toggle back
+			SetSel(pospair.x, pospair.x + nfc);
+			ReplaceSel(_T(""));
 
-				return TRUE;
-			}
+			nfc = 2;
+			if (pospair.y < nStartChar) nfc = 2;
+			SetSel(pospair.y - nfc, pospair.y - nfc + 2);
+			ReplaceSel(_T(""));
+
+			SetCharStyle(FALSE, FALSE, FALSE);//toggle back
+			return TRUE;
+
 		}
 
 	}
@@ -312,7 +310,7 @@ CString CPredictEdCtrl::SentenceCase(TCHAR c)
 		}
 	}
 
-	if ((c == L'\t') && (c1 == L' '))
+	if ((c == L'\t') && (c1 == L' ') && (c2 == L'.'))
 	{
 		m_ScString = _T("");
 		m_ScCapitalize = TRUE;
@@ -533,8 +531,9 @@ void CPredictEdCtrl::AutoComplete(TCHAR c)
 
 		if (m_PredictionMap.m_Predictions[m_TabCount] != _T("#"))
 		{
-			SetSel(m_AcCaretStartPos + m_SpaceInserted, m_AcCaretEndPos + 1 + m_SpaceInserted);
-			m_AcCaretEndPos = m_AcCaretStartPos;
+			int spos = m_AcCaretStartPos - m_PartialWord.GetLength() + m_SpaceInserted + 1;
+			SetSel(spos, m_AcCaretEndPos + 1 + m_SpaceInserted);
+			//m_AcCaretEndPos = m_AcCaretStartPos;
 
 			CString autocompleteword = m_PredictionMap.m_Predictions[m_TabCount];// .Right(m_PredictionMap.m_Predictions[m_TabCount].GetLength() - m_PartialWord.GetLength());
 
