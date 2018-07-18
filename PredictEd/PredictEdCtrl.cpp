@@ -26,6 +26,7 @@ CPredictEdCtrl::CPredictEdCtrl()
 	m_LastAcLength = 0;
 
 	m_ScCapitalize = FALSE;
+	m_SpaceInserted = 0;
 
 	m_pDialog = NULL;
 	m_Saved = TRUE;
@@ -80,7 +81,7 @@ void CPredictEdCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 		return;
 	}
 
-	TRACE("%c\r\n", nChar);
+	//TRACE("%c\r\n", nChar);
 
 	CRichEditCtrl::OnChar(nChar, nRepCnt, nFlags);
 	UpdateQueue();
@@ -119,19 +120,16 @@ void CPredictEdCtrl::Process(TCHAR c)
 
 	if(Format(c)) str = _T("");
 
-
-	SentenceCase(c);
+	str = SentenceCase(c);
 	Train(c);
 	Predict(c);
 	AutoComplete(c);
 	AutoSave(c);
 
-	//str = SentenceCase(c);
 	for (int i = 0; i < str.GetLength(); i++)
 	{
 		PostMessage(WM_CHAR, str.GetAt(i), 999); //999 is sent as repcount
 	}
-
 
 }
 
@@ -240,6 +238,7 @@ CString CPredictEdCtrl::SentenceCase(TCHAR c)
 {
 	CString str(c);
 	TCHAR c1, c2;
+
 	c1 = m_CharQueue.GetLast(0);
 	c2 = m_CharQueue.GetLast(1);
 
@@ -247,9 +246,10 @@ CString CPredictEdCtrl::SentenceCase(TCHAR c)
 	{
 		m_ScString = _T("");
 		m_ScCapitalize = FALSE;
+		m_SpaceInserted = 0;
 	}
 
-	if (c == L'.')
+	if (c == L'.') 
 	{
 		m_ScString = _T(" ");
 		m_ScCapitalize = TRUE;
@@ -257,43 +257,67 @@ CString CPredictEdCtrl::SentenceCase(TCHAR c)
 
 	if (c == L' ')
 	{
-		if (c1 == L'.') m_ScCapitalize = TRUE;
+		if (c1 == L'.')
+		{
+			m_ScCapitalize = TRUE;
+		}
 	}
 
+	if ((c1 == L'#') || (c1 == L'\r') || (c1 == L'\n'))
+	{
+		m_ScCapitalize = TRUE;
+	}
 
-	//if (c != L' ')
-	//{
-	//	if (c1 == L'.')
-	//	{
-	//		str.MakeUpper();
-	//		//insert newline at para break, 
-	//		//sending second '\r' won't work so use replacesel without selection
-	//		if (c == L'\r')
-	//		{
-	//			//ReplaceSel(_T("\r\n"));
-	//			SetCharStyle(FALSE, FALSE, FALSE);
-	//		}
-	//		else
-	//		{
-	//			if (c1 != L' ') str = _T(" ") + str;
-	//		}
-	//	}
+	if (c1 == L'.')
+	{
+		if (c == L'\r')
+		{
+			ReplaceSel(_T("\r\n"));
+			SetCharStyle(FALSE, FALSE, FALSE);
+		}
+	}
 
-	//	if (c1 == L' ')
-	//	{
-	//		if (c2 == L'.') str.MakeUpper();
-	//	}
+	if ((c != L'\t') && (c != L' '))
+	{
+		if (c1 == L'.')
+		{
+			str.MakeUpper();
+			//insert newline at para break, 
+			//sending second '\r' won't work so use replacesel without selection
+			if (c == L'\r')
+			{
+				//ReplaceSel(_T("\r\n"));
+				SetCharStyle(FALSE, FALSE, FALSE);
+			}
+			else
+			{
+				if (c1 != L' ') str = _T(" ") + str;
+				m_SpaceInserted = 1;
+			}
+		}
 
-	//	if (c1 == L'#')
-	//	{
-	//		if (c2 == L'#') str.MakeUpper();
-	//	}
+		if (c1 == L' ')
+		{
+			if (c2 == L'.') str.MakeUpper();
+		}
 
-	//	if ((c1 == L'\n') || (c1 == L'\r'))
-	//	{
-	//		str.MakeUpper();
-	//	}
-	//}
+		if (c1 == L'#')
+		{
+			if (c2 == L'#') str.MakeUpper();
+		}
+
+		if ((c1 == L'\n') || (c1 == L'\r'))
+		{
+			str.MakeUpper();
+		}
+	}
+
+	if ((c == L'\t') && (c1 == L' '))
+	{
+		m_ScString = _T("");
+		m_ScCapitalize = TRUE;
+		m_SpaceInserted = 0;
+	}
 
 	return str;
 }
@@ -509,7 +533,7 @@ void CPredictEdCtrl::AutoComplete(TCHAR c)
 
 		if (m_PredictionMap.m_Predictions[m_TabCount] != _T("#"))
 		{
-			SetSel(m_AcCaretStartPos/* + 1*/, m_AcCaretEndPos + 1);
+			SetSel(m_AcCaretStartPos + m_SpaceInserted, m_AcCaretEndPos + 1 + m_SpaceInserted);
 			m_AcCaretEndPos = m_AcCaretStartPos;
 
 			CString autocompleteword = m_PredictionMap.m_Predictions[m_TabCount];// .Right(m_PredictionMap.m_Predictions[m_TabCount].GetLength() - m_PartialWord.GetLength());
@@ -517,7 +541,7 @@ void CPredictEdCtrl::AutoComplete(TCHAR c)
 			if (autocompleteword.IsEmpty()) ReplaceSel(_T(""));
 
 			if (!autocompleteword.IsEmpty()) if (m_ScCapitalize) autocompleteword.SetAt(0, towupper(autocompleteword[0]));
-			autocompleteword = m_ScString + autocompleteword;
+			if(!m_SpaceInserted) autocompleteword = m_ScString + autocompleteword;
 
 			m_LastAcLength = autocompleteword.GetLength();
 			m_AcCaretEndPos = m_AcCaretEndPos + m_LastAcLength;

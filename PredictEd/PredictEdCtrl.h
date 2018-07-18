@@ -39,6 +39,7 @@ public:
 
 	CString m_ScString;
 	BOOL m_ScCapitalize;
+	int m_SpaceInserted;
 
 	void UpdateQueue();
 	void Train(TCHAR c);
