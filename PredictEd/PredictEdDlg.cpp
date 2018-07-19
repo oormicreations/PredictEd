@@ -238,6 +238,15 @@ void CPredictEdDlg::OnBnClickedButton1()
 	//SendMessageW(EM_SETSEL, 0, (LPARAM)&cr);
 
 	long len = m_Ed.GetTextLength();
+
+	CPreWordsDlg *m_pDialog = new CPreWordsDlg;
+	if (!m_pDialog->Create(IDD_DIALOG_PREWORDS))
+	{
+		delete m_pDialog;
+		m_pDialog = NULL;
+	}
+	m_pDialog->ShowWindow(SW_SHOW);
+
 }
 
 

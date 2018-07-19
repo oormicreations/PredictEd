@@ -23,7 +23,6 @@ CPredictEdCtrl::CPredictEdCtrl()
 
 	m_AcCaretStartPos = 0;
 	m_AcCaretEndPos = 0;
-	m_LastAcLength = 0;
 
 	m_ScCapitalize = FALSE;
 	m_SpaceInserted = 0;
@@ -532,8 +531,7 @@ void CPredictEdCtrl::AutoComplete(TCHAR c)
 
 			if (autocompleteword.IsEmpty()) ReplaceSel(_T(""));
 
-			m_LastAcLength = autocompleteword.GetLength();
-			m_AcCaretEndPos = m_AcCaretEndPos + m_LastAcLength;
+			m_AcCaretEndPos = m_AcCaretStartPos + autocompleteword.GetLength();
 
 			for (int i = 0; i < autocompleteword.GetLength(); i++)
 			{
@@ -595,15 +593,17 @@ void CPredictEdCtrl::ShowPredictions(TCHAR c)
 		}
 
 		CRect rect, dlgrect;
-		GetClientRect(rect);
+		GetWindowRect(rect);
 
 		m_pDialog->GetWindowRect(dlgrect);
 		int sz = dlgrect.Width();
-		int padding = 32;
+		int padding = 24;
+
+		m_CaretCoords.x = m_CaretCoords.x + rect.left;
+		m_CaretCoords.y = m_CaretCoords.y + rect.top;
 
 		if (m_CaretCoords.x < (rect.left + 15)) m_CaretCoords.x = rect.left + 15;
 		if (m_CaretCoords.x > (rect.right - sz)) m_CaretCoords.x = rect.right - sz;
-		//if (m_CaretCoords.y > (rect.bottom - sz - padding)) m_CaretCoords.y -= sz + padding;
 
 		m_pDialog->MoveWindow(m_CaretCoords.x, m_CaretCoords.y + padding, sz, sz);
 		m_pDialog->SetWords(m_PredictionMap);

@@ -31,4 +31,5 @@ public:
 
 	void SetWords(CKeyWordMap map);
 	void ShiftWords();
+	virtual BOOL OnInitDialog();
 };

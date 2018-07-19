@@ -28,7 +28,7 @@ public:
 	long m_PreCaretStartPos, m_PreCaretEndPos, m_AcCaretStartPos, m_AcCaretEndPos;
 	long m_CaretStartPos, m_CaretEndPos;
 	BOOL m_IsWordCommitted;
-	UINT m_LastPreLength, m_LastAcLength;
+	UINT m_LastPreLength;
 	CString m_AutoBackupFileName;
 	CString m_LTMFileName, m_STMFileName;
 	CPoint m_CaretCoords;

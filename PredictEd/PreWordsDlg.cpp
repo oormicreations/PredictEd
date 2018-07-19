@@ -67,3 +67,14 @@ void CPreWordsDlg::ShiftWords()
 	m_Word5.SetWindowText(str);
 
 }
+
+BOOL CPreWordsDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	// TODO:  Add extra initialization here
+	//SetWindowPos(&this->wndTop, 0, 0, 0, 0, SWP_DRAWFRAME | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);//sit on top of app
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+				  // EXCEPTION: OCX Property Pages should return FALSE
+}
