@@ -235,89 +235,83 @@ BOOL CPredictEdCtrl::Format(TCHAR c)
 CString CPredictEdCtrl::SentenceCase(TCHAR c)
 {
 	CString str(c);
-	TCHAR c1, c2;
+	TCHAR c1, c2, c3;
 
 	c1 = m_CharQueue.GetLast(0);
 	c2 = m_CharQueue.GetLast(1);
+	c3 = m_CharQueue.GetLast(2);
 
-	if ((c != L'\t') && (c1 != L'.'))
+	if (c == L'\t')
 	{
-		m_ScString = _T("");
-		m_ScCapitalize = FALSE;
-		m_SpaceInserted = 0;
-	}
-
-	if (c == L'.') 
-	{
-		m_ScString = _T(" ");
-		m_ScCapitalize = TRUE;
-	}
-
-	if (c == L' ')
-	{
-		if (c1 == L'.')
+		if (c1 == L' ')//predictions
 		{
-			m_ScCapitalize = TRUE;
-		}
-	}
-
-	if ((c1 == L'#') || (c1 == L'\r') || (c1 == L'\n'))
-	{
-		m_ScCapitalize = TRUE;
-	}
-
-	if (c1 == L'.')
-	{
-		if (c == L'\r')
-		{
-			ReplaceSel(_T("\r\n"));
-			SetCharStyle(FALSE, FALSE, FALSE);
-		}
-	}
-
-	if ((c != L'\t') && (c != L' '))
-	{
-		if (c1 == L'.')
-		{
-			str.MakeUpper();
-			//insert newline at para break, 
-			//sending second '\r' won't work so use replacesel without selection
-			if (c == L'\r')
+			if (c2 == L'.')
 			{
-				//ReplaceSel(_T("\r\n"));
-				SetCharStyle(FALSE, FALSE, FALSE);
+				m_ScString = _T("");
+				m_ScCapitalize = TRUE;
+				m_SpaceInserted = 0;
 			}
 			else
 			{
-				if (c1 != L' ') str = _T(" ") + str;
-				m_SpaceInserted = 1;
+				m_ScString = _T("");
+				m_ScCapitalize = FALSE;
+				m_SpaceInserted = 0;
+			}
+		}
+		else//autocomplete
+		{
+			//handled in no prediction or ac case
+		}
+
+	}
+	else//no prediction or ac
+	{
+		m_SpaceInserted = 0;
+
+		if (c1 == L'#')
+		{
+			str.MakeUpper();
+		}
+
+		if (c1 == L'.')
+		{
+			str.MakeUpper();
+			if (c != L' ')
+			{
+				if (c != L'\r')
+				{
+					str = _T(" ") + str;
+					m_SpaceInserted = 1;
+				}
 			}
 		}
 
 		if (c1 == L' ')
 		{
-			if (c2 == L'.') str.MakeUpper();
+			if (c2 == L'.')
+			{
+				str.MakeUpper();
+			}
 		}
 
-		if (c1 == L'#')
-		{
-			if (c2 == L'#') str.MakeUpper();
-		}
-
-		if ((c1 == L'\n') || (c1 == L'\r'))
+		if (c1 == L'\r')
 		{
 			str.MakeUpper();
 		}
-	}
 
-	if ((c == L'\t') && (c1 == L' ') && (c2 == L'.'))
-	{
-		m_ScString = _T("");
-		m_ScCapitalize = TRUE;
-		m_SpaceInserted = 0;
+		if (c == L'\r')
+		{
+			if (c1 == L'.')//para
+			{
+				ReplaceSel(_T("\r\n"));
+				SetCharStyle(FALSE, FALSE, FALSE);
+			}
+		}
+
 	}
 
 	return str;
+
 }
 
 
@@ -531,16 +525,12 @@ void CPredictEdCtrl::AutoComplete(TCHAR c)
 
 		if (m_PredictionMap.m_Predictions[m_TabCount] != _T("#"))
 		{
-			int spos = m_AcCaretStartPos - m_PartialWord.GetLength() + m_SpaceInserted + 1;
+			int spos = m_AcCaretStartPos + m_SpaceInserted + 1;
 			SetSel(spos, m_AcCaretEndPos + 1 + m_SpaceInserted);
-			//m_AcCaretEndPos = m_AcCaretStartPos;
 
-			CString autocompleteword = m_PredictionMap.m_Predictions[m_TabCount];// .Right(m_PredictionMap.m_Predictions[m_TabCount].GetLength() - m_PartialWord.GetLength());
+			CString autocompleteword = m_PredictionMap.m_Predictions[m_TabCount].Right(m_PredictionMap.m_Predictions[m_TabCount].GetLength() - m_PartialWord.GetLength());
 
 			if (autocompleteword.IsEmpty()) ReplaceSel(_T(""));
-
-			if (!autocompleteword.IsEmpty()) if (m_ScCapitalize) autocompleteword.SetAt(0, towupper(autocompleteword[0]));
-			if(!m_SpaceInserted) autocompleteword = m_ScString + autocompleteword;
 
 			m_LastAcLength = autocompleteword.GetLength();
 			m_AcCaretEndPos = m_AcCaretEndPos + m_LastAcLength;
@@ -593,8 +583,16 @@ void CPredictEdCtrl::ShowPredictions(TCHAR c)
 
 	if (m_pDialog)
 	{
-		if (c != '\r') m_pDialog->ShowWindow(SW_SHOW);
-		else m_pDialog->ShowWindow(SW_HIDE);
+		if ((c == '.') || (c == '\r') || (c == '\b'))
+		{
+			m_pDialog->ShowWindow(SW_HIDE);
+			Invalidate();
+			return;
+		}
+		else
+		{
+			m_pDialog->ShowWindow(SW_SHOW);
+		}
 
 		CRect rect, dlgrect;
 		GetClientRect(rect);
@@ -603,6 +601,7 @@ void CPredictEdCtrl::ShowPredictions(TCHAR c)
 		int sz = dlgrect.Width();
 		int padding = 32;
 
+		if (m_CaretCoords.x < (rect.left + 15)) m_CaretCoords.x = rect.left + 15;
 		if (m_CaretCoords.x > (rect.right - sz)) m_CaretCoords.x = rect.right - sz;
 		//if (m_CaretCoords.y > (rect.bottom - sz - padding)) m_CaretCoords.y -= sz + padding;
 
