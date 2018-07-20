@@ -76,6 +76,23 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_OPTIONS_TRAIN, &CPredictEdDlg::OnOptionsTrain)
 	ON_COMMAND(ID_FILE_SAVEPREDICTIONS, &CPredictEdDlg::OnFileSavepredictions)
 	ON_COMMAND(ID_OPTIONS_MERGESTMINLTM, &CPredictEdDlg::OnOptionsMergestminltm)
+	ON_COMMAND(ID_FILE_SAVEFILEAS, &CPredictEdDlg::OnFileSavefileas)
+	ON_COMMAND(ID_FILE_COPY, &CPredictEdDlg::OnFileCopy)
+	ON_COMMAND(ID_FILE_PASTE, &CPredictEdDlg::OnFilePaste)
+	ON_COMMAND(ID_EDIT_FINDANDREPLACE, &CPredictEdDlg::OnEditFindandreplace)
+	ON_COMMAND(ID_OPTIONS_CLEARFORMATTING, &CPredictEdDlg::OnEditClearformatting)
+	ON_COMMAND(ID_OPTIONS_FONTANDSIZE, &CPredictEdDlg::OnOptionsFontandsize)
+	ON_COMMAND(ID_FILE_NEWFILE, &CPredictEdDlg::OnFileNewfile)
+	ON_BN_CLICKED(IDC_BUTTON_NEW, &CPredictEdDlg::OnBnClickedButtonNew)
+	ON_BN_CLICKED(IDC_BUTTON_OPEN, &CPredictEdDlg::OnBnClickedButtonOpen)
+	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CPredictEdDlg::OnBnClickedButtonSave)
+	ON_BN_CLICKED(IDC_BUTTON_SAVEAS, &CPredictEdDlg::OnBnClickedButtonSaveas)
+	ON_BN_CLICKED(IDC_BUTTON_COPY, &CPredictEdDlg::OnBnClickedButtonCopy)
+	ON_BN_CLICKED(IDC_BUTTON_PASTE, &CPredictEdDlg::OnBnClickedButtonPaste)
+	ON_BN_CLICKED(IDC_BUTTON_CLEAR, &CPredictEdDlg::OnBnClickedButtonClear)
+	ON_BN_CLICKED(IDC_BUTTON_FONTS, &CPredictEdDlg::OnBnClickedButtonFonts)
+	ON_BN_CLICKED(IDC_BUTTON_TRAIN2, &CPredictEdDlg::OnBnClickedButtonTrain2)
+	ON_COMMAND(ID_OPTIONS_SETTINGS, &CPredictEdDlg::OnOptionsSettings)
 END_MESSAGE_MAP()
 
 
@@ -115,10 +132,15 @@ BOOL CPredictEdDlg::OnInitDialog()
 	SetMenu(&m_Menu);
 
 	m_IsShellOpen = FALSE;
-	m_Saved = TRUE;
+	//m_Saved = TRUE;
 	m_SaveCanceled = FALSE;
 
 	InitEd();
+
+	m_StartTime = CTime::GetCurrentTime();
+	ShowMessage(_T("Untitled File"));
+	//m_StartHour = t.GetHour();
+	//m_StartMinute = t.GetMinute();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -208,8 +230,6 @@ void CPredictEdDlg::InsertText(CString text, COLORREF color, bool bold, bool ita
 	m_Ed.SendMessage(WM_VSCROLL, SB_BOTTOM);
 }
 
-
-
 void CPredictEdDlg::OnBnClickedButton1()
 {
 	//int nLineLength, nLineLengthBuf, nLineIndex, nLineCount = m_Ed.GetLineCount();
@@ -278,7 +298,7 @@ void CPredictEdDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void CPredictEdDlg::OnFileExit()
 {
-	if ((!m_Saved)|| (!m_Ed.m_Saved))
+	if (!m_Ed.m_Saved)
 	{
 		int ex = AfxMessageBox(_T("Do you wish to save your work before closing??"), MB_YESNOCANCEL | MB_ICONQUESTION);
 		if (ex == IDCANCEL)	return;
@@ -300,7 +320,7 @@ void CPredictEdDlg::OnFileOpen32771()
 
 	if (!m_IsShellOpen)
 	{
-		if (!m_Saved)
+		if (!m_Ed.m_Saved)
 		{
 			int ex = AfxMessageBox(_T("Do you wish to save your work before loading another file??"), MB_YESNOCANCEL | MB_ICONQUESTION);
 			if (ex == IDCANCEL)	return;
@@ -320,7 +340,6 @@ void CPredictEdDlg::OnFileSave32772()
 	content = m_Ed.GetRTF();
 	if (m_SysHelper.SetFileContent(content))
 	{
-		m_Saved = TRUE;
 		m_Ed.m_Saved = TRUE;
 	}
 	else m_SaveCanceled = TRUE;
@@ -356,4 +375,127 @@ void CPredictEdDlg::OnFileSavepredictions()
 void CPredictEdDlg::OnOptionsMergestminltm()
 {
 	m_Ed.Merge();
+}
+
+
+void CPredictEdDlg::OnFileSavefileas()
+{
+	// TODO: Add your command handler code here
+}
+
+
+void CPredictEdDlg::OnFileCopy()
+{
+	// TODO: Add your command handler code here
+}
+
+
+void CPredictEdDlg::OnFilePaste()
+{
+	// TODO: Add your command handler code here
+}
+
+
+void CPredictEdDlg::OnEditFindandreplace()
+{
+	// TODO: Add your command handler code here
+}
+
+
+void CPredictEdDlg::OnEditClearformatting()
+{
+	// TODO: Add your command handler code here
+}
+
+
+void CPredictEdDlg::OnOptionsFontandsize()
+{
+	// TODO: Add your command handler code here
+}
+
+
+void CPredictEdDlg::OnFileNewfile()
+{
+	if (!m_Ed.m_Saved)
+	{
+		int ex = AfxMessageBox(_T("Do you wish to save your work??"), MB_YESNOCANCEL | MB_ICONQUESTION);
+		if (ex == IDCANCEL)	return;
+		if (ex == IDYES) OnFileSave32772();
+	}
+
+	m_Ed.Reset();
+	m_StartTime = CTime::GetCurrentTime();
+	ShowMessage(_T("Untitled File"));
+}
+
+
+void CPredictEdDlg::OnBnClickedButtonNew()
+{
+	OnFileNewfile();
+}
+
+
+void CPredictEdDlg::OnBnClickedButtonOpen()
+{
+	OnFileOpen32771();
+}
+
+
+void CPredictEdDlg::OnBnClickedButtonSave()
+{
+	OnFileSave32772();
+}
+
+
+void CPredictEdDlg::OnBnClickedButtonSaveas()
+{
+	OnFileSavefileas();
+}
+
+
+void CPredictEdDlg::OnBnClickedButtonCopy()
+{
+	OnFileCopy();
+}
+
+
+void CPredictEdDlg::OnBnClickedButtonPaste()
+{
+	OnFilePaste();
+}
+
+
+void CPredictEdDlg::OnBnClickedButtonClear()
+{
+	OnEditClearformatting();
+}
+
+
+void CPredictEdDlg::OnBnClickedButtonFonts()
+{
+	OnOptionsFontandsize();
+}
+
+
+void CPredictEdDlg::OnBnClickedButtonTrain2()
+{
+	OnOptionsTrain();
+}
+
+
+void CPredictEdDlg::OnOptionsSettings()
+{
+	// TODO: Add your command handler code here
+}
+
+
+void CPredictEdDlg::ShowMessage(CString msg)
+{
+	CString str, duration;
+	CTime t = CTime::GetCurrentTime();
+	CTimeSpan diff = t - m_StartTime;
+	duration = diff.Format(_T("%H:%M:%S"));
+
+	str.Format(_T("%s | Words:%d | Lines:%d | Duration:%s"), msg, m_Ed.GetWordCount(), m_Ed.GetLineCount(), duration);
+	GetDlgItem(IDC_EDIT_PRE)->SetWindowTextW(str);
 }

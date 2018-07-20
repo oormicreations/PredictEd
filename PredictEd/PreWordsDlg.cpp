@@ -33,6 +33,7 @@ void CPreWordsDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CPreWordsDlg, CDialog)
+	ON_WM_PAINT()
 END_MESSAGE_MAP()
 
 
@@ -77,4 +78,25 @@ BOOL CPreWordsDlg::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+
+void CPreWordsDlg::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+					   // TODO: Add your message handler code here
+					   // Do not call CDialog::OnPaint() for painting messages
+	CRect rect;
+	GetClientRect(&rect);
+	CBrush br;
+	br.CreateSolidBrush(RGB(255, 255, 255));
+	dc.FillRect(rect, &br);
+
+	//rect.DeflateRect(5, 5);
+	CBrush br2;
+	br2.CreateSolidBrush(RGB(200, 200, 200));
+	CBrush* old = dc.SelectObject(&br2);
+	dc.RoundRect(rect, CPoint(10, 10));
+	dc.SelectObject(old);
+
 }

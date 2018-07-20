@@ -110,7 +110,7 @@ void CPredictEdCtrl::UpdateQueue()
 	m_CaretEndPos = nEndChar;
 
 	m_CaretCoords = GetCaretPos();
-	m_Saved = FALSE;
+	if(GetTextLength()>0) m_Saved = FALSE;
 }
 
 void CPredictEdCtrl::Process(TCHAR c)
@@ -540,7 +540,7 @@ void CPredictEdCtrl::AutoComplete(TCHAR c)
 		}
 
 		m_TabCount++;
-		m_pDialog->ShiftWords();
+		if (m_pDialog) m_pDialog->ShiftWords();
 	}
 	else
 	{
@@ -597,13 +597,13 @@ void CPredictEdCtrl::ShowPredictions(TCHAR c)
 
 		m_pDialog->GetWindowRect(dlgrect);
 		int sz = dlgrect.Width();
-		int padding = 24;
+		int padding = 24, margin = 12;
 
 		m_CaretCoords.x = m_CaretCoords.x + rect.left;
 		m_CaretCoords.y = m_CaretCoords.y + rect.top;
 
-		if (m_CaretCoords.x < (rect.left + 15)) m_CaretCoords.x = rect.left + 15;
-		if (m_CaretCoords.x > (rect.right - sz)) m_CaretCoords.x = rect.right - sz;
+		if (m_CaretCoords.x < (rect.left + margin)) m_CaretCoords.x = rect.left + margin;
+		if (m_CaretCoords.x > (rect.right - sz - margin)) m_CaretCoords.x = rect.right - sz - margin;
 
 		m_pDialog->MoveWindow(m_CaretCoords.x, m_CaretCoords.y + padding, sz, sz);
 		m_pDialog->SetWords(m_PredictionMap);
@@ -850,3 +850,15 @@ void CPredictEdCtrl::Merge()
 	UpdateStatusMessage(_T("Merge complete. STM cleared."));
 }
 
+void CPredictEdCtrl::Reset()
+{
+	SetWindowText(_T(""));
+	UpdateQueue();
+	if (m_pDialog) m_pDialog->ShowWindow(SW_HIDE);
+	m_Saved = TRUE;
+}
+
+UINT CPredictEdCtrl::GetWordCount()
+{
+	return 0;
+}

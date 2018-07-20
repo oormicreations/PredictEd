@@ -70,6 +70,9 @@ public:
 	void SavePredictions();
 	void Merge();
 
+	void Reset();
+	UINT GetWordCount();
+
 private:
 	static DWORD CALLBACK CBStreamIn(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb);
 	static DWORD CALLBACK CBStreamOut(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb);

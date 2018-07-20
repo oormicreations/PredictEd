@@ -32,4 +32,5 @@ public:
 	void SetWords(CKeyWordMap map);
 	void ShiftWords();
 	virtual BOOL OnInitDialog();
+	afx_msg void OnPaint();
 };
