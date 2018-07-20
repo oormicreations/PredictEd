@@ -3,6 +3,10 @@ A rich edit control with text prediction and other smart features.
 Release Notes
 =================================================================
 
+2018-07-20
+
+* UI improvements
+
 2018-07-16
 
 * Word completion is working (commit 2018071602)

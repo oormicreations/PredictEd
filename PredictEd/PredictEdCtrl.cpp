@@ -431,11 +431,11 @@ void CPredictEdCtrl::Train(TCHAR c)
 		m_STM.CreateRelation(m_CharQueue.m_Words[1], m_CharQueue.m_Words[0]);
 
 		CString dispstr;
-		dispstr.Format(_T("KW Count LTM:%d | STM:%d | Queue: "), m_LTM.m_LastKeyWordIndex, m_STM.m_LastKeyWordIndex);
-		for (int i = 0; i < MAX_WORDS; i++)
-		{
-			dispstr = dispstr + _T(" ") + m_CharQueue.m_Words[i];
-		}
+		dispstr.Format(_T("KW Count - LTM:%d | STM:%d"), m_LTM.m_LastKeyWordIndex, m_STM.m_LastKeyWordIndex);
+		//for (int i = 0; i < MAX_WORDS; i++)
+		//{
+		//	dispstr = dispstr + _T(" ") + m_CharQueue.m_Words[i];
+		//}
 
 		UpdateStatusMessage(dispstr);
 	}
@@ -860,5 +860,21 @@ void CPredictEdCtrl::Reset()
 
 UINT CPredictEdCtrl::GetWordCount()
 {
-	return 0;
+	//todo: do it in a separate thread
+	UINT wcount = 0;
+	CString str;
+	GetWindowText(str);
+	int from = 0;
+
+	str.Replace(L'\r', L' ');
+	str.Replace(L',', L' ');
+	str.Replace(L'.', L' ');
+	str.Replace(_T("  "), _T(" "));
+
+	while (from >= 0)
+	{
+		from = str.Find(L' ', from+1);
+		if (from > 0) wcount++;
+	}
+	return wcount;
 }

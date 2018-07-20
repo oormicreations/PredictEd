@@ -63,6 +63,7 @@ void CPredictEdDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 //	ON_WM_SYSCOMMAND()
+	ON_WM_TIMER()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1, &CPredictEdDlg::OnBnClickedButton1)
@@ -135,12 +136,15 @@ BOOL CPredictEdDlg::OnInitDialog()
 	//m_Saved = TRUE;
 	m_SaveCanceled = FALSE;
 
+	m_MaxLimit = 2000000; //(bytes)get from settings
+
 	InitEd();
 
 	m_StartTime = CTime::GetCurrentTime();
-	ShowMessage(_T("Untitled File"));
-	//m_StartHour = t.GetHour();
-	//m_StartMinute = t.GetMinute();
+	m_SysHelper.m_FileTitle = _T("Untitled");
+	ShowMessage();
+
+	m_Timer = SetTimer(WM_USER + 100, 5000, NULL);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -205,7 +209,9 @@ void CPredictEdDlg::InitEd()
 	m_Ed.SetDefaultCharFormat(cf);
 
 	m_Ed.SetAutoURLDetect(TRUE);
-
+	UINT limit = m_Ed.GetLimitText();
+	m_Ed.LimitText(m_MaxLimit);
+	UINT limit2 = m_Ed.GetLimitText();
 }
 
 
@@ -310,6 +316,7 @@ void CPredictEdDlg::OnFileExit()
 		}
 	}
 
+	KillTimer(m_Timer);
 	EndDialog(IDOK);
 }
 
@@ -331,6 +338,10 @@ void CPredictEdDlg::OnFileOpen32771()
 	}
 
 	m_Ed.SetRTF(content);
+
+	m_StartTime = CTime::GetCurrentTime();
+	ShowMessage();
+
 }
 
 
@@ -338,11 +349,7 @@ void CPredictEdDlg::OnFileSave32772()
 {
 	CString content;
 	content = m_Ed.GetRTF();
-	if (m_SysHelper.SetFileContent(content))
-	{
-		m_Ed.m_Saved = TRUE;
-	}
-	else m_SaveCanceled = TRUE;
+	m_SaveCanceled = m_Ed.m_Saved =  (m_SysHelper.SetFileContent(content));
 
 }
 
@@ -380,19 +387,22 @@ void CPredictEdDlg::OnOptionsMergestminltm()
 
 void CPredictEdDlg::OnFileSavefileas()
 {
-	// TODO: Add your command handler code here
+	CString tmp = m_SysHelper.m_FileName;
+	m_SysHelper.m_FileName = _T("");
+	OnFileSave32772();
+	if (!m_Ed.m_Saved) m_SysHelper.m_FileName = tmp;
 }
 
 
 void CPredictEdDlg::OnFileCopy()
 {
-	// TODO: Add your command handler code here
+	m_SysHelper.SetClipboardText(m_Ed.GetSelText());
 }
 
 
 void CPredictEdDlg::OnFilePaste()
 {
-	// TODO: Add your command handler code here
+	m_Ed.ReplaceSel(m_SysHelper.GetClipboardText(), TRUE);
 }
 
 
@@ -404,7 +414,7 @@ void CPredictEdDlg::OnEditFindandreplace()
 
 void CPredictEdDlg::OnEditClearformatting()
 {
-	// TODO: Add your command handler code here
+	m_Ed.SetCharStyle(FALSE, FALSE, FALSE);
 }
 
 
@@ -425,7 +435,9 @@ void CPredictEdDlg::OnFileNewfile()
 
 	m_Ed.Reset();
 	m_StartTime = CTime::GetCurrentTime();
-	ShowMessage(_T("Untitled File"));
+	m_SysHelper.m_FileTitle = _T("Untitled");
+	m_SysHelper.m_FileName = _T("");
+	ShowMessage();
 }
 
 
@@ -489,13 +501,24 @@ void CPredictEdDlg::OnOptionsSettings()
 }
 
 
-void CPredictEdDlg::ShowMessage(CString msg)
+void CPredictEdDlg::ShowMessage()
 {
 	CString str, duration;
 	CTime t = CTime::GetCurrentTime();
 	CTimeSpan diff = t - m_StartTime;
 	duration = diff.Format(_T("%H:%M:%S"));
 
-	str.Format(_T("%s | Words:%d | Lines:%d | Duration:%s"), msg, m_Ed.GetWordCount(), m_Ed.GetLineCount(), duration);
+	str.Format(_T("%s | Words: %d | Lines: %d | Duration: %s"), m_SysHelper.m_FileTitle, m_Ed.GetWordCount(), m_Ed.GetLineCount(), duration);
 	GetDlgItem(IDC_EDIT_PRE)->SetWindowTextW(str);
+}
+
+
+void CPredictEdDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == m_Timer)
+	{
+		ShowMessage();
+	}
+
+	CDialogEx::OnTimer(nIDEvent);
 }

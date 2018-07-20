@@ -41,20 +41,15 @@ public:
 	BOOL m_IsShellOpen/*, m_Saved*/, m_SaveCanceled;
 	CString m_FileName;
 	CSysHelper m_SysHelper;
-	UINT m_StartHour, m_StartMinute;
+	UINT m_Timer;
 	CTime m_StartTime;
-
+	LONG m_MaxLimit;
 
 
 
 	void InitEd();
 	void InsertText(CString text, COLORREF color = RGB(0, 0, 0), bool bold = false, bool italic = false);
-	void ShowMessage(CString msg);
-
-
-
-
-
+	void ShowMessage();
 
 
 
@@ -86,4 +81,5 @@ public:
 	afx_msg void OnBnClickedButtonFonts();
 	afx_msg void OnBnClickedButtonTrain2();
 	afx_msg void OnOptionsSettings();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };

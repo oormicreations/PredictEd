@@ -10,7 +10,7 @@ public:
 	CSysHelper();
 	~CSysHelper();
 
-	CString m_FileName;
+	CString m_FileName, m_FileTitle;
 
 	CString GetClipboardText();
 	BOOL SetClipboardText(CString text);
