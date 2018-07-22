@@ -94,6 +94,7 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_FONTS, &CPredictEdDlg::OnBnClickedButtonFonts)
 	ON_BN_CLICKED(IDC_BUTTON_TRAIN2, &CPredictEdDlg::OnBnClickedButtonTrain2)
 	ON_COMMAND(ID_OPTIONS_SETTINGS, &CPredictEdDlg::OnOptionsSettings)
+	ON_REGISTERED_MESSAGE(WM_FINDREPLACE, &CPredictEdDlg::OnFindReplace)
 END_MESSAGE_MAP()
 
 
@@ -145,6 +146,7 @@ BOOL CPredictEdDlg::OnInitDialog()
 	ShowMessage();
 
 	m_Timer = SetTimer(WM_USER + 100, 5000, NULL);
+	m_pFRDlg = NULL;
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -187,6 +189,10 @@ void CPredictEdDlg::OnPaint()
 	}
 	else
 	{
+		//CPaintDC dc(this); // device context for painting
+		//CRect rect;
+		//GetClientRect(&rect);
+		//dc.FillSolidRect(rect, RGB(100, 100, 100));
 		CDialogEx::OnPaint();
 	}
 }
@@ -203,6 +209,9 @@ void CPredictEdDlg::InitEd()
 {
 	SetDefaultStyle(); //todo : get from settings
 	m_Ed.SetAutoURLDetect(TRUE);
+	m_Ed.SetOptions(ECOOP_OR, ECO_NOHIDESEL);
+	m_Ed.SetBackgroundColor(0, RGB(255, 253, 245));
+
 	UINT limit = m_Ed.GetLimitText();
 	m_Ed.LimitText(m_MaxLimit);
 	UINT limit2 = m_Ed.GetLimitText();
@@ -210,8 +219,7 @@ void CPredictEdDlg::InitEd()
 	m_Margin = 30; //todo : get from settings
 	CRect rect;
 	m_Ed.GetClientRect(rect);
-	rect.left = m_Margin;
-	rect.right = rect.right - m_Margin;
+	rect.DeflateRect(m_Margin, 0);
 	m_Ed.SetRect(rect);
 }
 
@@ -407,21 +415,105 @@ void CPredictEdDlg::OnFileSavefileas()
 
 void CPredictEdDlg::OnFileCopy()
 {
-	m_SysHelper.SetClipboardText(m_Ed.GetSelText());
+	m_Ed.Copy();
 }
 
 
 void CPredictEdDlg::OnFilePaste()
 {
-	m_Ed.ReplaceSel(m_SysHelper.GetClipboardText(), TRUE);
+	m_Ed.Paste();
 }
 
 
 void CPredictEdDlg::OnEditFindandreplace()
 {
-	// TODO: Add your command handler code here
+	InitFindReplaceDlg();
 }
 
+void CPredictEdDlg::InitFindReplaceDlg()
+{
+	if (NULL == m_pFRDlg)
+	{
+		m_pFRDlg = new CFindReplaceDialog();  // Must be created on the heap
+
+		m_pFRDlg->Create(FALSE, m_Ed.GetSelText(), _T(""), FR_DOWN, this);
+
+		m_pFRDlg->m_fr.lStructSize = sizeof(FINDREPLACE);
+		m_pFRDlg->m_fr.hwndOwner = this->m_hWnd;
+	}
+}
+
+LONG CPredictEdDlg::OnFindReplace(WPARAM wParam, LPARAM lParam)
+{
+	if (m_pFRDlg != NULL)
+	{
+		if (m_pFRDlg->IsTerminating())
+		{
+			m_pFRDlg = NULL;
+		}
+		else
+		{
+			CString sfind = m_pFRDlg->GetFindString();
+			CString srepl = m_pFRDlg->GetReplaceString();
+			BOOL mcase = m_pFRDlg->MatchCase();
+			BOOL mword = m_pFRDlg->MatchWholeWord();
+			BOOL repall = m_pFRDlg->ReplaceAll();
+			BOOL repcur = m_pFRDlg->ReplaceCurrent();
+			BOOL next = m_pFRDlg->FindNext();
+
+			long nStartChar, nEndChar, n;
+			m_Ed.GetSel(nStartChar, nEndChar);
+
+			FINDTEXTEX ft;
+			ft.chrg.cpMin = nEndChar;
+			ft.chrg.cpMax = -1;
+			ft.lpstrText = sfind;
+
+			if (next)
+			{
+				n = m_Ed.FindText((FR_MATCHCASE*mcase) | (FR_WHOLEWORD*mword) | FR_DOWN, &ft);
+				if (n != -1)
+				{
+					m_Ed.SetSel(ft.chrgText);
+				}
+				else m_Ed.SetSel(0, 0); //find from top again
+			}
+
+			if (repcur)
+			{
+				if(!m_Ed.GetSelText().IsEmpty()) m_Ed.ReplaceSel(srepl);
+			}
+
+			if (repall)
+			{
+				long n = 0;
+				UINT rcount = 0;
+
+				while (n >= 0)
+				{
+					ft.chrg.cpMin = 0;
+
+					n = m_Ed.FindText((FR_MATCHCASE*mcase) | (FR_WHOLEWORD*mword) | FR_DOWN, &ft);
+					if (n != -1)
+					{
+						m_Ed.SetSel(ft.chrgText);
+						if (!m_Ed.GetSelText().IsEmpty())
+						{
+							m_Ed.ReplaceSel(srepl);
+							rcount++;
+						}
+					}
+
+				}
+
+				CString res;
+				res.Format(_T("%d occurances were replaced."), rcount);
+				m_Ed.UpdateStatusMessage(res);
+			}
+		}
+	}
+	return 0;
+}
 
 void CPredictEdDlg::OnEditClearformatting()
 {

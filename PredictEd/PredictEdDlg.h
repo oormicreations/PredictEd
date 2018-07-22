@@ -7,6 +7,8 @@
 #include "PredictEdCtrl.h"
 #include "SysHelper.h"
 
+// Register FindReplace window message.
+static UINT WM_FINDREPLACE = ::RegisterWindowMessage(FINDMSGSTRING);
 
 // CPredictEdDlg dialog
 class CPredictEdDlg : public CDialogEx
@@ -45,14 +47,14 @@ public:
 	CTime m_StartTime;
 	LONG m_MaxLimit;
 	UINT m_Margin;
-
+	CFindReplaceDialog * m_pFRDlg;
 
 
 	void InitEd();
 	void InsertText(CString text, COLORREF color = RGB(0, 0, 0), bool bold = false, bool italic = false);
 	void ShowMessage();
 	void SetDefaultStyle();
-
+	void InitFindReplaceDlg();
 
 
 	afx_msg void OnBnClickedButton1();
@@ -84,4 +86,5 @@ public:
 	afx_msg void OnBnClickedButtonTrain2();
 	afx_msg void OnOptionsSettings();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg LONG OnFindReplace(WPARAM wParam, LPARAM lParam);
 };
