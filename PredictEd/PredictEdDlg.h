@@ -44,12 +44,14 @@ public:
 	UINT m_Timer;
 	CTime m_StartTime;
 	LONG m_MaxLimit;
+	UINT m_Margin;
 
 
 
 	void InitEd();
 	void InsertText(CString text, COLORREF color = RGB(0, 0, 0), bool bold = false, bool italic = false);
 	void ShowMessage();
+	void SetDefaultStyle();
 
 
 

@@ -84,6 +84,7 @@ void CPredictEdCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	CRichEditCtrl::OnChar(nChar, nRepCnt, nFlags);
 	UpdateQueue();
+
 }
 
 void CPredictEdCtrl::UpdateQueue()
@@ -217,8 +218,9 @@ BOOL CPredictEdCtrl::Format(TCHAR c)
 			ReplaceSel(_T(""));
 
 			nfc = 2;
-			if (pospair.y < nStartChar) nfc = 2;
-			SetSel(pospair.y - nfc, pospair.y - nfc + 2);
+			int n = 0;
+			if (pospair.y > nStartChar) n = 1;
+			SetSel(pospair.y - nfc, pospair.y - nfc + 1 + n);
 			ReplaceSel(_T(""));
 
 			SetCharStyle(FALSE, FALSE, FALSE);//toggle back
@@ -581,7 +583,7 @@ void CPredictEdCtrl::ShowPredictions(TCHAR c)
 
 	if (m_pDialog)
 	{
-		if ((c == '.') || (c == '\r') || (c == '\b'))
+		if ((c == '.') || (c == '\r') || (c == '\b') || (c == m_BoldChar) || (c == m_ItalicChar) || (c == m_UnderlineChar))
 		{
 			m_pDialog->ShowWindow(SW_HIDE);
 			Invalidate();

@@ -201,19 +201,30 @@ HCURSOR CPredictEdDlg::OnQueryDragIcon()
 
 void CPredictEdDlg::InitEd()
 {
-	CHARFORMAT2 cf = {};
-	CString fontname = L"Georgia";
-	cf.dwMask = CFM_FACE | CFM_SIZE;
-	for (int n = 0; n < fontname.GetLength(); n++) cf.szFaceName[n] = fontname.GetAt(n);
-	cf.yHeight = 22 * 10;
-	m_Ed.SetDefaultCharFormat(cf);
-
+	SetDefaultStyle(); //todo : get from settings
 	m_Ed.SetAutoURLDetect(TRUE);
 	UINT limit = m_Ed.GetLimitText();
 	m_Ed.LimitText(m_MaxLimit);
 	UINT limit2 = m_Ed.GetLimitText();
+
+	m_Margin = 30; //todo : get from settings
+	CRect rect;
+	m_Ed.GetClientRect(rect);
+	rect.left = m_Margin;
+	rect.right = rect.right - m_Margin;
+	m_Ed.SetRect(rect);
 }
 
+void CPredictEdDlg::SetDefaultStyle()
+{
+	CClientDC dc(this);
+	CHARFORMAT2 cf = {};
+	CString fontname = L"Georgia";
+	cf.dwMask = CFM_FACE | CFM_SIZE;
+	for (int n = 0; n < fontname.GetLength(); n++) cf.szFaceName[n] = fontname.GetAt(n);
+	cf.yHeight = -MulDiv(11*10*2, dc.GetDeviceCaps(LOGPIXELSY), 72); //x 2 for twips
+	m_Ed.SetDefaultCharFormat(cf);
+}
 
 void CPredictEdDlg::InsertText(CString text, COLORREF color, bool bold, bool italic)
 {
@@ -414,13 +425,68 @@ void CPredictEdDlg::OnEditFindandreplace()
 
 void CPredictEdDlg::OnEditClearformatting()
 {
-	m_Ed.SetCharStyle(FALSE, FALSE, FALSE);
+	CHARFORMAT2 cf = {};
+	m_Ed.GetDefaultCharFormat(cf);
+	m_Ed.SetSelectionCharFormat(cf);
 }
 
 
 void CPredictEdDlg::OnOptionsFontandsize()
 {
-	// TODO: Add your command handler code here
+	CClientDC dc(this); // expects a CWnd that has already been initialized
+	
+	CHARFORMAT2 cf = {};
+	m_Ed.GetSelectionCharFormat(cf);
+
+	CString fontname = cf.szFaceName;
+	LONG ht = cf.yHeight/(2*10); // 2 x for converting from twips
+	ht = MulDiv(ht, 72, dc.GetDeviceCaps(LOGPIXELSY));
+
+	LOGFONT lf;
+	memset(&lf, 0, sizeof(LOGFONT));
+
+	lf.lfHeight = -MulDiv(ht, dc.GetDeviceCaps(LOGPIXELSY), 72);
+	_tcscpy_s(lf.lfFaceName, LF_FACESIZE, fontname);
+
+	// Show the font dialog 
+	CFontDialog dlg(&lf);
+
+	dlg.m_cf.Flags |= CF_EFFECTS;
+	dlg.m_cf.rgbColors = cf.crTextColor;
+
+	if (dlg.DoModal() == IDOK)
+	{
+		CHARFORMAT2 newcf = {};
+
+		_tcscpy_s(newcf.szFaceName, dlg.GetFaceName());
+		newcf.dwMask |= CFM_FACE;
+		newcf.yHeight = (dlg.GetSize() / 10) * 20;	// convert into twips
+		newcf.dwMask |= CFM_SIZE;
+		newcf.crTextColor = dlg.GetColor();
+		newcf.dwMask |= CFM_COLOR;
+		newcf.dwMask |= CFM_BOLD;
+		if (dlg.IsBold()) 
+		{
+			newcf.dwEffects |= CFE_BOLD;
+		}
+		newcf.dwMask |= CFM_ITALIC;
+		if (dlg.IsItalic()) 
+		{
+			newcf.dwEffects |= CFE_ITALIC;
+		}
+		newcf.dwMask |= CFM_UNDERLINE;
+		if (dlg.IsUnderline()) 
+		{
+			newcf.dwEffects |= CFE_UNDERLINE;
+		}
+		newcf.dwMask |= CFM_STRIKEOUT;
+		if (dlg.IsStrikeOut()) 
+		{
+			newcf.dwEffects |= CFE_STRIKEOUT;
+		}
+
+		m_Ed.SetSelectionCharFormat(newcf);
+	}
 }
 
 
