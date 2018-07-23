@@ -230,7 +230,7 @@ void CPredictEdDlg::SetDefaultStyle()
 	CString fontname = L"Georgia";
 	cf.dwMask = CFM_FACE | CFM_SIZE;
 	for (int n = 0; n < fontname.GetLength(); n++) cf.szFaceName[n] = fontname.GetAt(n);
-	cf.yHeight = -MulDiv(11*10*2, dc.GetDeviceCaps(LOGPIXELSY), 72); //x 2 for twips
+	cf.yHeight = 12 * TWIPS_PER_PT; // pt to twips //-MulDiv(11*10*2, dc.GetDeviceCaps(LOGPIXELSY), 72); //x 2 for twips
 	m_Ed.SetDefaultCharFormat(cf);
 }
 
@@ -531,13 +531,12 @@ void CPredictEdDlg::OnOptionsFontandsize()
 	m_Ed.GetSelectionCharFormat(cf);
 
 	CString fontname = cf.szFaceName;
-	LONG ht = cf.yHeight/(2*10); // 2 x for converting from twips
-	ht = MulDiv(ht, 72, dc.GetDeviceCaps(LOGPIXELSY));
+	LONG ht = cf.yHeight/ TWIPS_PER_PT;// twips to pt
 
 	LOGFONT lf;
 	memset(&lf, 0, sizeof(LOGFONT));
 
-	lf.lfHeight = -MulDiv(ht, dc.GetDeviceCaps(LOGPIXELSY), 72);
+	lf.lfHeight = -MulDiv(ht, dc.GetDeviceCaps(LOGPIXELSY), 72); //pt to em
 	_tcscpy_s(lf.lfFaceName, LF_FACESIZE, fontname);
 
 	// Show the font dialog 
@@ -552,7 +551,7 @@ void CPredictEdDlg::OnOptionsFontandsize()
 
 		_tcscpy_s(newcf.szFaceName, dlg.GetFaceName());
 		newcf.dwMask |= CFM_FACE;
-		newcf.yHeight = (dlg.GetSize() / 10) * 20;	// convert into twips
+		newcf.yHeight = (dlg.GetSize() / 10) * TWIPS_PER_PT;	// GetSize returns size in pt * 10. convert into twips
 		newcf.dwMask |= CFM_SIZE;
 		newcf.crTextColor = dlg.GetColor();
 		newcf.dwMask |= CFM_COLOR;

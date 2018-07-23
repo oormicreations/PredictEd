@@ -3,6 +3,7 @@
 #define PREDICTED_AUTOBK_FILE 1
 #define PREDICTED_LTM_FILE 2
 #define PREDICTED_STM_FILE 3
+#define TWIPS_PER_PT 20
 
 class CSysHelper
 {
