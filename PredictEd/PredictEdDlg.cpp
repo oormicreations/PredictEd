@@ -7,6 +7,7 @@
 #include "PredictEdDlg.h"
 #include "afxdialogex.h"
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -138,6 +139,7 @@ BOOL CPredictEdDlg::OnInitDialog()
 	m_SaveCanceled = FALSE;
 
 	m_MaxLimit = 2000000; //(bytes)get from settings
+	m_DefaultFontSz = 12;
 
 	InitEd();
 
@@ -230,7 +232,7 @@ void CPredictEdDlg::SetDefaultStyle()
 	CString fontname = L"Georgia";
 	cf.dwMask = CFM_FACE | CFM_SIZE;
 	for (int n = 0; n < fontname.GetLength(); n++) cf.szFaceName[n] = fontname.GetAt(n);
-	cf.yHeight = 12 * TWIPS_PER_PT; // pt to twips //-MulDiv(11*10*2, dc.GetDeviceCaps(LOGPIXELSY), 72); //x 2 for twips
+	cf.yHeight = m_DefaultFontSz * TWIPS_PER_PT; // pt to twips 
 	m_Ed.SetDefaultCharFormat(cf);
 }
 
@@ -654,7 +656,11 @@ void CPredictEdDlg::OnBnClickedButtonTrain2()
 
 void CPredictEdDlg::OnOptionsSettings()
 {
-	// TODO: Add your command handler code here
+	CPredictEdSettingsDlg setdlg;
+	if (setdlg.DoModal() == IDOK)
+	{
+
+	}
 }
 
 

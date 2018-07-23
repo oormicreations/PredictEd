@@ -6,6 +6,7 @@
 #include "afxcmn.h"
 #include "PredictEdCtrl.h"
 #include "SysHelper.h"
+#include "PredictEdSettingsDlg.h"
 
 // Register FindReplace window message.
 static UINT WM_FINDREPLACE = ::RegisterWindowMessage(FINDMSGSTRING);
@@ -46,7 +47,7 @@ public:
 	UINT m_Timer;
 	CTime m_StartTime;
 	LONG m_MaxLimit;
-	UINT m_Margin;
+	UINT m_Margin, m_DefaultFontSz;
 	CFindReplaceDialog * m_pFRDlg;
 
 
