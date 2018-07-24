@@ -2,7 +2,7 @@
 
 				PredictED Project Overview
 
-![Logo](PredictEd/res/icon1.png)
+![Logo](https://github.com/oormicreations/PredictEd/blob/master/PredictEd/res/icon01.png)
 
 A rich edit control with text prediction and other smart features.
 
