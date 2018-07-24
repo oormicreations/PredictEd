@@ -2,7 +2,7 @@
 
 				PredictED Project Overview
 
-![Logo](master\PredictEd\res\icon1.png)
+![Logo](PredictEd/res/icon1.png)
 
 A rich edit control with text prediction and other smart features.
 
