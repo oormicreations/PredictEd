@@ -42,8 +42,7 @@ END_MESSAGE_MAP()
 BOOL CPredictEdSettingsDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
-
-	Reset();
+	SetParams();
 
 	return TRUE;  
 }
@@ -69,7 +68,6 @@ void CPredictEdSettingsDlg::OnEnChangeEditSetMargins()
 
 void CPredictEdSettingsDlg::OnBnClickedButtonSetDeffont()
 {
-	SetDefaultFont();
 	CFontDialog dlg(&m_DefFont);
 
 	dlg.m_cf.Flags |= CF_EFFECTS;
@@ -77,15 +75,24 @@ void CPredictEdSettingsDlg::OnBnClickedButtonSetDeffont()
 
 	if (dlg.DoModal() == IDOK)
 	{
-		long ht = m_DefFont.lfHeight;
-	}
-	else
-	{
-		SetDefaultFont();
+		m_TxtColor = dlg.m_cf.rgbColors;
+		SetFontName();
 	}
 }
 
-void CPredictEdSettingsDlg::SetDefaultFont()
+void CPredictEdSettingsDlg::SetFontName()
+{
+	CString str;
+	CClientDC dc(this); // expects a CWnd that has already been initialized
+
+	long ht = -MulDiv(m_DefFont.lfHeight, 72, dc.GetDeviceCaps(LOGPIXELSY)); //em to pt
+
+	str.Format(_T("Default Font: %s, %d"), m_DefFont.lfFaceName, ht);
+	SetDlgItemText(IDC_BUTTON_SET_DEFFONT, str);
+
+}
+
+void CPredictEdSettingsDlg::SetDefaultFont() //predicted default, not user default
 {
 	CString fontname = _T("Georgia");
 	LONG ht = 12; //pt
@@ -99,6 +106,8 @@ void CPredictEdSettingsDlg::SetDefaultFont()
 
 	m_TxtColor = RGB(0, 0, 0);
 
+	SetFontName();
+
 }
 
 void CPredictEdSettingsDlg::Reset()
@@ -108,7 +117,19 @@ void CPredictEdSettingsDlg::Reset()
 	m_MaxLimit = 2000;
 	m_Margins = 30;
 	m_BkColor = RGB(255, 253, 245);
+	m_DefFont = {};
+}
 
+void CPredictEdSettingsDlg::OnBnClickedButtonSetReset()
+{
+	Reset();
+	SetDefaultFont();
+	SetParams();
+
+}
+
+void CPredictEdSettingsDlg::SetParams()
+{
 	CString str;
 	str.Format(_T("%d"), m_LTMSz);
 	SetDlgItemText(IDC_EDIT_SET_LTMSZ, str);
@@ -121,11 +142,14 @@ void CPredictEdSettingsDlg::Reset()
 
 	m_ColorButton.SetColor(m_BkColor);
 
-	SetDefaultFont();
+	if (m_DefFont.lfHeight == 0) SetDefaultFont();
 
+	SetFontName();
 }
 
-void CPredictEdSettingsDlg::OnBnClickedButtonSetReset()
+void CPredictEdSettingsDlg::OnOK()
 {
-	Reset();
+	m_BkColor = m_ColorButton.GetColor();
+
+	CDialog::OnOK();
 }

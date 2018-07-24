@@ -50,6 +50,12 @@ public:
 	UINT m_Margin, m_DefaultFontSz;
 	CFindReplaceDialog * m_pFRDlg;
 
+	typedef struct tagPREDICTEDSET
+	{
+		UINT m_LTMSz, m_STMSz, m_MaxLimit, m_Margins;
+		COLORREF m_BkColor, m_TxtColor;
+		LOGFONT m_DefFont;
+	} PREDICTEDSET;
 
 	void InitEd();
 	void InsertText(CString text, COLORREF color = RGB(0, 0, 0), bool bold = false, bool italic = false);

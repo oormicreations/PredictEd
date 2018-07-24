@@ -135,10 +135,10 @@ BOOL CPredictEdDlg::OnInitDialog()
 	SetMenu(&m_Menu);
 
 	m_IsShellOpen = FALSE;
-	//m_Saved = TRUE;
 	m_SaveCanceled = FALSE;
 
-	m_MaxLimit = 2000000; //(bytes)get from settings
+	m_MaxLimit = 2000000; //(bytes)
+	m_Margin = 30;
 	m_DefaultFontSz = 12;
 
 	InitEd();
@@ -209,16 +209,46 @@ HCURSOR CPredictEdDlg::OnQueryDragIcon()
 
 void CPredictEdDlg::InitEd()
 {
-	SetDefaultStyle(); //todo : get from settings
+	UINT n;
+	PREDICTEDSET *pps;
+
+	if (AfxGetApp()->GetProfileBinary(_T("PredictEd"), _T("Settings"), (LPBYTE*)&pps, &n))
+	{
+		if (n == sizeof(PREDICTEDSET))
+		{
+			m_Ed.SetBackgroundColor(0, pps->m_BkColor);
+			//m_LTMSz = pps->m_LTMSz;
+			//m_STMSz = pps->m_STMSz;
+			m_MaxLimit = pps->m_MaxLimit;
+			m_Margin = pps->m_Margins;
+
+			CClientDC dc(this);
+			CHARFORMAT2 cf = {};
+			CString fontname(pps->m_DefFont.lfFaceName);
+
+			cf.dwMask = CFM_FACE | CFM_SIZE | CFM_COLOR | CFM_BOLD;
+			for (int n = 0; n < fontname.GetLength(); n++) cf.szFaceName[n] = pps->m_DefFont.lfFaceName[n];
+
+			long ht = -MulDiv(pps->m_DefFont.lfHeight, 72, dc.GetDeviceCaps(LOGPIXELSY)); //em to pt
+			cf.yHeight = ht * TWIPS_PER_PT; // pt to twips 
+
+			cf.crTextColor = pps->m_TxtColor;
+			cf.wWeight = pps->m_DefFont.lfWeight;
+
+			m_Ed.SetDefaultCharFormat(cf);
+
+		}
+		delete[] pps;
+	}
+	else
+	{
+		SetDefaultStyle();
+	}
+
+	m_Ed.LimitText(m_MaxLimit);
 	m_Ed.SetAutoURLDetect(TRUE);
 	m_Ed.SetOptions(ECOOP_OR, ECO_NOHIDESEL);
-	m_Ed.SetBackgroundColor(0, RGB(255, 253, 245));
 
-	UINT limit = m_Ed.GetLimitText();
-	m_Ed.LimitText(m_MaxLimit);
-	UINT limit2 = m_Ed.GetLimitText();
-
-	m_Margin = 30; //todo : get from settings
 	CRect rect;
 	m_Ed.GetClientRect(rect);
 	rect.DeflateRect(m_Margin, 0);
@@ -230,10 +260,18 @@ void CPredictEdDlg::SetDefaultStyle()
 	CClientDC dc(this);
 	CHARFORMAT2 cf = {};
 	CString fontname = L"Georgia";
+	if (!m_SysHelper.IsFontInstalled(fontname))
+	{
+		fontname = L"";
+	}
 	cf.dwMask = CFM_FACE | CFM_SIZE;
 	for (int n = 0; n < fontname.GetLength(); n++) cf.szFaceName[n] = fontname.GetAt(n);
 	cf.yHeight = m_DefaultFontSz * TWIPS_PER_PT; // pt to twips 
+
 	m_Ed.SetDefaultCharFormat(cf);
+
+	m_Ed.SetBackgroundColor(0, RGB(255, 253, 245));
+
 }
 
 void CPredictEdDlg::InsertText(CString text, COLORREF color, bool bold, bool italic)
@@ -657,9 +695,40 @@ void CPredictEdDlg::OnBnClickedButtonTrain2()
 void CPredictEdDlg::OnOptionsSettings()
 {
 	CPredictEdSettingsDlg setdlg;
+	UINT n;
+	PREDICTEDSET ps, *pps;
+
+	if (AfxGetApp()->GetProfileBinary(_T("PredictEd"), _T("Settings"), (LPBYTE*)&pps, &n))
+	{
+		if (n == sizeof(PREDICTEDSET))
+		{
+			setdlg.m_BkColor = pps->m_BkColor;
+			setdlg.m_LTMSz = pps->m_LTMSz;
+			setdlg.m_STMSz = pps->m_STMSz;
+			setdlg.m_MaxLimit = pps->m_MaxLimit;
+			setdlg.m_Margins = pps->m_Margins;
+			setdlg.m_TxtColor = pps->m_TxtColor;
+			setdlg.m_DefFont = pps->m_DefFont;
+
+		}
+		else setdlg.Reset();
+		delete[] pps;
+	}
+	else setdlg.Reset();
+
 	if (setdlg.DoModal() == IDOK)
 	{
+		ps.m_BkColor = setdlg.m_BkColor;
+		ps.m_LTMSz = setdlg.m_LTMSz;
+		ps.m_STMSz = setdlg.m_STMSz;
+		ps.m_MaxLimit = setdlg.m_MaxLimit;
+		ps.m_Margins = setdlg.m_Margins;
+		ps.m_TxtColor = setdlg.m_TxtColor;
+		ps.m_DefFont = setdlg.m_DefFont;
 
+		AfxGetApp()->WriteProfileBinary(_T("PredictEd"), _T("Settings"), (LPBYTE)&ps, sizeof(ps));
+
+		InitEd();
 	}
 }
 

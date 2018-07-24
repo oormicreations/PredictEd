@@ -19,6 +19,8 @@ public:
 
 	void SetDefaultFont();
 	void Reset();
+	void SetParams();
+	void SetFontName();
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
@@ -35,4 +37,5 @@ public:
 	afx_msg void OnEnChangeEditSetMargins();
 	afx_msg void OnBnClickedButtonSetDeffont();
 	afx_msg void OnBnClickedButtonSetReset();
+	virtual void OnOK();
 };
