@@ -101,5 +101,56 @@
     <Image Include="res\PredictEd.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\new.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\newfile.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\openfile.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\insert.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\train.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\fontclear.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\font.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\paste.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\copy.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\savefileas.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\savefile.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\clearfont.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\bitmap2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\setfont.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\icon01.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\icon01.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -133,6 +133,7 @@ BOOL CPredictEdDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 	m_Menu.LoadMenu(IDR_MENU_TOP);
 	SetMenu(&m_Menu);
+	SetButtons();
 
 	m_IsShellOpen = FALSE;
 	m_SaveCanceled = FALSE;
@@ -151,6 +152,24 @@ BOOL CPredictEdDlg::OnInitDialog()
 	m_pFRDlg = NULL;
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
+}
+
+void CPredictEdDlg::SetButtons()
+{
+	UINT id[] = { IDC_BUTTON_NEW, IDC_BUTTON_OPEN, IDC_BUTTON_SAVE, IDC_BUTTON_SAVEAS, IDC_BUTTON_COPY, IDC_BUTTON_PASTE, IDC_BUTTON_FONTS, IDC_BUTTON_CLEAR, IDC_BUTTON_TRAIN, IDC_BUTTON_INS };
+	UINT bm[] = { IDB_BITMAP_NEW, IDB_BITMAP_OPEN, IDB_BITMAP_SAVE, IDB_BITMAP_SAVEAS, IDB_BITMAP_COPY, IDB_BITMAP_PASTE, IDB_BITMAP_FONTS, IDB_BITMAP_CLEAR, IDB_BITMAP_TRAIN, IDB_BITMAP_INS };
+
+	for (int i = 0; i < 10; i++)
+	{
+		CBitmap bmp;
+		bmp.LoadBitmap(bm[i]);
+
+		CButton* pButton = (CButton*)GetDlgItem(id[i]);
+		pButton->ModifyStyle(0, BS_BITMAP);
+		pButton->SetBitmap(bmp);
+	}
+
+
 }
 
 //void CPredictEdDlg::OnSysCommand(UINT nID, LPARAM lParam)

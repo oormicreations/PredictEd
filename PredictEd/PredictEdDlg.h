@@ -62,6 +62,7 @@ public:
 	void ShowMessage();
 	void SetDefaultStyle();
 	void InitFindReplaceDlg();
+	void SetButtons();
 
 
 	afx_msg void OnBnClickedButton1();

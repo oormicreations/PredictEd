@@ -218,7 +218,24 @@
     <None Include="res\PredictEd.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\bitmap1.bmp" />
+    <Image Include="res\bitmap2.bmp" />
+    <Image Include="res\clearfont.bmp" />
+    <Image Include="res\copy.bmp" />
+    <Image Include="res\font.bmp" />
+    <Image Include="res\fontclear.bmp" />
+    <Image Include="res\icon01.bmp" />
+    <Image Include="res\icon01.ico" />
+    <Image Include="res\insert.bmp" />
+    <Image Include="res\new.bmp" />
+    <Image Include="res\newfile.bmp" />
+    <Image Include="res\openfile.bmp" />
+    <Image Include="res\paste.bmp" />
     <Image Include="res\PredictEd.ico" />
+    <Image Include="res\savefile.bmp" />
+    <Image Include="res\savefileas.bmp" />
+    <Image Include="res\setfont.bmp" />
+    <Image Include="res\train.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
