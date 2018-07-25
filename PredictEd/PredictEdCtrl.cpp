@@ -392,6 +392,10 @@ CHARFORMAT CPredictEdCtrl::GetCharFormat(DWORD dwMask)
 
 CString CPredictEdCtrl::FilterString(CString str)
 {
+	if (str.Find(_T("bad"))>=0)
+	{
+		int t = 0;
+	}
 	str.MakeLower();
 
 	//TCHAR filtered[] = 		{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -399,7 +403,7 @@ CString CPredictEdCtrl::FilterString(CString str)
 	//						'(', ')', '-', '_', '+', '=', '|', '\\', '{', '[', 
 	//						'}', ']', ':', ';', '\"', '\'', '<', ',', '>', '.', 
 	//						'?', '/', '\r', '\n'}; //44
-	int pos = str.FindOneOf(_T("0123456789~!@#$%^&*()-_+=|\\{[}]:;\"\'<,>.?/\r\n"));
+	int pos = str.FindOneOf(_T("0123456789~!@#$%^&*()-_+=|\\{[}]:;\"\'<,>.?/\r\n–“”’"));
 	if (pos >= 0)
 	{
 		str.Truncate(pos);
@@ -723,8 +727,15 @@ void CPredictEdCtrl::Erase()
 void CPredictEdCtrl::TrainFromFiles()
 {
 	CString filelist[20];
+
+#ifdef _DEBUG
 	filelist[0] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train00.txt");
+#else 
+	filelist[0] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train01.txt");
+#endif
+
 	//filelist[1] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train01.txt");
+	UINT count = 0;
 
 	for (int i = 0; i < 20; i++)
 	{
@@ -747,10 +758,10 @@ void CPredictEdCtrl::TrainFromFiles()
 				{
 
 					TCHAR c = content.GetAt(p);
-					if (c == '/')
-					{
-						int t=0;
-					}
+					//if (c == '/')
+					//{
+					//	int t=0;
+					//}
 					if ((c != ' ') && (c != '\r') && (c != '\n') && (c != '\t') && (c != '/') && (c != '.') && (c != ',')) //word delimiters
 					{
 						word.AppendChar(c);
@@ -762,6 +773,8 @@ void CPredictEdCtrl::TrainFromFiles()
 						m_LTM.CreateRelation(lastword, word);
 						lastword = word;
 						word = _T("");
+						count++;
+						//TRACE("%d\n", count);
 					}
 				}
 			}

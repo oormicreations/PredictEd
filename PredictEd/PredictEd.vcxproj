@@ -218,6 +218,7 @@
     <None Include="res\PredictEd.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\about.bmp" />
     <Image Include="res\bitmap1.bmp" />
     <Image Include="res\bitmap2.bmp" />
     <Image Include="res\clearfont.bmp" />

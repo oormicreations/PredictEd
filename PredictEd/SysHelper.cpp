@@ -102,7 +102,7 @@ BOOL CSysHelper::SetClipboardText(CString text)
 
 CString CSysHelper::ReadStringFromFile(CString filename)
 {
-	CFile file;
+/*	CFile file;
 	BOOL res1 = file.Open(filename, CFile::modeRead);
 	if (!res1)
 	{
@@ -121,6 +121,29 @@ CString CSysHelper::ReadStringFromFile(CString filename)
 	delete [] buf;
 
 	return content;
+	*/
+
+	// Open the file with the specified encoding, restrict to utf-8
+	FILE *fStream;
+	errno_t e = _tfopen_s(&fStream, filename, _T("rt,ccs=UTF-8"));
+	if (e != 0)
+	{
+		AfxMessageBox(filename + _T("\r\n\r\nError: This file could not be loaded."));
+		return _T("");
+	}
+	CStdioFile f(fStream);  // open the file from this stream
+
+	UINT len = (UINT)f.GetLength() * sizeof(TCHAR);
+	TCHAR *buf = new TCHAR[len + 1];
+	ZeroMemory(buf, len + 1);
+
+	f.Read(buf, len);
+	f.Close();
+	CString str(buf);
+	delete buf;
+
+	return str;
+
 }
 
 CString CSysHelper::GetFileContent()
@@ -184,7 +207,7 @@ BOOL CSysHelper::SaveString(CString filename, CString content)
 		return FALSE;
 	}
 
-	UINT len = (UINT)content.GetLength();
+	UINT len = (UINT)content.GetLength() * sizeof(TCHAR);
 	char * outputString = (char*)malloc(len+1);
 	ZeroMemory(outputString, len+1);
 
@@ -298,7 +321,7 @@ bool CSysHelper::IsFontInstalled(LPCTSTR lpszFont)
 	// Any character set will do
 	lf.lfCharSet = DEFAULT_CHARSET;
 	// Set the facename to check for
-	_tcscpy(lf.lfFaceName, lpszFont);
+	_tcscpy_s(lf.lfFaceName, lpszFont);
 	LPARAM lParam = 0;
 	// Enumerate fonts
 	::EnumFontFamiliesEx(dc.GetSafeHdc(), &lf, (FONTENUMPROC)EnumFontFamExProc, (LPARAM)&lParam, 0);

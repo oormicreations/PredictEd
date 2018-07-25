@@ -110,13 +110,13 @@ BOOL CWordList::SaveMap(CString filename, CString header)
 {
 	if (filename.IsEmpty()) return FALSE;
 
-	CFile file;
-	BOOL res1 = file.Open(filename, CFile::modeWrite | CStdioFile::modeCreate);
-	if (!res1)
-	{
-		//AfxMessageBox(_T("Error : Failed to save the file"));
-		return FALSE;
-	}
+	//CFile file;
+	//BOOL res1 = file.Open(filename, CFile::modeWrite | CStdioFile::modeCreate);
+	//if (!res1)
+	//{
+	//	//AfxMessageBox(_T("Error : Failed to save the file"));
+	//	return FALSE;
+	//}
 
 	CString content = header;
 	int i;
@@ -127,18 +127,18 @@ BOOL CWordList::SaveMap(CString filename, CString header)
 	}
 	m_LastEntrySaved = i;
 
-	UINT len = (UINT)content.GetLength();
-	char * outputString = (char*)malloc(len + 1);
-	ZeroMemory(outputString, len + 1);
+	//UINT len = (UINT)content.GetLength();
+	//char * outputString = (char*)malloc(len + 1);
+	//ZeroMemory(outputString, len + 1);
 
-	len = WideCharToMultiByte(CP_UTF8, NULL, content, -1, outputString, len, NULL, NULL);
+	//len = WideCharToMultiByte(CP_UTF8, NULL, content, -1, outputString, len, NULL, NULL);
 
-	//file.SeekToEnd();
-	file.Write(outputString, ::strlen(outputString));
-	file.Close();
-	free(outputString);
+	////file.SeekToEnd();
+	//file.Write(outputString, ::strlen(outputString));
+	//file.Close();
+	//free(outputString);
 
-	return TRUE;
+	return 	m_SysHelper.SaveString(filename, content);
 
 }
 
@@ -146,14 +146,24 @@ BOOL CWordList::LoadMap(CString filename)
 {
 	if (filename.IsEmpty()) return FALSE;
 
-	CStdioFile file;
-	BOOL res1 = file.Open(filename, CFile::modeRead);
-	if (!res1) return FALSE;
+	//CString str = m_SysHelper.ReadStringFromFile(filename);
+	FILE *fStream;
+	errno_t e = _tfopen_s(&fStream, filename, _T("rt,ccs=UTF-8"));
+	if (e != 0)
+	{
+		return FALSE;
+	}
+	CStdioFile file(fStream);  // open the file from this stream
+
+	//CStdioFile file;
+	//BOOL res1 = file.Open(filename, CFile::modeRead);
+	//if (!res1) return FALSE;
 
 	CString line, token, data[MAX_MAP_LEN];
 
-	res1 = file.ReadString(line);
+	BOOL res1 = file.ReadString(line);
 	if (!res1) return FALSE;
+
 	if (line.Find(_T("PredictEd Knowledge Map,Version,1")) < 0)
 	{
 		return FALSE;
