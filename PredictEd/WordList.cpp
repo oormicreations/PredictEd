@@ -246,3 +246,24 @@ int CWordList::GetKeyWordStartingWith(CString partstr, CString * match, int star
 
 	return start;
 }
+
+void CWordList::GetPhrases(CString preword, CString * phrases)
+{
+	CString str;
+
+	phrases[0] = _T("#");
+	phrases[1] = _T("#");
+	phrases[2] = _T("#");
+
+	if (preword.IsEmpty()) return;
+	if (preword == _T("#")) return;
+	str = GetPredictions(preword).m_Predictions[0];
+	if (str == _T("#")) return;
+	phrases[0] = preword +_T(" ") + str;
+	str = GetPredictions(str).m_Predictions[0];
+	if (str == _T("#")) return;
+	phrases[1] = phrases[0] + _T(" ") + str;
+	str = GetPredictions(str).m_Predictions[0];
+	if (str == _T("#")) return;
+	phrases[2] = phrases[1] + _T(" ") + str;
+}

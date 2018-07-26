@@ -10,6 +10,7 @@
 #endif
 
 #define MAX_SUGGESTION_COUNT 5
+#define MAX_PHRASE_COUNT 3
 
 class CWordList
 {
@@ -32,5 +33,6 @@ public:
 	BOOL LoadMap(CString filename);
 	void SortList();
 	int GetKeyWordStartingWith(CString partstr, CString * match, int start);
+	void GetPhrases(CString preword, CString *phrases);
 };
 

@@ -41,6 +41,8 @@ public:
 	BOOL m_ScCapitalize;
 	int m_SpaceInserted;
 
+	CString m_Phrases[MAX_PHRASE_COUNT];
+
 	void UpdateQueue();
 	void Train(TCHAR c);
 	void Predict(TCHAR c);

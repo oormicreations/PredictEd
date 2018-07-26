@@ -65,6 +65,7 @@ BEGIN_MESSAGE_MAP(CPredictEdCtrl, CRichEditCtrl)
 	ON_WM_LBUTTONUP()
 	ON_WM_KEYUP()
 	ON_WM_DESTROY()
+	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
 
@@ -341,9 +342,10 @@ void CPredictEdCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 void CPredictEdCtrl::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	UpdateQueue();
-	if(nChar == VK_ESCAPE) if (m_pDialog) m_pDialog->ShowWindow(SW_HIDE);
 
-	CRichEditCtrl::OnKeyUp(nChar, nRepCnt, nFlags);
+	if(nChar == VK_ESCAPE) if (m_pDialog) m_pDialog->ShowWindow(SW_HIDE);
+	
+	CRichEditCtrl::OnKeyUp(nChar, nRepCnt, nFlags); 
 }
 
 void CPredictEdCtrl::SetFmtChars(TCHAR b, TCHAR i, TCHAR u)
@@ -470,6 +472,9 @@ void CPredictEdCtrl::Predict(TCHAR c)
 
 		prediction = _T("");
 
+		//phrases
+		m_LTM.GetPhrases(m_PredictionMap.m_Predictions[0], m_Phrases);
+
 		ShowPredictions(c);
 
 	}
@@ -488,10 +493,18 @@ void CPredictEdCtrl::Predict(TCHAR c)
 			return;
 		}
 
-		if (m_TabCount >= MAX_PREDICTION_COUNT) m_TabCount = 0;
+		if (m_TabCount >= (MAX_PREDICTION_COUNT + MAX_PHRASE_COUNT)) m_TabCount = 0;
 
-		prediction = m_PredictionMap.m_Predictions[m_TabCount];
+		if (m_TabCount < (MAX_PREDICTION_COUNT)) prediction = m_PredictionMap.m_Predictions[m_TabCount];
+		if (m_TabCount >= (MAX_PREDICTION_COUNT)) prediction = m_Phrases[m_TabCount - MAX_PREDICTION_COUNT];
 		m_TabCount++;
+
+		if (prediction == _T("#"))
+		{
+			m_TabCount = MAX_PREDICTION_COUNT;
+			prediction = m_Phrases[m_TabCount- MAX_PREDICTION_COUNT];
+			m_TabCount++;
+		}
 
 		if (prediction == _T("#"))
 		{
@@ -526,26 +539,67 @@ void CPredictEdCtrl::AutoComplete(TCHAR c)
 	{
 		if (m_IsWordCommitted) return;
 
-		if (m_TabCount >= MAX_PREDICTION_COUNT) m_TabCount = 0;
+		//if (m_TabCount >= MAX_PREDICTION_COUNT) m_TabCount = 0;
 
-		if (m_PredictionMap.m_Predictions[m_TabCount] != _T("#"))
+		//if (m_PredictionMap.m_Predictions[m_TabCount] != _T("#"))
+		//{
+		//	int spos = m_AcCaretStartPos + m_SpaceInserted + 1;
+		//	SetSel(spos, m_AcCaretEndPos + 1 + m_SpaceInserted);
+
+		//	CString autocompleteword = m_PredictionMap.m_Predictions[m_TabCount].Right(m_PredictionMap.m_Predictions[m_TabCount].GetLength() - m_PartialWord.GetLength());
+
+		//	if (autocompleteword.IsEmpty()) ReplaceSel(_T(""));
+
+		//	m_AcCaretEndPos = m_AcCaretStartPos + autocompleteword.GetLength();
+
+		//	for (int i = 0; i < autocompleteword.GetLength(); i++)
+		//	{
+		//		PostMessage(WM_CHAR, autocompleteword.GetAt(i), 999); //999 is sent as repcount
+		//	}
+		//}
+		if (m_TabCount < MAX_PREDICTION_COUNT)
 		{
-			int spos = m_AcCaretStartPos + m_SpaceInserted + 1;
-			SetSel(spos, m_AcCaretEndPos + 1 + m_SpaceInserted);
-
-			CString autocompleteword = m_PredictionMap.m_Predictions[m_TabCount].Right(m_PredictionMap.m_Predictions[m_TabCount].GetLength() - m_PartialWord.GetLength());
-
-			if (autocompleteword.IsEmpty()) ReplaceSel(_T(""));
-
-			m_AcCaretEndPos = m_AcCaretStartPos + autocompleteword.GetLength();
-
-			for (int i = 0; i < autocompleteword.GetLength(); i++)
+			if (m_PredictionMap.m_Predictions[m_TabCount] != _T("#"))
 			{
-				PostMessage(WM_CHAR, autocompleteword.GetAt(i), 999); //999 is sent as repcount
+				int spos = m_AcCaretStartPos + m_SpaceInserted + 1;
+				SetSel(spos, m_AcCaretEndPos + 1 + m_SpaceInserted);
+
+				CString autocompleteword = m_PredictionMap.m_Predictions[m_TabCount].Right(m_PredictionMap.m_Predictions[m_TabCount].GetLength() - m_PartialWord.GetLength());
+
+				if (autocompleteword.IsEmpty()) ReplaceSel(_T(""));
+
+				m_AcCaretEndPos = m_AcCaretStartPos + autocompleteword.GetLength();
+
+				for (int i = 0; i < autocompleteword.GetLength(); i++)
+				{
+					PostMessage(WM_CHAR, autocompleteword.GetAt(i), 999); //999 is sent as repcount
+				}
+			}
+		}
+		else
+		{
+			int tcount = m_TabCount - MAX_PREDICTION_COUNT;
+			if (m_Phrases[tcount] != _T("#"))
+			{
+				int spos = m_AcCaretStartPos + m_SpaceInserted + 1;
+				SetSel(spos, m_AcCaretEndPos + 1 + m_SpaceInserted);
+
+				CString autocompleteword = m_Phrases[tcount].Right(m_Phrases[tcount].GetLength() - m_PartialWord.GetLength());
+
+				if (autocompleteword.IsEmpty()) ReplaceSel(_T(""));
+
+				m_AcCaretEndPos = m_AcCaretStartPos + autocompleteword.GetLength();
+
+				for (int i = 0; i < autocompleteword.GetLength(); i++)
+				{
+					PostMessage(WM_CHAR, autocompleteword.GetAt(i), 999); //999 is sent as repcount
+				}
 			}
 		}
 
 		m_TabCount++;
+		if (m_TabCount >= (MAX_PREDICTION_COUNT + MAX_PHRASE_COUNT)) m_TabCount = 0;
+
 		if (m_pDialog) m_pDialog->ShiftWords();
 	}
 	else
@@ -563,6 +617,9 @@ void CPredictEdCtrl::AutoComplete(TCHAR c)
 		m_PredictionMap.InitMap();
 		count = m_LTM.GetKeyWordStartingWith(m_PartialWord, m_PredictionMap.m_Predictions, count);
 		count = m_STM.GetKeyWordStartingWith(m_PartialWord, m_PredictionMap.m_Predictions, count);
+
+		//phrases
+		m_LTM.GetPhrases(m_PredictionMap.m_Predictions[0], m_Phrases);
 
 		m_TabCount = 0;
 		GetSel(m_AcCaretStartPos, m_AcCaretEndPos);
@@ -611,8 +668,8 @@ void CPredictEdCtrl::ShowPredictions(TCHAR c)
 		if (m_CaretCoords.x < (rect.left + margin)) m_CaretCoords.x = rect.left + margin;
 		if (m_CaretCoords.x > (rect.right - sz - margin)) m_CaretCoords.x = rect.right - sz - margin;
 
-		m_pDialog->MoveWindow(m_CaretCoords.x, m_CaretCoords.y + padding, sz, sz);
-		m_pDialog->SetWords(m_PredictionMap);
+		m_pDialog->MoveWindow(m_CaretCoords.x, m_CaretCoords.y + padding, sz, dlgrect.Height());
+		m_pDialog->SetWords(m_PredictionMap, m_Phrases);
 
 	}
 
@@ -893,3 +950,4 @@ UINT CPredictEdCtrl::GetWordCount()
 	}
 	return wcount;
 }
+

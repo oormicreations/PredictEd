@@ -28,9 +28,14 @@ public:
 	CEdit m_Word3;
 	CEdit m_Word4;
 	CEdit m_Word5;
+	CEdit m_Ph1;
+	CEdit m_Ph2;
+	CEdit m_Ph3;
+	int m_PhPos;
 
-	void SetWords(CKeyWordMap map);
+	void SetWords(CKeyWordMap map, CString * phrases);
 	void ShiftWords();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 };
