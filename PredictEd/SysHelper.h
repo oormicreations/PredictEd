@@ -24,5 +24,6 @@ public:
 	BOOL CreateFileAndInit(CString filename, CString content);
 	CString ReadStringFromFile(CString filename);
 	bool IsFontInstalled(LPCTSTR lpszFont);
+	void SelectMultipleFiles(CString * files, int maxfiles);
 };
 

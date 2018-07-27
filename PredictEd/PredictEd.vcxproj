@@ -192,6 +192,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SysHelper.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Train.h" />
     <ClInclude Include="WordList.h" />
   </ItemGroup>
   <ItemGroup>
@@ -209,6 +210,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SysHelper.cpp" />
+    <ClCompile Include="Train.cpp" />
     <ClCompile Include="WordList.cpp" />
   </ItemGroup>
   <ItemGroup>

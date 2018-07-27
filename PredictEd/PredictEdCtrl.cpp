@@ -783,6 +783,7 @@ void CPredictEdCtrl::Erase()
 
 void CPredictEdCtrl::TrainFromFiles()
 {
+
 	CString filelist[20];
 
 #ifdef _DEBUG

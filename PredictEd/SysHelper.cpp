@@ -327,3 +327,36 @@ bool CSysHelper::IsFontInstalled(LPCTSTR lpszFont)
 	::EnumFontFamiliesEx(dc.GetSafeHdc(), &lf, (FONTENUMPROC)EnumFontFamExProc, (LPARAM)&lParam, 0);
 	return lParam ? true : false;
 }
+
+void CSysHelper::SelectMultipleFiles(CString * files, int maxfiles)
+{
+	CFileDialog DataFileOpenDialog(true, _T("rtf"), _T(""), OFN_ALLOWMULTISELECT, _T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
+	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Select Files ...");
+	//DataFileOpenDialog.m_ofn.lpstrInitialDir = GetUserDocumentPath(PREDICTED_FOLDER);
+
+	int nLnBuff = maxfiles*256;
+	TCHAR* pBuffFileSelect = new TCHAR[nLnBuff];
+
+	memset(pBuffFileSelect, 0, nLnBuff * sizeof(TCHAR));
+
+	DataFileOpenDialog.m_ofn.lpstrFile = pBuffFileSelect;
+	DataFileOpenDialog.m_ofn.nMaxFile = nLnBuff;
+
+	INT_PTR res = DataFileOpenDialog.DoModal();
+	if (res == IDOK)
+	{
+
+		int f = 0;
+		POSITION pos(DataFileOpenDialog.GetStartPosition());
+		while (pos)
+		{
+			CString filename = DataFileOpenDialog.GetNextPathName(pos);
+
+			files[f] = filename;
+			f++;
+			if (f >= maxfiles) break;
+		}
+	}
+
+	delete[] pBuffFileSelect;
+}

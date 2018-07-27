@@ -447,7 +447,10 @@ void CPredictEdDlg::OnOptionsErasememories()
 
 void CPredictEdDlg::OnOptionsTrain()
 {
-	m_Ed.TrainFromFiles();
+	//m_Ed.TrainFromFiles();
+	CTrain traindlg;
+	INT_PTR res = traindlg.DoModal();
+
 }
 
 

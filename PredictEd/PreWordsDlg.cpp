@@ -130,10 +130,10 @@ HBRUSH CPreWordsDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 	// TODO:  Change any attributes of the DC here
 	UINT ec[] = { IDC_EDIT_W1, IDC_EDIT_W2, IDC_EDIT_W3, IDC_EDIT_W4, IDC_EDIT_W5, IDC_EDIT_P1, IDC_EDIT_P2, IDC_EDIT_P3};
-	int n1, n2, n3;
-	n1 = m_PhPos;
-	n2 = n1 + 1;
-	n3 = n2 + 1;
+
+	int n1 = m_PhPos;
+	int n2 = n1 + 1;
+	int n3 = n2 + 1;
 	if (n2 > 7) { n2 = 0; n3 = 1; }
 	if (n3 > 7) n3 = 0;
 

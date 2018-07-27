@@ -7,6 +7,7 @@
 #include "PredictEdCtrl.h"
 #include "SysHelper.h"
 #include "PredictEdSettingsDlg.h"
+#include "Train.h"
 
 // Register FindReplace window message.
 static UINT WM_FINDREPLACE = ::RegisterWindowMessage(FINDMSGSTRING);
