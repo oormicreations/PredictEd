@@ -66,7 +66,7 @@ public:
 
 	void UpdateStatusMessage(CString msg);
 	void Erase();
-	void TrainFromFiles();
+	//void TrainFromFiles();
 	CString FilterString(CString str);
 	void ShowPredictions(TCHAR c);
 	void SavePredictions();

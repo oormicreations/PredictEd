@@ -17,7 +17,11 @@ public:
 
 	CSysHelper m_SysHelper;
 	CString m_FileList[MAX_INPUT_FILES];
-	int m_FileCount;
+	int m_FileCount, m_Count;
+	CString m_FileName, m_FileHeader;
+	BOOL m_Result;
+	CWordList LTM;
+	CProgressCtrl m_Progress;
 
 	CString FilterString(CString str);
 
@@ -33,5 +37,6 @@ protected:
 public:
 	afx_msg void OnBnClickedButtonAdd();
 	afx_msg void OnBnClickedButtonStart();
-	CProgressCtrl m_Progress;
+	afx_msg LRESULT OnTrainThreadNotify(WPARAM, LPARAM);
+
 };

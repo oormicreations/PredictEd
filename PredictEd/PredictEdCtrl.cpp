@@ -780,73 +780,73 @@ void CPredictEdCtrl::Erase()
 	}
 
 }
-
-void CPredictEdCtrl::TrainFromFiles()
-{
-
-	CString filelist[20];
-
-#ifdef _DEBUG
-	filelist[0] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train00.txt");
-#else 
-	filelist[0] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train01.txt");
-#endif
-
-	//filelist[1] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train01.txt");
-	UINT count = 0;
-
-	for (int i = 0; i < 20; i++)
-	{
-		if (!filelist[i].IsEmpty())
-		{
-			UpdateStatusMessage(_T("Training ...") + filelist[i]);
-
-			if (m_LTM.m_LastKeyWordIndex >= MAX_LIST_COUNT)
-			{
-				AfxMessageBox(_T("List is full, only weights and relations will be updated."));
-			}
-
-			CString content = m_SysHelper.ReadStringFromFile(filelist[i]);
-			if (!content.IsEmpty())
-			{
-				UINT len = content.GetLength();
-				CString word, lastword;
-
-				for (UINT p = 0; p < len; p++)
-				{
-
-					TCHAR c = content.GetAt(p);
-					//if (c == '/')
-					//{
-					//	int t=0;
-					//}
-					if ((c != ' ') && (c != '\r') && (c != '\n') && (c != '\t') && (c != '/') && (c != '.') && (c != ',')) //word delimiters
-					{
-						word.AppendChar(c);
-					}
-					else
-					{
-						word = FilterString(word);
-						m_LTM.AddKeyWord(word);
-						m_LTM.CreateRelation(lastword, word);
-						lastword = word;
-						word = _T("");
-						count++;
-						//TRACE("%d\n", count);
-					}
-				}
-			}
-		}
-	}
-
-	m_LTM.SortList();
-
-	if (m_LTM.SaveMap(m_LTMFileName, LTM_HEADER)) UpdateStatusMessage(_T("Training complete..."));
-	else UpdateStatusMessage(_T("Error: Knowledge file could not be saved!"));
-
-	//refresh
-	m_LTM.LoadMap(m_LTMFileName);
-}
+//
+//void CPredictEdCtrl::TrainFromFiles()
+//{
+//
+//	CString filelist[20];
+//
+//#ifdef _DEBUG
+//	filelist[0] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train00.txt");
+//#else 
+//	filelist[0] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train01.txt");
+//#endif
+//
+//	//filelist[1] = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd\\train01.txt");
+//	UINT count = 0;
+//
+//	for (int i = 0; i < 20; i++)
+//	{
+//		if (!filelist[i].IsEmpty())
+//		{
+//			UpdateStatusMessage(_T("Training ...") + filelist[i]);
+//
+//			if (m_LTM.m_LastKeyWordIndex >= MAX_LIST_COUNT)
+//			{
+//				AfxMessageBox(_T("List is full, only weights and relations will be updated."));
+//			}
+//
+//			CString content = m_SysHelper.ReadStringFromFile(filelist[i]);
+//			if (!content.IsEmpty())
+//			{
+//				UINT len = content.GetLength();
+//				CString word, lastword;
+//
+//				for (UINT p = 0; p < len; p++)
+//				{
+//
+//					TCHAR c = content.GetAt(p);
+//					//if (c == '/')
+//					//{
+//					//	int t=0;
+//					//}
+//					if ((c != ' ') && (c != '\r') && (c != '\n') && (c != '\t') && (c != '/') && (c != '.') && (c != ',')) //word delimiters
+//					{
+//						word.AppendChar(c);
+//					}
+//					else
+//					{
+//						word = FilterString(word);
+//						m_LTM.AddKeyWord(word);
+//						m_LTM.CreateRelation(lastword, word);
+//						lastword = word;
+//						word = _T("");
+//						count++;
+//						//TRACE("%d\n", count);
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//	m_LTM.SortList();
+//
+//	if (m_LTM.SaveMap(m_LTMFileName, LTM_HEADER)) UpdateStatusMessage(_T("Training complete..."));
+//	else UpdateStatusMessage(_T("Error: Knowledge file could not be saved!"));
+//
+//	//refresh
+//	m_LTM.LoadMap(m_LTMFileName);
+//}
 
 
 

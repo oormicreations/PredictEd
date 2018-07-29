@@ -6,6 +6,16 @@
 #include "Train.h"
 #include "afxdialogex.h"
 
+#define TRAIN_THREAD_NOTIFY (WM_APP + 1)
+
+//CString content;
+
+struct ThreadParam
+{
+	CTrain *ptrain;
+	HWND mDlg;
+};
+
 
 // CTrain dialog
 
@@ -14,7 +24,7 @@ IMPLEMENT_DYNAMIC(CTrain, CDialog)
 CTrain::CTrain(CWnd* pParent /*=NULL*/)
 	: CDialog(IDD_DIALOG_TRAIN, pParent)
 {
-
+	m_FileCount = m_Count = 0;
 }
 
 CTrain::~CTrain()
@@ -31,16 +41,149 @@ void CTrain::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CTrain, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_ADD, &CTrain::OnBnClickedButtonAdd)
 	ON_BN_CLICKED(IDC_BUTTON_START, &CTrain::OnBnClickedButtonStart)
+	ON_MESSAGE(TRAIN_THREAD_NOTIFY, OnTrainThreadNotify)
 END_MESSAGE_MAP()
 
 
 // CTrain message handlers
 
+LRESULT CTrain::OnTrainThreadNotify(WPARAM wp, LPARAM lp)
+{
+	CString str;
+
+	if ((int)lp == 0)
+	{
+		str.Format(_T("Processing file %d of %d ..."), (int)wp+1, m_FileCount);
+		SetDlgItemText(IDC_EDIT_PROG, str);
+	}
+
+	if ((int)lp == 1)
+	{
+		SetDlgItemText(IDC_EDIT_ERR, _T("List is full, only weights and relations will be updated."));
+	}
+
+	if ((int)lp == 2)
+	{
+		str.Format(_T("%d Words processed, %d Entries added"), m_Count, LTM.m_LastKeyWordIndex);
+		SetDlgItemText(IDC_EDIT_RES, str);
+	}
+
+	if ((int)lp == 3)
+	{
+		m_Progress.SetPos((((int)wp+1) * 100) / m_FileCount);
+	}
+
+	if ((int)lp == 4)
+	{
+		m_Progress.SetPos(100);
+		SetDlgItemText(IDC_EDIT_PROG, _T("Training finished..."));
+		m_Result = TRUE;
+	}
+
+	if ((int)lp == 5)
+	{
+		m_Progress.SetPos(0);
+		SetDlgItemText(IDC_EDIT_ERR, _T("Error: Knowledge file could not be saved!"));
+	}
+
+	return 0;
+}
+
+UINT TrainDataProc(LPVOID param)
+{
+	ThreadParam* p = static_cast<ThreadParam*> (param);
+	CTrain *ptrain = (CTrain*)p->ptrain;
+
+	for (int i = 0; i < ptrain->m_FileCount; i++)
+	{
+		if (!ptrain->m_FileList[i].IsEmpty())
+		{
+			::SendMessage(p->mDlg, TRAIN_THREAD_NOTIFY, i, 0);
+
+
+			if (ptrain->LTM.m_LastKeyWordIndex >= MAX_LIST_COUNT)
+			{
+				::SendMessage(p->mDlg, TRAIN_THREAD_NOTIFY, 0, 1);
+			}
+
+			CString content = ptrain->m_SysHelper.ReadStringFromFile(ptrain->m_FileList[i]);
+
+
+			if (!content.IsEmpty())
+			{
+				UINT len = content.GetLength();
+				CString word, lastword;
+
+				for (UINT np = 0; np < len; np++)
+				{
+
+					TCHAR c = content.GetAt(np);
+					//if (c == '/')
+					//{
+					//	int t=0;
+					//}
+					if ((c != ' ') && (c != '\r') && (c != '\n') && (c != '\t') && (c != '/') && (c != '.') && (c != ',')) //word delimiters
+					{
+						word.AppendChar(c);
+					}
+					else
+					{
+						word = ptrain->FilterString(word);
+						ptrain->LTM.AddKeyWord(word);
+						ptrain->LTM.CreateRelation(lastword, word);
+						lastword = word;
+						word = _T("");
+						ptrain->m_Count++;
+						//TRACE("%d\n", count);
+					}
+					::SendMessage(p->mDlg, TRAIN_THREAD_NOTIFY, 0, 2);
+				}
+			}
+		}
+
+		::SendMessage(p->mDlg, TRAIN_THREAD_NOTIFY, i, 3);
+	}
+
+	ptrain->LTM.SortList();
+
+	if (ptrain->LTM.SaveMap(ptrain->m_FileName, ptrain->m_FileHeader))
+	{
+
+		::SendMessage(p->mDlg, TRAIN_THREAD_NOTIFY, 0, 4);
+
+	}
+	else
+	{
+		::SendMessage(p->mDlg, TRAIN_THREAD_NOTIFY, 0, 5);
+	}
+
+		delete p;
+		return 0;
+
+	
+}
+
+void CTrain::OnBnClickedButtonStart()
+{
+	CString str;
+	m_Count = 0;
+	m_Result = FALSE;
+	
+	LTM.InitList();
+
+	ThreadParam* param = new ThreadParam;
+	param->mDlg = m_hWnd; 
+	param->ptrain = this;
+
+	CWinThread* hTh1 = AfxBeginThread(TrainDataProc, param);
+
+}
+
 
 void CTrain::OnBnClickedButtonAdd()
 {
 	m_SysHelper.SelectMultipleFiles(m_FileList, MAX_INPUT_FILES);
-	
+
 	m_FileCount = 0;
 	for (int i = 0; i < MAX_INPUT_FILES; i++)
 	{
@@ -56,76 +199,6 @@ void CTrain::OnBnClickedButtonAdd()
 	m_Progress.SetRange(0, 100);
 	m_Progress.SetPos(0);
 }
-
-
-void CTrain::OnBnClickedButtonStart()
-{
-	CString str;
-	UINT count = 0;
-	CWordList LTM;
-	LTM.InitList();
-
-	for (int i = 0; i < m_FileCount; i++)
-	{
-		if (!m_FileList[i].IsEmpty())
-		{
-			str.Format(_T("Processing file %d of %d ..."), i, m_FileCount);
-			SetDlgItemText(IDC_EDIT_PROG, str);
-
-			if (LTM.m_LastKeyWordIndex >= MAX_LIST_COUNT)
-			{
-				//AfxMessageBox(_T("List is full, only weights and relations will be updated."));
-			}
-
-			CString content = m_SysHelper.ReadStringFromFile(m_FileList[i]);
-			if (!content.IsEmpty())
-			{
-				UINT len = content.GetLength();
-				CString word, lastword;
-
-				for (UINT p = 0; p < len; p++)
-				{
-
-					TCHAR c = content.GetAt(p);
-					//if (c == '/')
-					//{
-					//	int t=0;
-					//}
-					if ((c != ' ') && (c != '\r') && (c != '\n') && (c != '\t') && (c != '/') && (c != '.') && (c != ',')) //word delimiters
-					{
-						word.AppendChar(c);
-					}
-					else
-					{
-						word = FilterString(word);
-						LTM.AddKeyWord(word);
-						LTM.CreateRelation(lastword, word);
-						lastword = word;
-						word = _T("");
-						count++;
-						//TRACE("%d\n", count);
-					}
-				}
-
-				str.Format(_T("%d Words processed, %d Entries added"), count, LTM.m_LastKeyWordIndex);
-				SetDlgItemText(IDC_EDIT_RES, str);
-
-			}
-		}
-
-		m_Progress.SetPos((i * 100) / m_FileCount);
-	}
-
-	LTM.SortList();
-
-	//if (LTM.SaveMap(LTMFileName, LTM_HEADER)) UpdateStatusMessage(_T("Training complete..."));
-	//else UpdateStatusMessage(_T("Error: Knowledge file could not be saved!"));
-
-	m_Progress.SetPos(100);
-	SetDlgItemText(IDC_EDIT_PROG, _T("Training finished..."));
-
-}
-
 
 CString CTrain::FilterString(CString str)
 {

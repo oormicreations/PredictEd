@@ -3,11 +3,11 @@
 #include "SysHelper.h"
 
 
-#ifdef _DEBUG
-#define MAX_LIST_COUNT 100
-#else
+//#ifdef _DEBUG
 #define MAX_LIST_COUNT 5000
-#endif
+//#else
+//#define MAX_LIST_COUNT 5000
+//#endif
 
 #define MAX_SUGGESTION_COUNT 5
 #define MAX_PHRASE_COUNT 3

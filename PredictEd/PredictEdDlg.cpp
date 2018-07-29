@@ -447,10 +447,20 @@ void CPredictEdDlg::OnOptionsErasememories()
 
 void CPredictEdDlg::OnOptionsTrain()
 {
-	//m_Ed.TrainFromFiles();
 	CTrain traindlg;
-	INT_PTR res = traindlg.DoModal();
+	traindlg.m_FileName = m_Ed.m_LTMFileName;
+	traindlg.m_FileHeader = LTM_HEADER;
+	traindlg.DoModal();
+	if (traindlg.m_Result)
+	{
+		//backup
+		CString backupname = m_Ed.m_LTMFileName;
+		backupname.Replace(_T(".txt"), _T("_Backup.txt"));
+		m_Ed.m_LTM.SaveMap(backupname, LTM_HEADER);
 
+		//refresh
+		m_Ed.m_LTM.LoadMap(m_Ed.m_LTMFileName);
+	}
 }
 
 

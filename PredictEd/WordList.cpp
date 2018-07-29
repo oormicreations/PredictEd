@@ -110,14 +110,6 @@ BOOL CWordList::SaveMap(CString filename, CString header)
 {
 	if (filename.IsEmpty()) return FALSE;
 
-	//CFile file;
-	//BOOL res1 = file.Open(filename, CFile::modeWrite | CStdioFile::modeCreate);
-	//if (!res1)
-	//{
-	//	//AfxMessageBox(_T("Error : Failed to save the file"));
-	//	return FALSE;
-	//}
-
 	CString content = header;
 	int i;
 	for (i = 0; i < MAX_LIST_COUNT; i++)
@@ -127,17 +119,6 @@ BOOL CWordList::SaveMap(CString filename, CString header)
 	}
 	m_LastEntrySaved = i;
 
-	//UINT len = (UINT)content.GetLength();
-	//char * outputString = (char*)malloc(len + 1);
-	//ZeroMemory(outputString, len + 1);
-
-	//len = WideCharToMultiByte(CP_UTF8, NULL, content, -1, outputString, len, NULL, NULL);
-
-	////file.SeekToEnd();
-	//file.Write(outputString, ::strlen(outputString));
-	//file.Close();
-	//free(outputString);
-
 	return 	m_SysHelper.SaveString(filename, content);
 
 }
@@ -146,7 +127,6 @@ BOOL CWordList::LoadMap(CString filename)
 {
 	if (filename.IsEmpty()) return FALSE;
 
-	//CString str = m_SysHelper.ReadStringFromFile(filename);
 	FILE *fStream;
 	errno_t e = _tfopen_s(&fStream, filename, _T("rt,ccs=UTF-8"));
 	if (e != 0)
@@ -154,10 +134,6 @@ BOOL CWordList::LoadMap(CString filename)
 		return FALSE;
 	}
 	CStdioFile file(fStream);  // open the file from this stream
-
-	//CStdioFile file;
-	//BOOL res1 = file.Open(filename, CFile::modeRead);
-	//if (!res1) return FALSE;
 
 	CString line, token, data[MAX_MAP_LEN];
 
@@ -225,22 +201,12 @@ void CWordList::SortList()
 
 int CWordList::GetKeyWordStartingWith(CString partstr, CString * match, int start)
 {
-	//CString match[MAX_SUGGESTION_COUNT];
-	//int n = 0;
-	//for (n = 0; n < MAX_SUGGESTION_COUNT; n++)
-	//{
-	//	if (match[n].IsEmpty()) break;
-	//}
-
 	for (int i = 0; (i < MAX_LIST_COUNT) && (start < MAX_SUGGESTION_COUNT); i++)
 	{
 		if (m_WordList[i].m_KeyWord.Find(partstr) == 0)
 		{
-			//if (match[n].IsEmpty())
-			{
-				match[start] = m_WordList[i].m_KeyWord;
-				start++;
-			}
+			match[start] = m_WordList[i].m_KeyWord;
+			start++;
 		}
 	}
 
