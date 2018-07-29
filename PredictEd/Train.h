@@ -19,7 +19,7 @@ public:
 	CString m_FileList[MAX_INPUT_FILES];
 	int m_FileCount, m_Count;
 	CString m_FileName, m_FileHeader;
-	BOOL m_Result;
+	BOOL m_Result, m_Abort;
 	CWordList LTM;
 	CProgressCtrl m_Progress;
 
@@ -39,4 +39,7 @@ public:
 	afx_msg void OnBnClickedButtonStart();
 	afx_msg LRESULT OnTrainThreadNotify(WPARAM, LPARAM);
 
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg void OnDestroy();
+	afx_msg void OnBnClickedCancel();
 };

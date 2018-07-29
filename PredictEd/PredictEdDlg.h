@@ -8,6 +8,7 @@
 #include "SysHelper.h"
 #include "PredictEdSettingsDlg.h"
 #include "Train.h"
+#include "NetHelper.h"
 
 // Register FindReplace window message.
 static UINT WM_FINDREPLACE = ::RegisterWindowMessage(FINDMSGSTRING);
@@ -50,6 +51,8 @@ public:
 	LONG m_MaxLimit;
 	UINT m_Margin, m_DefaultFontSz;
 	CFindReplaceDialog * m_pFRDlg;
+	UINT m_PredictEdVersion;
+	CNetHelper m_NetHelper;
 
 	typedef struct tagPREDICTEDSET
 	{
@@ -96,4 +99,7 @@ public:
 	afx_msg void OnOptionsSettings();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg LONG OnFindReplace(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnHelpOnlinehelp();
+	afx_msg void OnHelpCheckforupdates();
+	afx_msg void OnHelpGetmorefreeapps();
 };

@@ -96,6 +96,9 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_TRAIN2, &CPredictEdDlg::OnBnClickedButtonTrain2)
 	ON_COMMAND(ID_OPTIONS_SETTINGS, &CPredictEdDlg::OnOptionsSettings)
 	ON_REGISTERED_MESSAGE(WM_FINDREPLACE, &CPredictEdDlg::OnFindReplace)
+	ON_COMMAND(ID_HELP_ONLINEHELP, &CPredictEdDlg::OnHelpOnlinehelp)
+	ON_COMMAND(ID_HELP_CHECKFORUPDATES, &CPredictEdDlg::OnHelpCheckforupdates)
+	ON_COMMAND(ID_HELP_GETMOREFREEAPPS, &CPredictEdDlg::OnHelpGetmorefreeapps)
 END_MESSAGE_MAP()
 
 
@@ -150,6 +153,10 @@ BOOL CPredictEdDlg::OnInitDialog()
 
 	m_Timer = SetTimer(WM_USER + 100, 5000, NULL);
 	m_pFRDlg = NULL;
+
+	m_PredictEdVersion = 1;
+	m_NetHelper.ReportUsage(_T("PredictEd"), _T("INST"));
+
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -238,7 +245,7 @@ void CPredictEdDlg::InitEd()
 			m_Ed.SetBackgroundColor(0, pps->m_BkColor);
 			//m_LTMSz = pps->m_LTMSz;
 			//m_STMSz = pps->m_STMSz;
-			m_MaxLimit = pps->m_MaxLimit;
+			m_MaxLimit = pps->m_MaxLimit * 1000; //its in kb in settings
 			m_Margin = pps->m_Margins;
 
 			CClientDC dc(this);
@@ -447,17 +454,17 @@ void CPredictEdDlg::OnOptionsErasememories()
 
 void CPredictEdDlg::OnOptionsTrain()
 {
+	//backup
+	CString backupname = m_Ed.m_LTMFileName;
+	backupname.Replace(_T(".txt"), _T("_Backup.txt"));
+	m_Ed.m_LTM.SaveMap(backupname, LTM_HEADER);
+
 	CTrain traindlg;
 	traindlg.m_FileName = m_Ed.m_LTMFileName;
 	traindlg.m_FileHeader = LTM_HEADER;
 	traindlg.DoModal();
 	if (traindlg.m_Result)
 	{
-		//backup
-		CString backupname = m_Ed.m_LTMFileName;
-		backupname.Replace(_T(".txt"), _T("_Backup.txt"));
-		m_Ed.m_LTM.SaveMap(backupname, LTM_HEADER);
-
 		//refresh
 		m_Ed.m_LTM.LoadMap(m_Ed.m_LTMFileName);
 	}
@@ -487,6 +494,8 @@ void CPredictEdDlg::OnFileSavefileas()
 
 void CPredictEdDlg::OnFileCopy()
 {
+	CString str = m_Ed.GetSelText();
+	if (str.IsEmpty()) m_Ed.SetSel(0, -1);
 	m_Ed.Copy();
 }
 
@@ -494,6 +503,7 @@ void CPredictEdDlg::OnFileCopy()
 void CPredictEdDlg::OnFilePaste()
 {
 	m_Ed.Paste();
+	//m_Ed.SetRTF(m_SysHelper.GetClipboardText());
 }
 
 
@@ -785,4 +795,23 @@ void CPredictEdDlg::OnTimer(UINT_PTR nIDEvent)
 	}
 
 	CDialogEx::OnTimer(nIDEvent);
+}
+
+
+void CPredictEdDlg::OnHelpOnlinehelp()
+{
+	ShellExecute(NULL, _T("open"), _T("https://oormi.in/software/predicted/help.html"), NULL, NULL, SW_SHOWNORMAL);
+}
+
+
+void CPredictEdDlg::OnHelpCheckforupdates()
+{
+	m_NetHelper.Checkforupdates(m_PredictEdVersion, _T("https://oormi.in/software/predicted/updatecbp.txt"),
+		_T(" https://github.com/oormicreations/PredictEd/releases"), _T("PredictEd App"));
+}
+
+
+void CPredictEdDlg::OnHelpGetmorefreeapps()
+{
+	ShellExecute(NULL, _T("open"), _T("https://github.com/oormicreations?tab=repositories"), NULL, NULL, SW_SHOWNORMAL);
 }

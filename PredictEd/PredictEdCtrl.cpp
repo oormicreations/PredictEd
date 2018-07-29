@@ -933,6 +933,9 @@ void CPredictEdCtrl::Reset()
 
 UINT CPredictEdCtrl::GetWordCount()
 {
+	//too slow for large text
+	if (GetTextLength() > 100000) return 0;
+
 	//todo: do it in a separate thread
 	UINT wcount = 0;
 	CString str;

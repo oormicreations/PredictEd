@@ -94,6 +94,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>wininet.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -140,6 +141,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>wininet.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -183,6 +185,7 @@
   <ItemGroup>
     <ClInclude Include="CharQueue.h" />
     <ClInclude Include="KeyWordMap.h" />
+    <ClInclude Include="NetHelper.h" />
     <ClInclude Include="PredictEd.h" />
     <ClInclude Include="PredictEdCtrl.h" />
     <ClInclude Include="PredictEdDlg.h" />
@@ -198,6 +201,7 @@
   <ItemGroup>
     <ClCompile Include="CharQueue.cpp" />
     <ClCompile Include="KeyWordMap.cpp" />
+    <ClCompile Include="NetHelper.cpp" />
     <ClCompile Include="PredictEd.cpp" />
     <ClCompile Include="PredictEdCtrl.cpp" />
     <ClCompile Include="PredictEdDlg.cpp" />

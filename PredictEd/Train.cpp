@@ -42,6 +42,9 @@ BEGIN_MESSAGE_MAP(CTrain, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_ADD, &CTrain::OnBnClickedButtonAdd)
 	ON_BN_CLICKED(IDC_BUTTON_START, &CTrain::OnBnClickedButtonStart)
 	ON_MESSAGE(TRAIN_THREAD_NOTIFY, OnTrainThreadNotify)
+	ON_WM_CTLCOLOR()
+	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDCANCEL, &CTrain::OnBnClickedCancel)
 END_MESSAGE_MAP()
 
 
@@ -116,12 +119,13 @@ UINT TrainDataProc(LPVOID param)
 
 				for (UINT np = 0; np < len; np++)
 				{
+					if (ptrain->m_Abort)
+					{
+						delete p;
+						return 0;
+					}
 
 					TCHAR c = content.GetAt(np);
-					//if (c == '/')
-					//{
-					//	int t=0;
-					//}
 					if ((c != ' ') && (c != '\r') && (c != '\n') && (c != '\t') && (c != '/') && (c != '.') && (c != ',')) //word delimiters
 					{
 						word.AppendChar(c);
@@ -168,6 +172,7 @@ void CTrain::OnBnClickedButtonStart()
 	CString str;
 	m_Count = 0;
 	m_Result = FALSE;
+	m_Abort = FALSE;
 	
 	LTM.InitList();
 
@@ -182,16 +187,23 @@ void CTrain::OnBnClickedButtonStart()
 
 void CTrain::OnBnClickedButtonAdd()
 {
-	m_SysHelper.SelectMultipleFiles(m_FileList, MAX_INPUT_FILES);
+	CString tfilelist[MAX_INPUT_FILES];
+	m_SysHelper.SelectMultipleFiles(tfilelist, MAX_INPUT_FILES);
 
-	m_FileCount = 0;
+	int c = 0;
 	for (int i = 0; i < MAX_INPUT_FILES; i++)
 	{
-		if (!m_FileList[i].IsEmpty())
+		if (m_FileList[i].IsEmpty())
 		{
-			m_FileCount++;
+			if (!tfilelist[c].IsEmpty())
+			{
+				m_FileList[i] = tfilelist[c];
+				m_FileCount++;
+				c++;
+			}
 		}
 	}
+
 	CString str;
 	str.Format(_T("%d files added."), m_FileCount);
 	SetDlgItemText(IDC_EDIT_PROG, str);
@@ -199,6 +211,7 @@ void CTrain::OnBnClickedButtonAdd()
 	m_Progress.SetRange(0, 100);
 	m_Progress.SetPos(0);
 }
+
 
 CString CTrain::FilterString(CString str)
 {
@@ -216,4 +229,36 @@ CString CTrain::FilterString(CString str)
 	}
 
 	return str;
+}
+
+HBRUSH CTrain::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	// TODO:  Change any attributes of the DC here
+	if (pWnd->GetDlgCtrlID() == IDC_EDIT_PROG)
+	{
+		pDC->SetTextColor(RGB(0, 150, 0));
+	}
+
+	if (pWnd->GetDlgCtrlID() == IDC_EDIT_ERR)
+	{
+		pDC->SetTextColor(RGB(150, 0, 0));
+	}
+
+	// TODO:  Return a different brush if the default is not desired
+	return hbr;
+}
+
+
+void CTrain::OnDestroy()
+{
+	CDialog::OnDestroy();
+}
+
+
+void CTrain::OnBnClickedCancel()
+{
+	m_Abort = TRUE;
+	CDialog::OnCancel();
 }
