@@ -33,7 +33,6 @@ Coming soon
 * Background colors and text colors.
 * Unicode UTF-8 support. Works for many languages.
 * Supports MS Windows 7 onwards.
-* IDE is MS Visual Studio Community 2015. C++ and MFC.
 
 ---
 
@@ -62,7 +61,7 @@ The first is the LTM (long term memory) which is a list made from feeding text f
 
 The entries in the list are in this form:
 
-<keyword>, <frequency>, <prediction#1>, <prediction#2>, . . . <prediction#N>, <prediction weight #1>, <prediction weight #2>, . . . .<prediction weight #N> 
+| keyword | <frequency | prediction#1 | prediction#2 | . . . | prediction#N | prediction weight #1 | prediction weight #2 | . . . | prediction weight #N |
 
 Both the lists are sorted on Frequency. Frequency is the count of a word found during the training. More frequently used words are at the top.
 
@@ -83,6 +82,10 @@ At any time one can erase the LTM and retrain it using text files. The good thin
 Anyhow, because of STM, the knowledge base gradually acquires the user specific context. The whole knowledge gets biased according to the writing style and character of the user, and changes as the user shifts to different contexts. The user gets the right suggestions most of the time.
 
 Three of the suggestions are multiple words or phrases, which are recursively predicted using the last prediction as a keyword.
+
+_IDE:_
+
+MS Visual Studio Community 2015. C++ and MFC.
 
 _Classes:_
 
