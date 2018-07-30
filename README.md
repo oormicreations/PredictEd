@@ -1,20 +1,26 @@
 # PredictED
 
-				PredictED Project Overview
 
 ![Logo](https://github.com/oormicreations/PredictEd/blob/master/PredictEd/res/icon01.png)
 
-A rich edit control with text prediction and other smart features.
+**PredictED** is a rich edit control with text prediction and other smart features.
 
-_Introduction and Tutorial_
+---
 
-Coming soon
-
-_Download link_
+**Introduction and Tutorial**
 
 Coming soon
 
-_Features:_
+---
+
+**Download link**
+
+Coming soon
+
+---
+
+**Features:**
+
 * Word prediction as you type.
 * Format as you type (basic).
 * Auto sentence case and paragraphs.
@@ -29,23 +35,33 @@ _Features:_
 * Supports MS Windows 7 onwards.
 * IDE is MS Visual Studio Community 2015. C++ and MFC.
 
-_For Users_
+---
+
+**For Users**
+
 Download the installer and run it. Start typing.
-The suggestions are shown as you type. Press TAB to select a suggestion. Three of the suggestions are phrases.
+The suggestions are shown as you type. Press TAB to select a suggestion. More TAB presses cycle through the suggestions. Three of the suggestions are phrases.
 When spacebar is pressed it shows a probable word that may occur next.
+
 Enter after a period (full stop) adds a new line and is a paragraph break.
 Type a formatting pair (like **, // or __ ) around the words to format as you type.
 
-The installation comes with a buit in word list (knowledge map), which was generated using some default text files. So it will immediately show suggestions, but it is highly recommended to train it using your own writings, so that you get most relevant suggestions. Anyhow it will learn as you type.
+The installation comes with a built in word list (knowledge map), which was generated using some default text files. So it will immediately show suggestions, but it is highly recommended to train it using your own writings, so that you get most relevant suggestions. Anyhow it will learn as you type.
 
 This tool helps to speed up typing and ease the stress on fingers, especially for those with RSI or carpel tunnel etc. Initially it will appear as if you have slowed down because now you need to check the suggestions or predictions and decide whether to continue typing or press TAB. But gradually it becomes your habit and the typing will speed up. Takes a bit of practice and getting used to predictive typing.
 
-_For Developers_
+See the **tutorial video** or Help for more details.
+
+---
+
+**For Developers**
+
 PredictEd uses two lists (maps) to predict the next word or to provide autocomplete suggestions.
 
 The first is the LTM (long term memory) which is a list made from feeding text files to it or appending the STM (short term memory) data, which is the second list. STM has data which is gathered while the user types in the editor.
 
 The entries in the list are in this form:
+
 <keyword>, <frequency>, <prediction#1>, <prediction#2>, . . . <prediction#N>, <prediction weight #1>, <prediction weight #2>, . . . .<prediction weight #N> 
 
 Both the lists are sorted on Frequency. Frequency is the count of a word found during the training. More frequently used words are at the top.
@@ -68,22 +84,34 @@ Anyhow, because of STM, the knowledge base gradually acquires the user specific 
 
 Three of the suggestions are multiple words or phrases, which are recursively predicted using the last prediction as a keyword.
 
-Classes:
+_Classes:_
+
 CPredictEdDlg: Handles the main window, controls, menu and their messages.
+
 CPredictEdCtrl: Derived from RichEditControl 2.0, handles the typing, formation of word queue, formatting, sentence case, and prediction, real time training, autocompletion and other tasks.
+
 CPreWordsDlg: Displays the predicted words and handles the cycling of words from bottom to top.
+
 CWordList: It is the object that contains the word lists. Handles adding new entries, forming relations, sorting, returning the matches, saving and loading the lists in CSV format.
+
 CCharQueue: Object that maintains last 100 characters from the editor window as the user types and interacts with the text. The words are counted backwords from currect cursor position.
+
 CKeyWordMap: This object holds a single entry of the word list. Adds, returns and sorts the prediction and weights.
+
 CTrain: Handles training of LTM from text input. Displays the training dialog.
+
 CSysHelper: Helper class for open, save, and all file/OS related functions.
+
 CNetHelper: Helper class for internet related functions.
 
+---
+
 _About_
+
 A FOSS Project by Oormi Creations
 
 http://oormi.in
 
 oormicreations@gmail.com
 
-/////////////////////////////////////////////////////////////////////////////
+---
