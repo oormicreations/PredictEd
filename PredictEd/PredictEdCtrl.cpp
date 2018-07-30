@@ -332,7 +332,8 @@ void CPredictEdCtrl::SetCharStyle(BOOL bold, BOOL italic, BOOL underline)
 
 void CPredictEdCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	UpdateQueue();
+	if(this==GetFocus()) UpdateQueue();
+
 	if(m_pDialog) m_pDialog->ShowWindow(SW_HIDE);
 
 	CRichEditCtrl::OnLButtonUp(nFlags, point);

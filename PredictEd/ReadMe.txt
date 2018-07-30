@@ -2,6 +2,15 @@ A rich edit control with text prediction and other smart features.
 =================================================================
 Release Notes
 =================================================================
+
+2018-07-30
+
+* Train dlg
+* Save text files
+* open text files
+* help menu items
+
+
 2018-07-24
 
 * Settings, icons and buttons

@@ -167,26 +167,33 @@ CString CSysHelper::GetFileContent()
 	return ReadStringFromFile(m_FileName);
 }
 
+BOOL CSysHelper::GetSaveFileNameType()
+{
+	CFileDialog DataFileOpenDialog(false, _T("rtf"), _T(""), OFN_HIDEREADONLY, _T("Rich text Files (*.rtf)|*.rtf|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
+	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Save an RTF or Text File ...");
+	//DataFileOpenDialog.m_ofn.lpstrInitialDir = GetUserDocumentPath(PREDICTED_FOLDER);
+
+	INT_PTR res = DataFileOpenDialog.DoModal();
+	if (res == IDCANCEL) return FALSE;
+	m_FileName = DataFileOpenDialog.GetPathName();
+	if (m_FileName.IsEmpty()) return FALSE;
+	m_FileExt = DataFileOpenDialog.GetFileExt();
+
+	m_FileTitle = DataFileOpenDialog.GetFileTitle();
+	if (m_FileTitle.GetLength() > 10)
+	{
+		m_FileTitle.Truncate(10);
+		m_FileTitle = m_FileTitle + _T("...");
+	}
+
+	return TRUE;
+}
+
 BOOL CSysHelper::SetFileContent(CString content)
 {
 	if (m_FileName.IsEmpty())
 	{
-		CFileDialog DataFileOpenDialog(false, _T("rtf"), _T(""), OFN_HIDEREADONLY, _T("Rich text Files (*.rtf)|*.rtf|All Files (*.*)|*.*||"));
-		DataFileOpenDialog.m_ofn.lpstrTitle = _T("Save an RTF File ...");
-		//DataFileOpenDialog.m_ofn.lpstrInitialDir = GetUserDocumentPath(PREDICTED_FOLDER);
-
-		INT_PTR res = DataFileOpenDialog.DoModal();
-		if (res == IDCANCEL) return FALSE;
-		m_FileName = DataFileOpenDialog.GetPathName();
-		if (m_FileName.IsEmpty()) return FALSE;
-		//if (DataFileOpenDialog.GetFileExt() != _T("rtf")) return;
-
-		m_FileTitle = DataFileOpenDialog.GetFileTitle();
-		if (m_FileTitle.GetLength() > 10)
-		{
-			m_FileTitle.Truncate(10);
-			m_FileTitle = m_FileTitle + _T("...");
-		}
+		GetSaveFileNameType();
 	}
 
 	if(!SaveString(m_FileName, content)) m_FileName = _T("");

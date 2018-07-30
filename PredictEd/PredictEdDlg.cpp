@@ -436,15 +436,30 @@ void CPredictEdDlg::OnFileOpen32771()
 	m_StartTime = CTime::GetCurrentTime();
 	ShowMessage();
 
+	m_Ed.SetFocus();
+	m_Ed.SetScrollPos(SB_VERT, 0);
+	m_Ed.SetCaretPos(CPoint(0, 0));
+	m_Ed.SetSel(0, 0);
 }
 
 
 void CPredictEdDlg::OnFileSave32772()
 {
-	CString content;
-	content = m_Ed.GetRTF();
-	m_SaveCanceled = m_Ed.m_Saved =  (m_SysHelper.SetFileContent(content));
+	if (m_SysHelper.m_FileName.IsEmpty())
+	{
+		BOOL res = m_SysHelper.GetSaveFileNameType();
+		m_SaveCanceled = !res;
+		if (!res) return;
+	}
 
+	CString content;
+	if (m_SysHelper.m_FileExt == _T("rtf"))
+	{
+		content = m_Ed.GetRTF();
+	}
+	else m_Ed.GetWindowText(content);
+
+	m_Ed.m_Saved = (m_SysHelper.SetFileContent(content));
 }
 
 
@@ -513,6 +528,7 @@ void CPredictEdDlg::OnFilePaste()
 {
 	m_Ed.Paste();
 	//m_Ed.SetRTF(m_SysHelper.GetClipboardText());
+	m_Ed.m_Saved = FALSE;
 }
 
 
