@@ -61,7 +61,8 @@ The first is the LTM (long term memory) which is a list made from feeding text f
 
 The entries in the list are in this form:
 
-| keyword | <frequency | prediction#1 | prediction#2 | . . . | prediction#N | prediction weight #1 | prediction weight #2 | . . . | prediction weight #N |
+`keyword` | `frequency` | `prediction#1` | `prediction#2` | `...` | `prediction#N` | `prediction weight #1` | `prediction weight #2` | `...` | `prediction weight #N`
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
 
 Both the lists are sorted on Frequency. Frequency is the count of a word found during the training. More frequently used words are at the top.
 
