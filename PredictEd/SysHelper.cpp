@@ -148,14 +148,14 @@ CString CSysHelper::ReadStringFromFile(CString filename)
 
 CString CSysHelper::GetFileContent()
 {
-	CFileDialog DataFileOpenDialog(true, _T("rtf"), _T(""), OFN_HIDEREADONLY, _T("Rich text Files (*.rtf)|*.rtf|All Files (*.*)|*.*||"));
-	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Load an RTF File ...");
+	CFileDialog DataFileOpenDialog(true, _T("rtf"), _T(""), OFN_HIDEREADONLY, _T("Rich text Files (*.rtf)|*.rtf|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
+	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Load an RTF or Text File ...");
 	//DataFileOpenDialog.m_ofn.lpstrInitialDir = GetUserDocumentPath(PREDICTED_FOLDER);
 	INT_PTR res = DataFileOpenDialog.DoModal();
 	if (res == IDCANCEL) return _T("");
 	m_FileName = DataFileOpenDialog.GetPathName();
 	if (m_FileName.IsEmpty()) return _T("");
-	//if (DataFileOpenDialog.GetFileExt() != _T("rtf")) return;
+	m_FileExt = DataFileOpenDialog.GetFileExt();
 
 	m_FileTitle = DataFileOpenDialog.GetFileTitle();
 	if (m_FileTitle.GetLength() > 10)

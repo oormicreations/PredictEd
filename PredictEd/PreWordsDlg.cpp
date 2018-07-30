@@ -19,6 +19,7 @@ CPreWordsDlg::CPreWordsDlg(CWnd* pParent /*=NULL*/)
 
 CPreWordsDlg::~CPreWordsDlg()
 {
+	DeleteObject(m_PhraseBkBrush);
 }
 
 void CPreWordsDlg::DoDataExchange(CDataExchange* pDX)
@@ -42,6 +43,20 @@ END_MESSAGE_MAP()
 
 
 // CPreWordsDlg message handlers
+
+BOOL CPreWordsDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	// TODO:  Add extra initialization here
+	//SetWindowPos(&this->wndTop, 0, 0, 0, 0, SWP_DRAWFRAME | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);//sit on top of app
+	m_PhPos = 5;
+	m_PhraseBkBrush = CreateSolidBrush(RGB(220, 220, 220));
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+				  // EXCEPTION: OCX Property Pages should return FALSE
+}
+
 
 void CPreWordsDlg::SetWords(CKeyWordMap map, CString * phrases)
 {
@@ -90,19 +105,6 @@ void CPreWordsDlg::ShiftWords()
 	if (m_PhPos < 0)m_PhPos = 7;
 }
 
-BOOL CPreWordsDlg::OnInitDialog()
-{
-	CDialog::OnInitDialog();
-
-	// TODO:  Add extra initialization here
-	//SetWindowPos(&this->wndTop, 0, 0, 0, 0, SWP_DRAWFRAME | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);//sit on top of app
-	m_PhPos = 5;
-
-	return TRUE;  // return TRUE unless you set the focus to a control
-				  // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-
 void CPreWordsDlg::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
@@ -113,6 +115,7 @@ void CPreWordsDlg::OnPaint()
 	CBrush br;
 	br.CreateSolidBrush(RGB(255, 255, 255));
 	dc.FillRect(rect, &br);
+	br.DeleteObject();
 
 	//rect.DeflateRect(5, 5);
 	CBrush br2;
@@ -120,6 +123,7 @@ void CPreWordsDlg::OnPaint()
 	CBrush* old = dc.SelectObject(&br2);
 	dc.RoundRect(rect, CPoint(10, 10));
 	dc.SelectObject(old);
+	br2.DeleteObject();
 
 }
 
@@ -139,8 +143,7 @@ HBRUSH CPreWordsDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 	if ((pWnd->GetDlgCtrlID() == ec[n1])|| (pWnd->GetDlgCtrlID() == ec[n2])|| (pWnd->GetDlgCtrlID() == ec[n3]))
 	{
-		HBRUSH B = CreateSolidBrush(RGB(220, 220, 220));
-		return (HBRUSH)B;
+		return (HBRUSH)m_PhraseBkBrush;
 	}
 
 	// TODO:  Return a different brush if the default is not desired

@@ -32,6 +32,7 @@ public:
 	CEdit m_Ph2;
 	CEdit m_Ph3;
 	int m_PhPos;
+	HBRUSH m_PhraseBkBrush;
 
 	void SetWords(CKeyWordMap map, CString * phrases);
 	void ShiftWords();
