@@ -169,6 +169,8 @@ UINT TrainDataProc(LPVOID param)
 
 void CTrain::OnBnClickedButtonStart()
 {
+	if (m_FileCount < 1)return;
+
 	CString str;
 	m_Count = 0;
 	m_Result = FALSE;

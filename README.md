@@ -1,35 +1,39 @@
-# PredictED
+# PredictEd
 
 
 ![Logo](https://github.com/oormicreations/PredictEd/blob/master/PredictEd/res/icon01.png)
 
-**PredictED** is a rich edit control with text prediction and other smart features.
+**PredictEd** is a rich edit control with text prediction and other smart features.
 
 ---
 
 **Introduction and Tutorial**
 
-Coming soon
+Help Document
+https://oormi.in/software/predicted/help.html
+
+Video Introduction
+https://www.youtube.com/watch?v=RZPQNAE9kYs
 
 ---
 
 **Download link**
 
-Coming soon
+https://github.com/oormicreations/PredictEd/releases
 
 ---
 
 **Features:**
 
 * Word prediction as you type.
-* Format as you type (basic).
-* Auto sentence case and paragraphs.
+* Word and phrase completion.
 * Learns new words as you type.
 * Train using existing text files of your own.
+* Format as you type (basic).
+* Auto sentence case and paragraphs.
 * Auto saves the work.
-* Word and phrase completion.
 * Save and open RTF and Text files.
-* Usual editor functions like cut, copy, paste, font type, font size, find and replace etc.
+* Usual editor functions like cut, copy, paste, font type, font size, find and replace, undo/redo etc.
 * Background colors and text colors.
 * Unicode UTF-8 support. Works for many languages.
 * Supports MS Windows 7 onwards.
@@ -39,6 +43,7 @@ Coming soon
 **For Users**
 
 Download the installer and run it. Start typing.
+
 The suggestions are shown as you type. Press TAB to select a suggestion. More TAB presses cycle through the suggestions. Three of the suggestions are phrases.
 When spacebar is pressed it shows a probable word that may occur next.
 
@@ -98,7 +103,7 @@ CPreWordsDlg: Displays the predicted words and handles the cycling of words from
 
 CWordList: It is the object that contains the word lists. Handles adding new entries, forming relations, sorting, returning the matches, saving and loading the lists in CSV format.
 
-CCharQueue: Object that maintains last 100 characters from the editor window as the user types and interacts with the text. The words are counted backwords from currect cursor position.
+CCharQueue: Object that maintains last 100 characters from the editor window as the user types and interacts with the text. The words are counted backwords from currect cursor position. Used for sentence case, capitalization, paragraph breaks etc.
 
 CKeyWordMap: This object holds a single entry of the word list. Adds, returns and sorts the prediction and weights.
 

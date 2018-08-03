@@ -67,6 +67,7 @@ public:
 	void SetDefaultStyle();
 	void InitFindReplaceDlg();
 	void SetButtons();
+	void BackupMemories();
 
 
 	afx_msg void OnBnClickedButton1();

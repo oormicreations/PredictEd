@@ -472,16 +472,25 @@ void CPredictEdDlg::OnHelpAboutpredicted()
 
 void CPredictEdDlg::OnOptionsErasememories()
 {
+	BackupMemories();
 	m_Ed.Erase();
 }
 
-
-void CPredictEdDlg::OnOptionsTrain()
+void CPredictEdDlg::BackupMemories()
 {
-	//backup
 	CString backupname = m_Ed.m_LTMFileName;
 	backupname.Replace(_T(".txt"), _T("_Backup.txt"));
 	m_Ed.m_LTM.SaveMap(backupname, LTM_HEADER);
+
+	backupname = m_Ed.m_STMFileName;
+	backupname.Replace(_T(".txt"), _T("_Backup.txt"));
+	m_Ed.m_STM.SaveMap(backupname, STM_HEADER);
+
+}
+
+void CPredictEdDlg::OnOptionsTrain()
+{
+	BackupMemories();
 
 	CTrain traindlg;
 	traindlg.m_FileName = m_Ed.m_LTMFileName;
@@ -831,8 +840,8 @@ void CPredictEdDlg::OnHelpOnlinehelp()
 
 void CPredictEdDlg::OnHelpCheckforupdates()
 {
-	m_NetHelper.Checkforupdates(m_PredictEdVersion, _T("https://oormi.in/software/predicted/updatecbp.txt"),
-		_T(" https://github.com/oormicreations/PredictEd/releases"), _T("PredictEd App"));
+	m_NetHelper.Checkforupdates(m_PredictEdVersion, _T("https://oormi.in/software/predicted/updatepredicted.txt"),
+		_T("https://github.com/oormicreations/PredictEd/releases"), _T("PredictEd App"));
 }
 
 
