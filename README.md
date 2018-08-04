@@ -3,7 +3,7 @@
 
 ![Logo](https://github.com/oormicreations/PredictEd/blob/master/PredictEd/res/icon01.png)
 
-**PredictEd** is a rich edit control with text prediction and other smart features.
+**PredictEd** is a text editor with text prediction and other smart features.
 
 ---
 
@@ -42,7 +42,7 @@ https://github.com/oormicreations/PredictEd/releases
 
 **For Users**
 
-Download the installer and run it. Start typing.
+Download the installer and run it. Launch it from Desktop shortcut or from Start menu. Start typing.
 
 The suggestions are shown as you type. Press TAB to select a suggestion. More TAB presses cycle through the suggestions. Three of the suggestions are phrases.
 When spacebar is pressed it shows a probable word that may occur next.
@@ -54,7 +54,7 @@ The installation comes with a built in word list (knowledge map), which was gene
 
 This tool helps to speed up typing and ease the stress on fingers, especially for those with RSI or carpel tunnel etc. Initially it will appear as if you have slowed down because now you need to check the suggestions or predictions and decide whether to continue typing or press TAB. But gradually it becomes your habit and the typing will speed up. Takes a bit of practice and getting used to predictive typing.
 
-See the **tutorial video** or Help for more details.
+See the tutorial video or help document for more details (linked above).
 
 ---
 

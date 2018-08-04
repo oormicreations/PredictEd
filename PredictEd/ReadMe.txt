@@ -3,6 +3,11 @@ A rich edit control with text prediction and other smart features.
 Release Notes
 =================================================================
 
+2018-08-04
+
+* Release 1.0.0
+
+
 2018-07-30
 
 * Train dlg
