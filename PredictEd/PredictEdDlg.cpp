@@ -841,7 +841,7 @@ void CPredictEdDlg::OnHelpOnlinehelp()
 
 void CPredictEdDlg::OnHelpCheckforupdates()
 {
-	m_NetHelper.Checkforupdates(m_PredictEdVersion, _T("https://oormi.in/software/predicted/updatepredicted.txt"),
+	m_NetHelper.Checkforupdates(m_PredictEdVersionMaj, m_PredictEdVersionMin, _T("https://oormi.in/software/predicted/updatepredicted.txt"),
 		_T("https://github.com/oormicreations/PredictEd/releases"), _T("PredictEd App"));
 }
 

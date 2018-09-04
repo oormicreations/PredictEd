@@ -275,7 +275,7 @@ CString CSysHelper::GetUserDocumentPath(UINT type)
 
 		if (type == PREDICTED_USER_FOLDER)
 		{
-			str = str + _T("\\Oormi Creations\\PredictEd");
+			str = str + _T("\\Oormi Creations\\PredictEd dev");
 		}
 
 		if (GetFileAttributes(str) == INVALID_FILE_ATTRIBUTES)

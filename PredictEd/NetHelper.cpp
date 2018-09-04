@@ -96,7 +96,8 @@ CString CNetHelper::Fetch(CString url, CString useragent)
 }
 
 
-void CNetHelper::Checkforupdates(int appVer, CString updateFile, CString downloadUrl, CString userAgent)
+
+void CNetHelper::Checkforupdates(int appVerMaj, int appVerMin, CString updateFile, CString downloadUrl, CString userAgent)
 {
 	CString content = Fetch(updateFile, userAgent);
 
@@ -108,7 +109,7 @@ void CNetHelper::Checkforupdates(int appVer, CString updateFile, CString downloa
 		AfxExtractSubString(ver2, content, 1, '|'); //minor ver num
 		AfxExtractSubString(durl, content, 2, '|'); //downlaod url
 
-		int oldver = (int)appVer * 10;
+		int oldver = appVerMaj * 10 + appVerMin;
 		int newver = _ttoi(ver1) * 10 + _ttoi(ver2);
 
 		if (newver > oldver)
