@@ -154,8 +154,9 @@ BOOL CPredictEdDlg::OnInitDialog()
 	m_Timer = SetTimer(WM_USER + 100, 5000, NULL);
 	m_pFRDlg = NULL;
 
-	m_PredictEdVersion = 1;
-	m_NetHelper.ReportUsage(_T("PredictEd"), _T("INST"));
+	m_PredictEdVersionMaj = 1;
+	m_PredictEdVersionMin = 1;
+	m_NetHelper.ReportUsage(_T("PredictEd"), m_PredictEdVersionMaj*10 + m_PredictEdVersionMin);
 
 
 	return TRUE;  // return TRUE  unless you set the focus to a control

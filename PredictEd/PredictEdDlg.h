@@ -51,7 +51,7 @@ public:
 	LONG m_MaxLimit;
 	UINT m_Margin, m_DefaultFontSz;
 	CFindReplaceDialog * m_pFRDlg;
-	UINT m_PredictEdVersion;
+	UINT m_PredictEdVersionMaj, m_PredictEdVersionMin;
 	CNetHelper m_NetHelper;
 
 	typedef struct tagPREDICTEDSET

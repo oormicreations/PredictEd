@@ -15,7 +15,13 @@ CNetHelper::~CNetHelper()
 
 UINT UsageProc(LPVOID param)
 {
-	static CHAR frmdata[] = ("appinstall=predicted_install&ver=1.0.0");
+	int ver = *(int*)param;
+
+	//static CHAR frmdata[] = ("appinstall=cbp_install&ver=1.0.0");
+	static CHAR frmdata[30];
+	sprintf_s(frmdata, "appinstall=pre_install&ver=%d", ver);
+	frmdata[29] = 0;
+
 	static TCHAR hdrs[] = (_T("Content-Type: application/x-www-form-urlencoded"));
 	LPCTSTR accept[2] = { _T("*/*"), NULL };
 
@@ -35,18 +41,19 @@ UINT UsageProc(LPVOID param)
 	return 0;
 }
 
-void CNetHelper::ReportUsage(CString regSection, CString regKey)
+void CNetHelper::ReportUsage(CString regSection, int ver)
 {
-	char *c = new char;
+	unsigned char *c;// = new char;
 	UINT i;
 
-	if (!AfxGetApp()->GetProfileBinary(regSection, regKey, (LPBYTE*)&c, &i))
+	if (!AfxGetApp()->GetProfileBinary(regSection, _T("VERSION"), (LPBYTE*)&c, &i))
 	{
-		CWinThread* hTh1 = AfxBeginThread(UsageProc, 0/*UsageProc receives this as param */, THREAD_PRIORITY_NORMAL);
-		char inst = 'Y';
-		AfxGetApp()->WriteProfileBinary(regSection, regKey, (LPBYTE)&inst, sizeof(inst));
+		CWinThread* hTh1 = AfxBeginThread(UsageProc, (LPVOID)&ver/*UsageProc receives this as param */, THREAD_PRIORITY_NORMAL);
+		AfxGetApp()->WriteProfileBinary(regSection, _T("VERSION"), (LPBYTE)&ver, sizeof(ver));
 	}
-	delete c;
+
+	//char x = c[0];
+	delete[] c;
 	c = NULL;
 }
 
