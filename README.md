@@ -20,6 +20,7 @@ https://www.youtube.com/watch?v=RZPQNAE9kYs
 **Download link**
 
 https://github.com/oormicreations/PredictEd/releases
+
 [![Github All Releases](https://img.shields.io/github/downloads/oormicreations/PredictEd/total.svg)]()
 
 ---
