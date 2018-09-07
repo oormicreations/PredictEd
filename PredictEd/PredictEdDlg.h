@@ -9,6 +9,9 @@
 #include "PredictEdSettingsDlg.h"
 #include "Train.h"
 #include "NetHelper.h"
+#include "AESEncryptDlg.h"
+#include "AESDecryptDlg.h"
+
 
 // Register FindReplace window message.
 static UINT WM_FINDREPLACE = ::RegisterWindowMessage(FINDMSGSTRING);
@@ -44,7 +47,7 @@ public:
 	CPredictEdCtrl m_Ed;
 	CMenu m_Menu;
 	BOOL m_IsShellOpen/*, m_Saved*/, m_SaveCanceled;
-	CString m_FileName;
+	//CString m_FileName;
 	CSysHelper m_SysHelper;
 	UINT m_Timer;
 	CTime m_StartTime;
@@ -103,4 +106,7 @@ public:
 	afx_msg void OnHelpOnlinehelp();
 	afx_msg void OnHelpCheckforupdates();
 	afx_msg void OnHelpGetmorefreeapps();
+	afx_msg void OnEncryptionOpenencryptedfile();
+	afx_msg void OnEncryptionSaveasencryptedfile();
+	afx_msg void OnEncryptionEncrypt();
 };

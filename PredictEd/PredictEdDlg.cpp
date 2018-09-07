@@ -99,6 +99,9 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_HELP_ONLINEHELP, &CPredictEdDlg::OnHelpOnlinehelp)
 	ON_COMMAND(ID_HELP_CHECKFORUPDATES, &CPredictEdDlg::OnHelpCheckforupdates)
 	ON_COMMAND(ID_HELP_GETMOREFREEAPPS, &CPredictEdDlg::OnHelpGetmorefreeapps)
+	ON_COMMAND(ID_ENCRYPTION_OPENENCRYPTEDFILE, &CPredictEdDlg::OnEncryptionOpenencryptedfile)
+	ON_COMMAND(ID_ENCRYPTION_SAVEASENCRYPTEDFILE, &CPredictEdDlg::OnEncryptionSaveasencryptedfile)
+	ON_COMMAND(ID_ENCRYPTION_ENCRYPT, &CPredictEdDlg::OnEncryptionEncrypt)
 END_MESSAGE_MAP()
 
 
@@ -849,4 +852,85 @@ void CPredictEdDlg::OnHelpCheckforupdates()
 void CPredictEdDlg::OnHelpGetmorefreeapps()
 {
 	ShellExecute(NULL, _T("open"), _T("https://github.com/oormicreations?tab=repositories"), NULL, NULL, SW_SHOWNORMAL);
+}
+
+
+void CPredictEdDlg::OnEncryptionOpenencryptedfile()
+{
+	if (!m_Ed.m_Saved)
+	{
+		int ex = AfxMessageBox(_T("Do you wish to save your work before loading another file??"), MB_YESNOCANCEL | MB_ICONQUESTION);
+		if (ex == IDCANCEL)	return;
+		if (ex == IDYES) OnFileSave32772();
+	}
+
+	CAESDecryptDlg ddlg;
+
+	CFileDialog DataFileOpenDialog(true, _T(""), _T(""), OFN_FILEMUSTEXIST, _T("All Files (*.*)|*.*||"));
+	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Open an Encrypted File ...");
+
+	INT_PTR res = DataFileOpenDialog.DoModal();
+	if (res != IDCANCEL)
+	{
+		ddlg.m_EncryptedFilename = DataFileOpenDialog.GetPathName();
+		ddlg.m_DecryptedFilename = m_SysHelper.GetPredictEdFileName(PREDICTED_DEC_FILE);
+
+		if (!ddlg.m_EncryptedFilename.IsEmpty())
+		{
+			if (ddlg.DoModal())
+			{
+				if (!ddlg.m_DecryptedFilename.IsEmpty() && ddlg.m_DecryptResult)
+				{
+					CString content = m_SysHelper.ReadStringFromFile(ddlg.m_DecryptedFilename);
+
+					if (ddlg.m_DecryptedFileType == 1)
+					{
+						m_Ed.SetRTF(content);
+					}
+					else
+					{
+						m_Ed.SetWindowText(content);
+					}
+
+					m_StartTime = CTime::GetCurrentTime();
+					m_SysHelper.m_FileName.Empty();
+					m_SysHelper.m_FileTitle.Empty();
+					m_SysHelper.m_FileExt.Empty();
+					ShowMessage();
+
+					m_Ed.SetFocus();
+					m_Ed.SetScrollPos(SB_VERT, 0);
+					m_Ed.SetCaretPos(CPoint(0, 0));
+					m_Ed.SetSel(0, 0);
+					m_Ed.m_Saved = FALSE;
+
+					//delete the decrypted file from disc
+					if (!DeleteFile(ddlg.m_DecryptedFilename)) AfxMessageBox(_T("Could not clean up temp decrypted file from the disk!\r\nPlease remove it manually\r\nThe file is here:") + ddlg.m_DecryptedFilename, MB_ICONERROR);
+				}
+			}
+
+		}
+	}
+
+	//ddlg.m_EncryptedFilename =
+}
+
+
+void CPredictEdDlg::OnEncryptionSaveasencryptedfile()
+{
+	CAESEncryptDlg edlg;
+	if (!m_Ed.m_Saved) OnFileSave32772();
+	if (m_SysHelper.m_FileName.IsEmpty()) OnFileSave32772();
+
+	edlg.m_SourceFileName = m_SysHelper.m_FileName;
+	edlg.m_BackupFileName = m_Ed.m_AutoBackupFileName;
+
+	edlg.DoModal();
+
+}
+
+
+void CPredictEdDlg::OnEncryptionEncrypt()
+{
+	// TODO: Add your command handler code here
 }

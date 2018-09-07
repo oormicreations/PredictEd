@@ -94,7 +94,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>wininet.lib</AdditionalDependencies>
+      <AdditionalDependencies>wininet.lib;bcrypt.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -141,7 +141,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>wininet.lib</AdditionalDependencies>
+      <AdditionalDependencies>wininet.lib;bcrypt.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -183,7 +183,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AESDecryptDlg.h" />
+    <ClInclude Include="AESEncryptDlg.h" />
     <ClInclude Include="CharQueue.h" />
+    <ClInclude Include="CryptHelper.h" />
     <ClInclude Include="KeyWordMap.h" />
     <ClInclude Include="NetHelper.h" />
     <ClInclude Include="PredictEd.h" />
@@ -199,7 +202,10 @@
     <ClInclude Include="WordList.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AESDecryptDlg.cpp" />
+    <ClCompile Include="AESEncryptDlg.cpp" />
     <ClCompile Include="CharQueue.cpp" />
+    <ClCompile Include="CryptHelper.cpp" />
     <ClCompile Include="KeyWordMap.cpp" />
     <ClCompile Include="NetHelper.cpp" />
     <ClCompile Include="PredictEd.cpp" />

@@ -148,7 +148,7 @@ CString CSysHelper::ReadStringFromFile(CString filename)
 
 CString CSysHelper::GetFileContent()
 {
-	CFileDialog DataFileOpenDialog(true, _T("rtf"), _T(""), OFN_HIDEREADONLY, _T("Rich text Files (*.rtf)|*.rtf|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
+	CFileDialog DataFileOpenDialog(true, _T("rtf"), _T(""), OFN_FILEMUSTEXIST, _T("Rich text Files (*.rtf)|*.rtf|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
 	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Load an RTF or Text File ...");
 	//DataFileOpenDialog.m_ofn.lpstrInitialDir = GetUserDocumentPath(PREDICTED_FOLDER);
 	INT_PTR res = DataFileOpenDialog.DoModal();
@@ -249,6 +249,7 @@ CString CSysHelper::GetPredictEdFileName(UINT type)
 		if (type == PREDICTED_AUTOBK_FILE)	fname = _T("\\PredictEd_AutoBackup.rtf");
 		if (type == PREDICTED_LTM_FILE)		fname = _T("\\PredictEd_LTM.txt");
 		if (type == PREDICTED_STM_FILE)		fname = _T("\\PredictEd_STM.txt");
+		if (type == PREDICTED_DEC_FILE)		fname = _T("\\PredictEd_tmp.dec");
 
 		if (fname.IsEmpty()) return _T("");
 
