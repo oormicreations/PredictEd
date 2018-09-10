@@ -567,3 +567,309 @@ bool CCryptHelper::Create_SHA512_Hash(CString pwszText)
 
 	return true;
 }
+
+
+bool CCryptHelper::Create_SHA512_Hash_Bin(PBYTE data, ULONG nbytes)
+{
+	NTSTATUS ntStatus = STATUS_SUCCESS;
+	BCRYPT_KEY_HANDLE	hKey = NULL;
+	DWORD               cbHashObject, cbResult;
+	DWORD				cbData = 0;
+	DWORD				cbHash = 0;
+	PBYTE               pbHash = NULL;
+	PBYTE				pbHashObject = NULL;
+
+	m_sSHA512.Empty();
+
+	ntStatus = BCryptOpenAlgorithmProvider(&m_hHashAlg, BCRYPT_SHA512_ALGORITHM, NULL, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error Open SHA512 provider. BCryptOpenAlgorithmProvider failed with status: 0x%08x\n"), ntStatus);
+		return false;
+	}
+
+	//  Determine the size of the Hash object
+	ntStatus = BCryptGetProperty(m_hHashAlg, BCRYPT_OBJECT_LENGTH, (PBYTE)&cbHashObject, sizeof(DWORD), &cbResult, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error determining the size of the Hash object. BCryptGetProperty failed with status: 0x%08x"), ntStatus);
+		return false;
+	}
+
+	//allocate the hash object on the heap
+	pbHashObject = (PBYTE)malloc(cbHashObject);
+
+	if (NULL == pbHashObject)
+	{
+		m_sError = _T("Memory allocation failed for hash object");
+		return false;
+	}
+
+	//calculate the length of the hash
+	ntStatus = BCryptGetProperty(m_hHashAlg, BCRYPT_HASH_LENGTH, (PBYTE)&cbHash, sizeof(DWORD), &cbData, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error calc hash length. BCryptGetProperty failed with status: 0x%08x"), ntStatus);
+		return false;
+	}
+
+	//allocate the hash buffer on the heap
+	pbHash = (PBYTE)HeapAlloc(GetProcessHeap(), 0, cbHash);
+	if (NULL == pbHash)
+	{
+		m_sError = _T("Memory allocation failed for hash buffer");
+		return false;
+	}
+
+	//  Create the Hash object
+	ntStatus = BCryptCreateHash(m_hHashAlg, &m_hHash, pbHashObject, cbHashObject, NULL, 0, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error Creating the Hash object. BCryptCreateHash failed with status: 0x%08x"), ntStatus);
+		return false;
+	}
+
+	// Hash the data
+	ntStatus = BCryptHashData(m_hHash, data, nbytes, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error hashing the data. BCryptHashData failed with status: 0x%08x"), ntStatus);
+		return false;
+	}
+
+	// Finish the hash
+	ntStatus = BCryptFinishHash(m_hHash, pbHash, cbHash, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error finish the hash. BCryptFinishHash failed with status: 0x%08x"), ntStatus);
+		return false;
+	}
+
+	//convert to hex
+	CString tmp;
+	for (int i = 0; i < (int)cbHash; i++)
+	{
+		tmp.Format(_T("%02X"), pbHash[i]);
+		m_sSHA512.Append(tmp);
+	}
+
+	if (m_sSHA512.IsEmpty()) return false;
+
+	//cleanup
+	if (pbHash)
+	{
+		HeapFree(GetProcessHeap(), 0, pbHash);
+	}
+	if (pbHashObject)
+	{
+		free(pbHashObject);
+	}
+
+	return true;
+}
+
+
+//Base64 code is by Mihai MOGA, https://www.codeproject.com/Tips/813146/Fast-base-functions-for-encode-decode
+
+inline bool CCryptHelper::is_base64(unsigned char c)
+{
+	return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
+unsigned int CCryptHelper::Base64_Encode(const unsigned char* bytes_to_encode, unsigned int in_len, unsigned char* encoded_buffer, unsigned int& out_len)
+{
+	int i = 0;
+	int j = 0;
+	unsigned char char_array_3[3] = { 0, 0, 0 };
+	unsigned char char_array_4[4] = { 0, 0, 0, 0 };
+
+	out_len = 0;
+	while (in_len--)
+	{
+		char_array_3[i++] = *(bytes_to_encode++);
+		if (i == 3)
+		{
+			char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+			char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+			char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+			char_array_4[3] = char_array_3[2] & 0x3f;
+
+			for (i = 0; i < 4; i++)
+			{
+				encoded_buffer[out_len++] = base64_chars[char_array_4[i]];
+			}
+			i = 0;
+		}
+	}
+
+	if (i)
+	{
+		for (j = i; j < 3; j++)
+		{
+			char_array_3[j] = '\0';
+		}
+
+		char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+		char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+		char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+		char_array_4[3] = char_array_3[2] & 0x3f;
+
+		for (j = 0; j < (i + 1); j++)
+		{
+			encoded_buffer[out_len++] = base64_chars[char_array_4[j]];
+		}
+
+		while (i++ < 3)
+		{
+			encoded_buffer[out_len++] = '=';
+		}
+	}
+
+	return out_len;
+}
+
+unsigned int CCryptHelper::Base64_Decode(const unsigned char* encoded_string, unsigned int in_len, unsigned char* decoded_buffer, unsigned int& out_len)
+{
+	size_t i = 0;
+	size_t j = 0;
+	int in_ = 0;
+	unsigned char char_array_3[3] = { 0, 0, 0 };
+	unsigned char char_array_4[4] = { 0, 0, 0, 0 };
+
+	out_len = 0;
+	while (in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_]))
+	{
+		char_array_4[i++] = encoded_string[in_]; in_++;
+		if (i == 4)
+		{
+			for (i = 0; i < 4; i++)
+			{
+				char_array_4[i] = static_cast<unsigned char>(base64_chars.find(char_array_4[i]));
+			}
+
+			char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+			char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+			char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+			for (i = 0; i < 3; i++)
+			{
+				decoded_buffer[out_len++] = char_array_3[i];
+			}
+			i = 0;
+		}
+	}
+
+	if (i)
+	{
+		for (j = i; j < 4; j++)
+		{
+			char_array_4[j] = 0;
+		}
+
+		for (j = 0; j < 4; j++)
+		{
+			char_array_4[j] = static_cast<unsigned char>(base64_chars.find(char_array_4[j]));
+		}
+
+		char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+		char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+		char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+		for (j = 0; (j < i - 1); j++)
+		{
+			decoded_buffer[out_len++] = char_array_3[j];
+		}
+	}
+	return out_len;
+}
+
+
+BOOL CCryptHelper::B64Encode(CString sfilename)
+{
+	m_OutputFile.Empty();
+
+	CFile sfile;
+	if (sfile.Open(sfilename, CFile::modeRead | CFile::typeBinary))
+	{
+		UINT slen = (UINT)sfile.GetLength();
+		if (slen > 0)
+		{
+			CString tfilename = sfilename + _T(".b64.txt");
+
+			CFile tfile;
+			if (tfile.Open(tfilename, CFile::modeWrite | CFile::modeCreate))
+			{
+				unsigned char sbuf[300];//sz must be multiple of 3
+				ZeroMemory(sbuf, 300);
+				unsigned char tbuf[400];//sz must be multiple of 4
+				ZeroMemory(tbuf, 400);
+
+				UINT nread = 0;
+				UINT nenc = 0;
+				do {
+					nread = sfile.Read(sbuf, 300);
+					if (nread > 0)
+					{
+						Base64_Encode(sbuf, nread, tbuf, nenc);
+						tfile.Write(tbuf, nenc);
+					}
+				} while (nread > 0);
+
+				tfile.Close();
+				sfile.Close();
+
+				m_OutputFile = tfilename;
+				return TRUE;
+			}
+		}
+
+	}
+
+	return FALSE;
+}
+
+
+BOOL CCryptHelper::B64Decode(CString sfilename)
+{
+	m_OutputFile.Empty();
+
+	CFile sfile;
+	if (sfile.Open(sfilename, CFile::modeRead | CFile::typeBinary))
+	{
+		UINT slen = (UINT)sfile.GetLength();
+		if (slen > 0)
+		{
+			CString tfilename = sfilename + _T(".b64.decoded");
+
+			CFile tfile;
+			if (tfile.Open(tfilename, CFile::modeWrite | CFile::modeCreate))
+			{
+				unsigned char sbuf[400];//sz must be multiple of 4
+				ZeroMemory(sbuf, 400);
+				unsigned char tbuf[300];//sz must be multiple of 3
+				ZeroMemory(tbuf, 300);
+
+				UINT nread = 0;
+				UINT nenc = 0;
+				do {
+					nread = sfile.Read(sbuf, 300);
+					if (nread > 0)
+					{
+						Base64_Decode(sbuf, nread, tbuf, nenc);
+						tfile.Write(tbuf, nenc);
+					}
+				} while (nread > 0);
+
+				tfile.Close();
+				sfile.Close();
+
+				m_OutputFile = tfilename;
+				return TRUE;
+			}
+		}
+
+	}
+
+	return FALSE;
+}
+

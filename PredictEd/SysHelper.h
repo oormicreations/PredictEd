@@ -13,7 +13,7 @@ public:
 	CSysHelper();
 	~CSysHelper();
 
-	CString m_FileName, m_FileTitle, m_FileExt;
+	CString m_FileName, m_FileTitle, m_FileExt, m_FileNameNoPath;
 
 	CString GetClipboardText();
 	BOOL SetClipboardText(CString text);
@@ -29,6 +29,6 @@ public:
 	void SelectMultipleFiles(CString * files, int maxfiles);
 	BOOL GetSaveFileNameType();
 	BOOL SaveAsTextFile(CString content);
-	BOOL GetFileNameToOpen(CString filetype);
+	BOOL GetFileNameToOpen(CString filetype, CString caption);
 };
 

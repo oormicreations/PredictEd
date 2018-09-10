@@ -103,6 +103,9 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_ENCRYPTION_SAVEASENCRYPTEDFILE, &CPredictEdDlg::OnEncryptionSaveasencryptedfile)
 	ON_COMMAND(ID_ENCRYPTION_ENCRYPT, &CPredictEdDlg::OnEncryptionEncrypt)
 	ON_COMMAND(ID_ENCRYPTION_SHA512HASH, &CPredictEdDlg::OnEncryptionSha512hash)
+	ON_COMMAND(ID_ENCRYPTION_CONVERTTO, &CPredictEdDlg::OnEncryptionConvertto)
+	ON_COMMAND(ID_BASE64_ENCODE, &CPredictEdDlg::OnBase64Encode)
+	ON_COMMAND(ID_BASE64_DECODE, &CPredictEdDlg::OnBase64Decode)
 END_MESSAGE_MAP()
 
 
@@ -845,6 +848,8 @@ void CPredictEdDlg::OnHelpOnlinehelp()
 
 void CPredictEdDlg::OnHelpCheckforupdates()
 {
+	//SetDlgItemText(IDC_EDIT_WORDS, _T("Checking for updates..."));
+
 	m_NetHelper.Checkforupdates(m_PredictEdVersionMaj, m_PredictEdVersionMin, _T("https://oormi.in/software/predicted/updatepredicted.txt"),
 		_T("https://github.com/oormicreations/PredictEd/releases"), _T("PredictEd App"));
 }
@@ -945,4 +950,39 @@ void CPredictEdDlg::OnEncryptionSha512hash()
 	CHashDlg hdlg;
 	m_Ed.GetWindowText(hdlg.m_Content);
 	hdlg.DoModal();
+}
+
+
+void CPredictEdDlg::OnEncryptionConvertto()
+{
+	//CBase64Dlg bdlg;
+	//bdlg.DoModal();
+}
+
+
+void CPredictEdDlg::OnBase64Encode()
+{
+	if (m_SysHelper.GetFileNameToOpen(_T("All Files (*.*)|*.*||"), _T("Select a file to encode...")))
+	{
+		CCryptHelper crypthelper;
+		if ((crypthelper.B64Encode(m_SysHelper.m_FileName)) && (!crypthelper.m_OutputFile.IsEmpty()))
+		{
+			AfxMessageBox(_T("File Encoded and saved as:\r\n\r\n") + crypthelper.m_OutputFile, MB_ICONINFORMATION);
+		}
+		else AfxMessageBox(_T("Base64 encoding failed!"), MB_ICONERROR);
+	}
+}
+
+
+void CPredictEdDlg::OnBase64Decode()
+{
+	if (m_SysHelper.GetFileNameToOpen(_T("All Files (*.*)|*.*||"), _T("Select a file to decode...")))
+	{
+		CCryptHelper crypthelper;
+		if ((crypthelper.B64Decode(m_SysHelper.m_FileName)) && (!crypthelper.m_OutputFile.IsEmpty()))
+		{
+			AfxMessageBox(_T("File Decoded and saved as:\r\n\r\n") + crypthelper.m_OutputFile, MB_ICONINFORMATION);
+		}
+		else AfxMessageBox(_T("Base64 decoding failed!"), MB_ICONERROR);
+	}
 }

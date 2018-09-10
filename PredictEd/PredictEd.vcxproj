@@ -185,6 +185,7 @@
   <ItemGroup>
     <ClInclude Include="AESDecryptDlg.h" />
     <ClInclude Include="AESEncryptDlg.h" />
+    <ClInclude Include="Base64Dlg.h" />
     <ClInclude Include="CharQueue.h" />
     <ClInclude Include="CryptHelper.h" />
     <ClInclude Include="HashDlg.h" />
@@ -205,6 +206,7 @@
   <ItemGroup>
     <ClCompile Include="AESDecryptDlg.cpp" />
     <ClCompile Include="AESEncryptDlg.cpp" />
+    <ClCompile Include="Base64Dlg.cpp" />
     <ClCompile Include="CharQueue.cpp" />
     <ClCompile Include="CryptHelper.cpp" />
     <ClCompile Include="HashDlg.cpp" />

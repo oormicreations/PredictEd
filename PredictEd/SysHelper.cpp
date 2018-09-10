@@ -102,27 +102,30 @@ BOOL CSysHelper::SetClipboardText(CString text)
 
 CString CSysHelper::ReadStringFromFile(CString filename)
 {
-	// Open the file with the specified encoding, restrict to utf-8
-	FILE *fStream;
-	errno_t e = _tfopen_s(&fStream, filename, _T("rt,ccs=UTF-8"));
-	if (e != 0)
+	CFile file;
+	file.Open(filename, CFile::modeRead);
+
+	int len = file.GetLength();
+	char * buf = new char[len + 1];
+
+	file.Read(buf, len);
+	file.Close();
+
+	buf[len] = 0;
+
+	CString uni;
+	int cc = 0;
+	// get length (cc) of the new widechar excluding the \0 terminator first
+	if ((cc = MultiByteToWideChar(CP_UTF8, 0, buf, -1, NULL, 0) - 1) > 0)
 	{
-		AfxMessageBox(filename + _T("\r\n\r\nError: This file could not be loaded."));
-		return _T("");
+		// convert
+		wchar_t *buf1 = uni.GetBuffer(cc);
+		if (buf1) MultiByteToWideChar(CP_UTF8, 0, buf, -1, buf1, cc);
+		uni.ReleaseBuffer();
 	}
-	CStdioFile f(fStream);  // open the file from this stream
 
-	UINT len = (UINT)f.GetLength() * sizeof(TCHAR);
-	TCHAR *buf = new TCHAR[len + 1];
-	ZeroMemory(buf, len + 1);
-
-	f.Read(buf, len);
-	f.Close();
-	CString str(buf);
-	delete buf;
-
-	return str;
-
+	delete[] buf;
+	return uni;
 }
 
 CString CSysHelper::GetFileContent()
@@ -130,6 +133,7 @@ CString CSysHelper::GetFileContent()
 	CFileDialog DataFileOpenDialog(true, _T("rtf"), _T(""), OFN_FILEMUSTEXIST, _T("Rich text Files (*.rtf)|*.rtf|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
 	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Load an RTF or Text File ...");
 	//DataFileOpenDialog.m_ofn.lpstrInitialDir = GetUserDocumentPath(PREDICTED_FOLDER);
+
 	INT_PTR res = DataFileOpenDialog.DoModal();
 	if (res == IDCANCEL) return _T("");
 	m_FileName = DataFileOpenDialog.GetPathName();
@@ -365,16 +369,19 @@ BOOL CSysHelper::SaveAsTextFile(CString content)
 	return TRUE;
 }
 
-BOOL CSysHelper::GetFileNameToOpen(CString filetype)
+BOOL CSysHelper::GetFileNameToOpen(CString filetype, CString caption)
 {
 	CFileDialog DataFileOpenDialog(true, _T(""), _T(""), OFN_FILEMUSTEXIST, filetype);
-	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Select a file ...");
+	DataFileOpenDialog.m_ofn.lpstrTitle = caption;// _T("Select a file ...");
 
 	INT_PTR res = DataFileOpenDialog.DoModal();
 	if (res != IDCANCEL)
 	{
 		m_FileName = DataFileOpenDialog.GetPathName();
 		if (m_FileName.IsEmpty()) return FALSE; 
+		m_FileTitle = DataFileOpenDialog.GetFileTitle();
+		m_FileExt = DataFileOpenDialog.GetFileExt();
+		m_FileNameNoPath = DataFileOpenDialog.GetFileName();
 	}
 
 	return TRUE;

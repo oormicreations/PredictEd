@@ -12,6 +12,7 @@
 #include "AESEncryptDlg.h"
 #include "AESDecryptDlg.h"
 #include "HashDlg.h"
+#include "Base64Dlg.h"
 
 
 // Register FindReplace window message.
@@ -111,4 +112,7 @@ public:
 	afx_msg void OnEncryptionSaveasencryptedfile();
 	afx_msg void OnEncryptionEncrypt();
 	afx_msg void OnEncryptionSha512hash();
+	afx_msg void OnEncryptionConvertto();
+	afx_msg void OnBase64Encode();
+	afx_msg void OnBase64Decode();
 };

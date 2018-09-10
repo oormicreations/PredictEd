@@ -52,7 +52,7 @@ BOOL CAESEncryptDlg::OnInitDialog()
 
 	m_PassStrengthProg.SetRange(0, 100);
 
-	srand(time(NULL));
+	srand((UINT)time(NULL));
 
 	if (m_FileEnc)
 	{
@@ -183,7 +183,7 @@ void CAESEncryptDlg::OnBnClickedButtonGenpass()
 		pass.AppendChar((WCHAR)num);
 	}
 
-	SetDlgItemText(IDC_EDIT_WARN, _T("Generated Password: ") + pass);
+	SetDlgItemText(IDC_EDIT_WARN, _T("Generated Password:\t") + pass);
 }
 
 

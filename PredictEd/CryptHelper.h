@@ -1,5 +1,6 @@
 #pragma once
 #include <bcrypt.h>
+#include <string>
 
 
 #ifndef NTSTATUS
@@ -36,6 +37,11 @@ static const BYTE rgbIV[] =
 //	'C', 'N', 'G', ' ', 'T', 'e', 's', 't'
 //};
 
+static const std::string base64_chars =
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+"abcdefghijklmnopqrstuvwxyz"
+"0123456789+/";
+
 class CCryptHelper
 {
 
@@ -66,15 +72,24 @@ public:
 	CString m_sSHA512;
 
 	CString m_sError;
+	CString m_OutputFile;
 
 	bool OpenMSPrimitiveProviderAES();
 	//bool CreateSymmetricKey_AES_CBC(DWORD &cbKeyObject, DWORD &cbIV);
 	bool CreateSymmetricKey_SHA1_Hash(PCWSTR pwszText, DWORD cbKeyObj);
 	bool Crypt(bool bEncrypt, PUCHAR pbufFileToOpen, ULONG iBytesRead, ULONG cbIV, PBYTE pbufFileToSave, DWORD& iBufToSave);
 	bool CryptLastByte(bool bEncrypt, PUCHAR pbufFileToOpen, ULONG iBytesRead, ULONG cbIV, PBYTE pbufFileToSave, DWORD& iBufToSave);
+	
 	bool Create_SHA512_Hash(CString pwszText);
-	void Cleanup();
+	bool Create_SHA512_Hash_Bin(PBYTE data, ULONG nbytes);
+	
+	unsigned int Base64_Decode(const unsigned char * encoded_string, unsigned int in_len, unsigned char * decoded_buffer, unsigned int & out_len);
+	unsigned int Base64_Encode(const unsigned char * bytes_to_encode, unsigned int in_len, unsigned char * encoded_buffer, unsigned int & out_len);
+	static bool is_base64(unsigned char c);
+	BOOL B64Encode(CString sfilename);
+	BOOL B64Decode(CString sfilename);
 
+	void Cleanup();
 
 public:
 	bool EnumProviders(CStringList *lstRegisteredProviders);

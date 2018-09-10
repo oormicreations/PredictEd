@@ -68,7 +68,8 @@ void CHashDlg::SetHashDisplayFont()
 	}
 
 	m_EdFont = new CFont;
-	m_EdFont->CreateFontW(fontsz, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, fontname);
+	m_EdFont->CreateFontW(fontsz, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
+							CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, fontname);
 
 	m_HashEd.SetFont(m_EdFont);
 	m_Rows.SetFont(m_EdFont);
@@ -106,6 +107,9 @@ void CHashDlg::DisplayFormattedHash()
 
 void CHashDlg::OnBnClickedButtonHashtext()
 {
+	SetDlgItemText(IDC_BUTTON_HASHFILE, _T("Hash a file"));
+	SetDlgItemText(IDC_EDIT_HASH, _T(""));
+
 	if (m_Content.IsEmpty()) return;
 
 	CCryptHelper crypthelper;
@@ -122,9 +126,48 @@ void CHashDlg::OnBnClickedButtonHashtext()
 
 void CHashDlg::OnBnClickedButtonHashfile()
 {
-	if (m_SysHelper.GetFileNameToOpen(_T("All Files (*.*)|*.*||")))
-	{
+	SetDlgItemText(IDC_BUTTON_HASHFILE, _T("Hash a file"));
+	SetDlgItemText(IDC_EDIT_HASH, _T(""));
 
+	if (m_SysHelper.GetFileNameToOpen(_T("All Files (*.*)|*.*||"), _T("Select a file to hash...")))
+	{
+		CFile file;
+		if (file.Open(m_SysHelper.m_FileName, CFile::modeRead | CFile::typeBinary))
+		{
+			ULONG fsz = file.GetLength();
+			if (fsz < 1)
+			{
+				AfxMessageBox(_T("File has no data!"), MB_ICONERROR);
+				file.Close();
+				return;
+			}
+
+			PBYTE data = (PBYTE)HeapAlloc(GetProcessHeap(), 0, fsz);
+			if (NULL == data)
+			{
+				AfxMessageBox(_T("Memory allocation failed for reading the file"), MB_ICONERROR);
+				file.Close();
+				return;
+			}
+
+			file.Read(data, fsz);
+
+			CCryptHelper crypthelper;
+			if (!crypthelper.Create_SHA512_Hash_Bin(data, fsz))
+			{
+				AfxMessageBox(_T("Hash failed!"), MB_ICONERROR);
+			}
+			else
+			{
+				m_HashStr = crypthelper.m_sSHA512;
+				DisplayFormattedHash();
+				SetDlgItemText(IDC_BUTTON_HASHFILE, m_SysHelper.m_FileNameNoPath);
+			}
+
+			if(data) HeapFree(GetProcessHeap(), 0, data);
+			file.Close();
+
+		}
 	}
 }
 
