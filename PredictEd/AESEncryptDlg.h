@@ -13,10 +13,11 @@ public:
 	CAESEncryptDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CAESEncryptDlg();
 
-	CCryptHelper m_CryptHelper;
+	//CCryptHelper m_CryptHelper;
 	CString m_SourceFileName, m_BackupFileName;
 	CProgressCtrl m_PassStrengthProg;
 	BOOL m_DeleteOriginal;
+	BOOL m_FileEnc;
 
 
 	void DisplayPasswordStrength(CString pass);
@@ -37,4 +38,6 @@ public:
 	afx_msg void OnEnChangeEditPass1();
 	afx_msg void OnBnClickedButtonGenpass();
 	CButton m_DelCheckBox;
+	afx_msg void OnBnClickedButtonSelfile();
+	afx_msg void OnBnClickedButtonDec();
 };

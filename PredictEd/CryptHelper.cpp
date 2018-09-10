@@ -27,7 +27,11 @@ CCryptHelper::CCryptHelper()
 
 CCryptHelper::~CCryptHelper()
 {
+	Cleanup();
+}
 
+void CCryptHelper::Cleanup()
+{
 	if (m_hAesAlg)
 	{
 		BCryptCloseAlgorithmProvider(m_hAesAlg, 0);
@@ -125,6 +129,7 @@ bool CCryptHelper::CryptFile(bool bEncrypt, CString sFileToOpen, CString sFileTo
 			oFileToCrypt.Write(pbufFileToSave, iBufToSave);
 		}
 	}
+
 	return true;
 }
 
@@ -309,9 +314,6 @@ bool CCryptHelper::CreateSymmetricKey_SHA1_Hash(PCWSTR pwszText, DWORD cbKeyObje
 {
 	NTSTATUS ntStatus = STATUS_SUCCESS;
 	BCRYPT_KEY_HANDLE	hKey = NULL;
-
-
-
 	DWORD               cbHashObject, cbResult;
 	BYTE                rgbHash[20];
 	DWORD				cbData = 0;
@@ -362,8 +364,15 @@ bool CCryptHelper::CreateSymmetricKey_SHA1_Hash(PCWSTR pwszText, DWORD cbKeyObje
 		return false;
 	}
 
+	//convert unicode cstring to bytes
+	CStringA utf8 = CW2A(pwszText, CP_UTF8);
+	CByteArray Bytes;
+	const size_t nBytes = sizeof(CStringA::XCHAR) * utf8.GetLength();
+	Bytes.SetSize(nBytes);
+	memcpy(Bytes.GetData(), (LPVOID)utf8.GetString(), nBytes);
+
 	// Hash the data
-	ntStatus = BCryptHashData(m_hHash, (PBYTE)pwszText, (ULONG)sizeof(pwszText), 0);
+	ntStatus = BCryptHashData(m_hHash, (PBYTE)Bytes.GetData(), nBytes, 0);
 	if (STATUS_SUCCESS != ntStatus)
 	{
 		m_sError.Format(_T("Error hashing the data. BCryptHashData failed with status: 0x%08x"), ntStatus);
@@ -388,7 +397,7 @@ bool CCryptHelper::CreateSymmetricKey_SHA1_Hash(PCWSTR pwszText, DWORD cbKeyObje
 	return true;
 }
 
-
+/*
 bool CCryptHelper::CreateSymmetricKey_AES_CBC(DWORD &cbKeyObject, DWORD &cbIV)
 {
 	NTSTATUS	ntStatus = STATUS_UNSUCCESSFUL;
@@ -443,10 +452,6 @@ bool CCryptHelper::CreateSymmetricKey_AES_CBC(DWORD &cbKeyObject, DWORD &cbIV)
 	// generate the key from supplied input key bytes
 	ntStatus = BCryptGenerateSymmetricKey(m_hAesAlg, &m_hKey, m_pbKeyObject, cbKeyObject, (PBYTE)rgbAES128Key, sizeof(rgbAES128Key), 0);
 
-	/*	PBYTE pKey;
-	memcpy(pKey, sKey, sKey.GetLength());
-	ntStatus = BCryptGenerateSymmetricKey(m_hAesAlg, &m_hKey, m_pbKeyObject, cbKeyObject, (PBYTE) pKey, sKey.GetLength(), 0);
-	*/
 	if (ntStatus != STATUS_SUCCESS)
 	{
 		m_sError.Format(_T("Error generate the key. BCryptGenerateSymmetricKey return with error 0x%08x"), ntStatus);
@@ -455,4 +460,110 @@ bool CCryptHelper::CreateSymmetricKey_AES_CBC(DWORD &cbKeyObject, DWORD &cbIV)
 
 	return true;
 
+}*/
+
+bool CCryptHelper::Create_SHA512_Hash(CString pwszText)
+{
+	NTSTATUS ntStatus = STATUS_SUCCESS;
+	BCRYPT_KEY_HANDLE	hKey = NULL;
+	DWORD               cbHashObject, cbResult;
+	DWORD				cbData = 0;
+	DWORD				cbHash = 0;
+	PBYTE               pbHash = NULL;
+	PBYTE				pbHashObject = NULL;
+
+	m_sSHA512.Empty();
+
+	ntStatus = BCryptOpenAlgorithmProvider(&m_hHashAlg,BCRYPT_SHA512_ALGORITHM, NULL, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error Open SHA512 provider. BCryptOpenAlgorithmProvider failed with status: 0x%08x\n"), ntStatus);
+		return false;
+	}
+
+	//  Determine the size of the Hash object
+	ntStatus = BCryptGetProperty(m_hHashAlg, BCRYPT_OBJECT_LENGTH, (PBYTE)&cbHashObject, sizeof(DWORD), &cbResult, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error determining the size of the Hash object. BCryptGetProperty failed with status: 0x%08x"), ntStatus);
+		return false;
+	}
+
+	//allocate the hash object on the heap
+	pbHashObject = (PBYTE)malloc(cbHashObject);
+
+	if (NULL == pbHashObject)
+	{
+		m_sError = _T("Memory allocation failed for hash object");
+		return false;
+	}
+
+	//calculate the length of the hash
+	ntStatus = BCryptGetProperty(m_hHashAlg, BCRYPT_HASH_LENGTH, (PBYTE)&cbHash, sizeof(DWORD),	&cbData, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error calc hash length. BCryptGetProperty failed with status: 0x%08x"), ntStatus);
+		return false;
+	}
+
+	//allocate the hash buffer on the heap
+	pbHash = (PBYTE)HeapAlloc(GetProcessHeap(), 0, cbHash);
+	if (NULL == pbHash)
+	{
+		m_sError = _T("Memory allocation failed for hash buffer");
+		return false;
+	}
+
+	//  Create the Hash object
+	ntStatus = BCryptCreateHash(m_hHashAlg, &m_hHash, pbHashObject, cbHashObject, NULL, 0, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error Creating the Hash object. BCryptCreateHash failed with status: 0x%08x"), ntStatus);
+		return false;
+	}
+
+	//convert unicode cstring to bytes
+	CStringA utf8 = CW2A(pwszText, CP_UTF8);
+	CByteArray Bytes;
+	const size_t nBytes = sizeof(CStringA::XCHAR) * utf8.GetLength();
+	Bytes.SetSize(nBytes);
+	memcpy(Bytes.GetData(), (LPVOID)utf8.GetString(), nBytes);
+
+	// Hash the data
+	ntStatus = BCryptHashData(m_hHash, (PBYTE)Bytes.GetData(), nBytes, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error hashing the data. BCryptHashData failed with status: 0x%08x"), ntStatus);
+		return false;
+	}
+
+	// Finish the hash
+	ntStatus = BCryptFinishHash(m_hHash, pbHash, cbHash, 0);
+	if (STATUS_SUCCESS != ntStatus)
+	{
+		m_sError.Format(_T("Error finish the hash. BCryptFinishHash failed with status: 0x%08x"), ntStatus);
+		return false;
+	}
+
+	//convert to hex
+	CString tmp;
+	for (int i = 0; i < (int)cbHash; i++)
+	{
+		tmp.Format(_T("%02X"), pbHash[i]);
+		m_sSHA512.Append(tmp);
+	}
+
+	if (m_sSHA512.IsEmpty()) return false;
+
+	//cleanup
+	if (pbHash)
+	{
+		HeapFree(GetProcessHeap(), 0, pbHash);
+	}
+	if (pbHashObject)
+	{
+		free(pbHashObject);
+	}
+
+	return true;
 }

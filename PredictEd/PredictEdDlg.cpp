@@ -102,6 +102,7 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_ENCRYPTION_OPENENCRYPTEDFILE, &CPredictEdDlg::OnEncryptionOpenencryptedfile)
 	ON_COMMAND(ID_ENCRYPTION_SAVEASENCRYPTEDFILE, &CPredictEdDlg::OnEncryptionSaveasencryptedfile)
 	ON_COMMAND(ID_ENCRYPTION_ENCRYPT, &CPredictEdDlg::OnEncryptionEncrypt)
+	ON_COMMAND(ID_ENCRYPTION_SHA512HASH, &CPredictEdDlg::OnEncryptionSha512hash)
 END_MESSAGE_MAP()
 
 
@@ -932,5 +933,16 @@ void CPredictEdDlg::OnEncryptionSaveasencryptedfile()
 
 void CPredictEdDlg::OnEncryptionEncrypt()
 {
-	// TODO: Add your command handler code here
+	CAESEncryptDlg edlg;
+	edlg.m_FileEnc = TRUE;
+	edlg.DoModal();
+
+}
+
+
+void CPredictEdDlg::OnEncryptionSha512hash()
+{
+	CHashDlg hdlg;
+	m_Ed.GetWindowText(hdlg.m_Content);
+	hdlg.DoModal();
 }

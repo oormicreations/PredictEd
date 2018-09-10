@@ -187,6 +187,7 @@
     <ClInclude Include="AESEncryptDlg.h" />
     <ClInclude Include="CharQueue.h" />
     <ClInclude Include="CryptHelper.h" />
+    <ClInclude Include="HashDlg.h" />
     <ClInclude Include="KeyWordMap.h" />
     <ClInclude Include="NetHelper.h" />
     <ClInclude Include="PredictEd.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="AESEncryptDlg.cpp" />
     <ClCompile Include="CharQueue.cpp" />
     <ClCompile Include="CryptHelper.cpp" />
+    <ClCompile Include="HashDlg.cpp" />
     <ClCompile Include="KeyWordMap.cpp" />
     <ClCompile Include="NetHelper.cpp" />
     <ClCompile Include="PredictEd.cpp" />

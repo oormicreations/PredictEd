@@ -30,11 +30,11 @@ static const BYTE rgbIV[] =
 };
 
 //Set AES KEY
-static const BYTE rgbAES128Key[] =
-{
-	'D', 'r', '.', 'L', 'u', 'i', 'j', 'i',
-	'C', 'N', 'G', ' ', 'T', 'e', 's', 't'
-};
+//static const BYTE rgbAES128Key[] =
+//{
+//	'D', 'r', '.', 'L', 'u', 'i', 'j', 'i',
+//	'C', 'N', 'G', ' ', 'T', 'e', 's', 't'
+//};
 
 class CCryptHelper
 {
@@ -62,14 +62,19 @@ public:
 	PBYTE					m_pbHashObject;
 	BCRYPT_ALG_HANDLE		m_hHashAlg;
 
-	// 
+	//hash
+	CString m_sSHA512;
+
+	CString m_sError;
+
 	bool OpenMSPrimitiveProviderAES();
-	bool CreateSymmetricKey_AES_CBC(DWORD &cbKeyObject, DWORD &cbIV);
+	//bool CreateSymmetricKey_AES_CBC(DWORD &cbKeyObject, DWORD &cbIV);
 	bool CreateSymmetricKey_SHA1_Hash(PCWSTR pwszText, DWORD cbKeyObj);
 	bool Crypt(bool bEncrypt, PUCHAR pbufFileToOpen, ULONG iBytesRead, ULONG cbIV, PBYTE pbufFileToSave, DWORD& iBufToSave);
 	bool CryptLastByte(bool bEncrypt, PUCHAR pbufFileToOpen, ULONG iBytesRead, ULONG cbIV, PBYTE pbufFileToSave, DWORD& iBufToSave);
+	bool Create_SHA512_Hash(CString pwszText);
+	void Cleanup();
 
-	CString m_sError;
 
 public:
 	bool EnumProviders(CStringList *lstRegisteredProviders);

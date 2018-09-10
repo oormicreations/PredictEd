@@ -28,5 +28,7 @@ public:
 	bool IsFontInstalled(LPCTSTR lpszFont);
 	void SelectMultipleFiles(CString * files, int maxfiles);
 	BOOL GetSaveFileNameType();
+	BOOL SaveAsTextFile(CString content);
+	BOOL GetFileNameToOpen(CString filetype);
 };
 

@@ -15,7 +15,7 @@ CAESEncryptDlg::CAESEncryptDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(IDD_DIALOG_ENCPASS, pParent)
 	, m_DeleteOriginal(false)
 {
-
+	m_FileEnc = FALSE;
 }
 
 CAESEncryptDlg::~CAESEncryptDlg()
@@ -35,6 +35,8 @@ BEGIN_MESSAGE_MAP(CAESEncryptDlg, CDialog)
 	ON_BN_CLICKED(IDOK, &CAESEncryptDlg::OnBnClickedOk)
 	ON_EN_CHANGE(IDC_EDIT_PASS1, &CAESEncryptDlg::OnEnChangeEditPass1)
 	ON_BN_CLICKED(IDC_BUTTON_GENPASS, &CAESEncryptDlg::OnBnClickedButtonGenpass)
+	ON_BN_CLICKED(IDC_BUTTON_SELFILE, &CAESEncryptDlg::OnBnClickedButtonSelfile)
+	ON_BN_CLICKED(IDC_BUTTON_DEC, &CAESEncryptDlg::OnBnClickedButtonDec)
 END_MESSAGE_MAP()
 
 
@@ -51,6 +53,14 @@ BOOL CAESEncryptDlg::OnInitDialog()
 	m_PassStrengthProg.SetRange(0, 100);
 
 	srand(time(NULL));
+
+	if (m_FileEnc)
+	{
+		GetDlgItem(IDC_CHECK_DELFILE)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_SELFILE)->ShowWindow(SW_SHOW);
+		GetDlgItem(IDC_BUTTON_DEC)->ShowWindow(SW_SHOW);
+		SetWindowText(_T("Encrypt/Decrypt Any File"));
+	}
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
@@ -83,8 +93,15 @@ void CAESEncryptDlg::OnBnClickedOk()
 		AfxMessageBox(_T("Password is required!"), MB_ICONERROR);
 		return;
 	}
+	if (m_SourceFileName.IsEmpty())
+	{
+		AfxMessageBox(_T("File name is required!"), MB_ICONERROR);
+		return;
+	}
 
 	CString cryptfilename = m_SourceFileName + _T(".enc");
+
+	CCryptHelper m_CryptHelper; //local because needs to reinit while dialog is open
 
 	bool cryptres = m_CryptHelper.CryptFile(true, m_SourceFileName, cryptfilename, pass);
 
@@ -99,22 +116,15 @@ void CAESEncryptDlg::OnBnClickedOk()
 	}
 	else AfxMessageBox(_T("Failed to encrypt the file:\r\n\r\n") + m_CryptHelper.GetLastError(), MB_ICONERROR);
 
-	CDialog::OnOK();
+	if (!m_FileEnc) CDialog::OnOK();
 }
 
 
 void CAESEncryptDlg::OnEnChangeEditPass1()
 {
-	// TODO:  If this is a RICHEDIT control, the control will not
-	// send this notification unless you override the CDialog::OnInitDialog()
-	// function and call CRichEditCtrl().SetEventMask()
-	// with the ENM_CHANGE flag ORed into the mask.
-
-	// TODO:  Add your control notification handler code here
 	CString pass;
 	GetDlgItemText(IDC_EDIT_PASS1, pass);
 	DisplayPasswordStrength(pass);
-
 }
 
 void CAESEncryptDlg::DisplayPasswordStrength(CString pass)
@@ -174,4 +184,53 @@ void CAESEncryptDlg::OnBnClickedButtonGenpass()
 	}
 
 	SetDlgItemText(IDC_EDIT_WARN, _T("Generated Password: ") + pass);
+}
+
+
+void CAESEncryptDlg::OnBnClickedButtonSelfile()
+{
+	CFileDialog DataFileOpenDialog(true, _T(""), _T(""), OFN_FILEMUSTEXIST, _T("All Files (*.*)|*.*||"));
+	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Select the file to encrypt/decrypt ...");
+
+	INT_PTR res = DataFileOpenDialog.DoModal();
+	if (res != IDCANCEL)
+	{
+		m_SourceFileName = DataFileOpenDialog.GetPathName();
+		SetDlgItemText(IDC_BUTTON_SELFILE, DataFileOpenDialog.GetFileName());
+
+	}
+}
+
+
+void CAESEncryptDlg::OnBnClickedButtonDec()
+{
+	CString pass;
+	GetDlgItemText(IDC_EDIT_PASS1, pass);
+
+	//m_CryptHelper.Create_SHA512_Hash(pass);
+	//return;
+
+
+	if (pass.IsEmpty())
+	{
+		AfxMessageBox(_T("Password is required!"), MB_ICONERROR);
+		return;
+	}
+	if (m_SourceFileName.IsEmpty())
+	{
+		AfxMessageBox(_T("File name is required!"), MB_ICONERROR);
+		return;
+	}
+
+	CString cryptfilename = m_SourceFileName + _T(".dec");
+
+	CCryptHelper m_CryptHelper;
+
+	bool cryptres = m_CryptHelper.CryptFile(false, m_SourceFileName, cryptfilename, pass);
+
+	if (cryptres)
+	{
+		AfxMessageBox(_T("File was AES decrypted and saved as:\r\n\r\n") + cryptfilename, MB_ICONINFORMATION);
+	}
+	else AfxMessageBox(_T("Failed to decrypt the file:\r\n\r\n") + m_CryptHelper.GetLastError(), MB_ICONERROR);
 }

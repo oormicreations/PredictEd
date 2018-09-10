@@ -11,6 +11,7 @@
 #include "NetHelper.h"
 #include "AESEncryptDlg.h"
 #include "AESDecryptDlg.h"
+#include "HashDlg.h"
 
 
 // Register FindReplace window message.
@@ -109,4 +110,5 @@ public:
 	afx_msg void OnEncryptionOpenencryptedfile();
 	afx_msg void OnEncryptionSaveasencryptedfile();
 	afx_msg void OnEncryptionEncrypt();
+	afx_msg void OnEncryptionSha512hash();
 };
