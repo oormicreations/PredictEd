@@ -88,6 +88,10 @@ public:
 	static bool is_base64(unsigned char c);
 	BOOL B64Encode(CString sfilename);
 	BOOL B64Decode(CString sfilename);
+	BOOL PredictEdStegEncode();
+	BOOL PredictEdStegDecode();
+
+
 
 	void Cleanup();
 

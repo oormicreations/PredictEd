@@ -141,6 +141,10 @@ BOOL CPredictEdDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	CCryptHelper crypthelper;
+	crypthelper.PredictEdStegEncode();
+	crypthelper.PredictEdStegDecode();
+
 	m_Menu.LoadMenu(IDR_MENU_TOP);
 	SetMenu(&m_Menu);
 	SetButtons();
@@ -925,8 +929,22 @@ void CPredictEdDlg::OnEncryptionOpenencryptedfile()
 void CPredictEdDlg::OnEncryptionSaveasencryptedfile()
 {
 	CAESEncryptDlg edlg;
-	if (!m_Ed.m_Saved) OnFileSave32772();
-	if (m_SysHelper.m_FileName.IsEmpty()) OnFileSave32772();
+	if (!m_Ed.m_Saved)
+	{
+		int res = AfxMessageBox(_T("The changes are not saved. Do you wish to save before encrypting?"), MB_YESNOCANCEL);
+		if (res == IDCANCEL) return;
+		if (res == IDYES)
+		{
+			OnFileSave32772();
+			if (m_SaveCanceled) return;
+		
+		}
+		if (m_SysHelper.m_FileName.IsEmpty())
+		{
+			AfxMessageBox(_T("File must be saved in order to be encrypted!"), MB_ICONERROR);
+			return;
+		}
+	}
 
 	edlg.m_SourceFileName = m_SysHelper.m_FileName;
 	edlg.m_BackupFileName = m_Ed.m_AutoBackupFileName;

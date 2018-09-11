@@ -873,3 +873,88 @@ BOOL CCryptHelper::B64Decode(CString sfilename)
 	return FALSE;
 }
 
+BOOL CCryptHelper::PredictEdStegEncode()
+{
+	CString srcimage = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd dev\\steg.jpg");
+	CString encimage = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd dev\\stegenc.png");
+	CString msg = _T("Secret message");
+
+	//convert unicode cstring to bytes
+	CStringA stra = CW2A(msg, CP_UTF8);
+	CByteArray Bytes;
+	const size_t nBytes = sizeof(CStringA::XCHAR) * stra.GetLength();
+	Bytes.SetSize(nBytes);
+	memcpy(Bytes.GetData(), (LPVOID)stra.GetString(), nBytes);
+
+
+
+	CImage image;
+	HRESULT hr = image.Load(srcimage);
+	if (hr == S_OK)
+	{
+		int h = image.GetHeight();
+		int w = image.GetWidth();
+
+		ULONG npix = h*w;
+
+		COLORREF col;
+		col = image.GetPixel(0, 0);
+		int r = GetRValue(col);
+		int g = GetGValue(col);
+		int b = GetBValue(col);
+
+		BYTE bt = Bytes[0];
+
+		//empty last 3 bits of each
+		r = r & 0xF8;
+		g = g & 0xF8;
+		b = b & 0xF8;
+
+		//extract bits and insert in rgb
+		r = r | (bt & 7);
+		g = g | ((bt >> 3) & 7);
+		b = b | ((bt >> 6) & 7);
+
+		image.SetPixel(0, 0, RGB(r, g, b));
+
+		image.Save(encimage);
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+BOOL CCryptHelper::PredictEdStegDecode()
+{
+	CString srcimage = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd dev\\stegenc.png");
+	CString msg;
+
+	CByteArray Bytes;
+
+	CImage image;
+	HRESULT hr = image.Load(srcimage);
+	if (hr == S_OK)
+	{
+		//int h = image.GetHeight();
+		//int w = image.GetWidth();
+
+		COLORREF col;
+		col = image.GetPixel(0, 0);
+		int r = GetRValue(col);
+		int g = GetGValue(col);
+		int b = GetBValue(col);
+
+		//extract msg bits
+		r = r & 7;
+		g = g & 7;
+		b = b & 7;
+
+		BYTE bt = (b << 6) | (g << 3) | r;
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
