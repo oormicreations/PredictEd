@@ -77,7 +77,10 @@ void CStegEncDlg::OnBnClickedButtonStegdec()
 
 void CStegEncDlg::OnBnClickedButtonStegenc()
 {
-	m_CryptHelper.PredictEdStegEncode(m_ImageFile, m_DataFile);
+	CString pass;
+	GetDlgItemText(IDC_EDIT_PASS, pass);
+
+	m_CryptHelper.PredictEdStegEncode(m_ImageFile, m_DataFile, pass);
 }
 
 
