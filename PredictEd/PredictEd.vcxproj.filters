@@ -72,7 +72,7 @@
     <ClInclude Include="HashDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Base64Dlg.h">
+    <ClInclude Include="StegEncDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -125,7 +125,7 @@
     <ClCompile Include="HashDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Base64Dlg.cpp">
+    <ClCompile Include="StegEncDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

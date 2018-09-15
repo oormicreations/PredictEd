@@ -52,7 +52,6 @@ BOOL CAESEncryptDlg::OnInitDialog()
 
 	m_PassStrengthProg.SetRange(0, 100);
 
-	srand((UINT)time(NULL));
 
 	if (m_FileEnc)
 	{
@@ -101,9 +100,9 @@ void CAESEncryptDlg::OnBnClickedOk()
 
 	CString cryptfilename = m_SourceFileName + _T(".enc");
 
-	CCryptHelper m_CryptHelper; //local because needs to reinit while dialog is open
+	CCryptHelper CryptHelper; //local because needs to reinit while dialog is open
 
-	bool cryptres = m_CryptHelper.CryptFile(true, m_SourceFileName, cryptfilename, pass);
+	bool cryptres = CryptHelper.CryptFile(true, m_SourceFileName, cryptfilename, pass);
 
 	if (cryptres)
 	{
@@ -114,7 +113,7 @@ void CAESEncryptDlg::OnBnClickedOk()
 			else AfxMessageBox(_T("Failed to delete the original file and backup file."), MB_ICONERROR);
 		}
 	}
-	else AfxMessageBox(_T("Failed to encrypt the file:\r\n\r\n") + m_CryptHelper.GetLastError(), MB_ICONERROR);
+	else AfxMessageBox(_T("Failed to encrypt the file:\r\n\r\n") + CryptHelper.GetLastError(), MB_ICONERROR);
 
 	if (!m_FileEnc) CDialog::OnOK();
 }
@@ -124,66 +123,12 @@ void CAESEncryptDlg::OnEnChangeEditPass1()
 {
 	CString pass;
 	GetDlgItemText(IDC_EDIT_PASS1, pass);
-	DisplayPasswordStrength(pass);
-}
-
-void CAESEncryptDlg::DisplayPasswordStrength(CString pass)
-{
-	if (pass.IsEmpty()) return;
-
-	TCHAR nums[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-		L'०', L'१', L'२', L'३', L'४', L'५', L'६', L'७', L'८', L'९' }; //L'x' is necessary
-
-	TCHAR spl[] = { '~', '`', '!', '@', '#', '$', '%', '^', '&', '*',
-		'(', ')', '-', '_', '+', '=', '|', '\\', '{', '[', '}', ']',
-		':', ';', '\"', '\'', '<', ',', '>', '.', '?', '/' }; //32
-
-	BOOL hasnum = FALSE;
-	BOOL hasspl = FALSE;
-
-	for (int i = 0; i < 20; i++)
-	{
-		if (pass.Find(nums[i]) >= 0)
-		{
-			hasnum = TRUE;
-			break;
-		}
-	}
-
-	for (int i = 0; i < 32; i++)
-	{
-		if (pass.Find(spl[i]) >= 0)
-		{
-			hasspl = TRUE;
-			break;
-		}
-	}
-
-	int passstrength = 0;
-	int passlen = pass.GetLength();
-
-	//these are arbitrary criteria
-	passstrength = passlen * 5 + hasnum * 25 + hasspl * 25;
-	m_PassStrengthProg.SetPos(passstrength);
-
-
+	m_PassStrengthProg.SetPos(m_CryptHelper.GetPasswordStrength(pass));
 }
 
 void CAESEncryptDlg::OnBnClickedButtonGenpass()
 {
-	CString pass;
-	int len = 10;
-	int max = 126;
-	int min = 33;
-	int range = max - min + 1;
-
-	for (int i = 0; i < len; i++)
-	{
-		int num = rand() % range + min;
-		pass.AppendChar((WCHAR)num);
-	}
-
-	SetDlgItemText(IDC_EDIT_WARN, _T("Generated Password:\t") + pass);
+	SetDlgItemText(IDC_EDIT_WARN, _T("Generated Password:\t") + m_CryptHelper.PasswordGen());
 }
 
 
@@ -207,10 +152,6 @@ void CAESEncryptDlg::OnBnClickedButtonDec()
 	CString pass;
 	GetDlgItemText(IDC_EDIT_PASS1, pass);
 
-	//m_CryptHelper.Create_SHA512_Hash(pass);
-	//return;
-
-
 	if (pass.IsEmpty())
 	{
 		AfxMessageBox(_T("Password is required!"), MB_ICONERROR);
@@ -224,13 +165,13 @@ void CAESEncryptDlg::OnBnClickedButtonDec()
 
 	CString cryptfilename = m_SourceFileName + _T(".dec");
 
-	CCryptHelper m_CryptHelper;
+	CCryptHelper CryptHelper;
 
-	bool cryptres = m_CryptHelper.CryptFile(false, m_SourceFileName, cryptfilename, pass);
+	bool cryptres = CryptHelper.CryptFile(false, m_SourceFileName, cryptfilename, pass);
 
 	if (cryptres)
 	{
 		AfxMessageBox(_T("File was AES decrypted and saved as:\r\n\r\n") + cryptfilename, MB_ICONINFORMATION);
 	}
-	else AfxMessageBox(_T("Failed to decrypt the file:\r\n\r\n") + m_CryptHelper.GetLastError(), MB_ICONERROR);
+	else AfxMessageBox(_T("Failed to decrypt the file:\r\n\r\n") + CryptHelper.GetLastError(), MB_ICONERROR);
 }

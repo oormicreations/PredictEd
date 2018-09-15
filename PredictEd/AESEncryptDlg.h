@@ -13,14 +13,12 @@ public:
 	CAESEncryptDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CAESEncryptDlg();
 
-	//CCryptHelper m_CryptHelper;
+	CCryptHelper m_CryptHelper;
 	CString m_SourceFileName, m_BackupFileName;
 	CProgressCtrl m_PassStrengthProg;
 	BOOL m_DeleteOriginal;
 	BOOL m_FileEnc;
 
-
-	void DisplayPasswordStrength(CString pass);
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME

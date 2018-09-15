@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 The code below is mostly from https://www.codeproject.com/Articles/18713/Simple-way-to-crypt-a-file-with-CNG
 Which is based on Microsoft's CNG SDK sample code most probably.
@@ -22,6 +22,7 @@ CCryptHelper::CCryptHelper()
 	m_hHash = NULL;
 	m_pbHashObject = NULL;
 	m_hHashAlg = NULL;
+	srand((UINT)time(NULL));
 
 }
 
@@ -873,19 +874,22 @@ BOOL CCryptHelper::B64Decode(CString sfilename)
 	return FALSE;
 }
 
-BOOL CCryptHelper::PredictEdStegEncode()
+BOOL CCryptHelper::PredictEdStegEncode(CString srcimage, CString datafile, CString pass)
 {
-	CString srcimage = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd dev\\steg.jpg");
-	CString encimage = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd dev\\stegenc.png");
-	CString msg = _T("Secret message");
+	CByteArray passBytes;
+	UINT npassBytes = 0;
+	if (!pass.IsEmpty())
+	{
+		//convert unicode cstring to bytes
+		CStringA stra = CW2A(pass, CP_UTF8);
+		npassBytes = sizeof(CStringA::XCHAR) * stra.GetLength();
+		passBytes.SetSize(npassBytes);
+		memcpy(passBytes.GetData(), (LPVOID)stra.GetString(), npassBytes);
+	}
 
-	//convert unicode cstring to bytes
-	CStringA stra = CW2A(msg, CP_UTF8);
-	CByteArray Bytes;
-	const size_t nBytes = sizeof(CStringA::XCHAR) * stra.GetLength();
-	Bytes.SetSize(nBytes);
-	memcpy(Bytes.GetData(), (LPVOID)stra.GetString(), nBytes);
-
+	CString encimage = srcimage;
+	encimage.Replace(_T("jpeg"), _T("jpg"));
+	encimage.Replace(_T(".jpg"), _T("_StegEnc.png"));
 
 
 	CImage image;
@@ -895,29 +899,133 @@ BOOL CCryptHelper::PredictEdStegEncode()
 		int h = image.GetHeight();
 		int w = image.GetWidth();
 
-		ULONG npix = h*w;
+		ULONGLONG npix = h*w;
+		int npixdatasz = sizeof(ULONGLONG); // number of pix needed to store data size
+
+		//open and check data size
+		CFile sfile;
+		if (sfile.Open(datafile, CFile::modeRead | CFile::typeBinary))
+		{
+			ULONGLONG slen = sfile.GetLength();
+			if (slen > 0)
+			{
+				if (slen > npix + npixdatasz)
+				{
+					CString tmp;
+					tmp.Format(_T("Error: Data size is too big to fit inside the chosen image.\r\n\r\nData size: %I64u\r\nNumber of pixels: %I64u\r\nNumber of pixels needed: %I64u"), slen, npix, (slen + npixdatasz));
+					AfxMessageBox(tmp, MB_ICONERROR);
+					sfile.Close();
+					return FALSE;
+				}
+
+				//malloc
+				BYTE *data = (BYTE*)malloc(slen);
+				if (data)
+				{
+					//read data
+					sfile.Read(data, slen);
+					sfile.Close();
+
+					COLORREF col;
+					int n = 0;
+					int p = 0;
+					BYTE bt;
+					ULONGLONG totalbytes = npixdatasz + slen;
+
+
+					for (int y = 0; y < h; y++)
+					{
+						for (int x = 0; x < w; x++)
+						{
+							if (n < npixdatasz) bt = slen >> (n * 8); //embed data length
+							else bt = data[n]; //embed data
+
+							if (n >= totalbytes) bt = rand(); //fill the rest of pixels with random data to disable noise analysis of encoded image
+							//int k = (int)bt;
+							n++;
+
+							//xor encrypt, repeat password bytes in sequence
+							bt = bt ^ passBytes[p];
+							p++;
+							if (p >= npassBytes)p = 0;
+
+							col = image.GetPixel(x, y);
+							int r = GetRValue(col);
+							int g = GetGValue(col);
+							int b = GetBValue(col);
+
+							//empty last 3 bits of each
+							r = r & 0xF8;
+							g = g & 0xF8;
+							b = b & 0xF8;
+
+							//extract bits and insert in rgb
+							r = r | (bt & 7);
+							g = g | ((bt >> 3) & 7);
+							b = b | ((bt >> 6) & 7);
+
+							//modified pixel
+							image.SetPixel(x, y, RGB(r, g, b));
+
+						}
+					}
+
+					image.Save(encimage);
+				}
+			}
+			else
+			{
+				AfxMessageBox(_T("Error: No data!"), MB_ICONERROR);
+				sfile.Close();
+				return FALSE;
+			}
+		}
+
+
+		return TRUE;
+	}
+	else AfxMessageBox(_T("Error: Failed to load the image"), MB_ICONERROR);
+
+	return FALSE;
+}
+
+
+BOOL CCryptHelper::PredictEdStegDecode(CString encimage, CString datafile, CString pass)
+{
+	//CString srcimage = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd dev\\stegenc.png");
+	//CString msg;
+
+	CByteArray Bytes;
+	int nBytes = 900;
+
+	CImage image;
+	HRESULT hr = image.Load(encimage);
+	if (hr == S_OK)
+	{
+		int h = image.GetHeight();
+		int w = image.GetWidth();
 
 		COLORREF col;
-		col = image.GetPixel(0, 0);
-		int r = GetRValue(col);
-		int g = GetGValue(col);
-		int b = GetBValue(col);
+		int n = 0;
 
-		BYTE bt = Bytes[0];
+		for (int y = 0; y < h; y++)
+		{
+			for (int x = 0; x < w; x++)
+			{
+				col = image.GetPixel(x, y);
+				int r = GetRValue(col);
+				int g = GetGValue(col);
+				int b = GetBValue(col);
 
-		//empty last 3 bits of each
-		r = r & 0xF8;
-		g = g & 0xF8;
-		b = b & 0xF8;
+				//extract msg bits
+				BYTE bt = ((b & 7) << 6) | ((g & 7) << 3) | (r & 7);
+				//msg.AppendChar((WCHAR)bt);
 
-		//extract bits and insert in rgb
-		r = r | (bt & 7);
-		g = g | ((bt >> 3) & 7);
-		b = b | ((bt >> 6) & 7);
-
-		image.SetPixel(0, 0, RGB(r, g, b));
-
-		image.Save(encimage);
+				n++;
+				if (n >= nBytes) break;
+			}
+			if (n >= nBytes) break;
+		}
 
 		return TRUE;
 	}
@@ -925,36 +1033,71 @@ BOOL CCryptHelper::PredictEdStegEncode()
 	return FALSE;
 }
 
-
-BOOL CCryptHelper::PredictEdStegDecode()
+CString CCryptHelper::PasswordGen(int len)
 {
-	CString srcimage = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd dev\\stegenc.png");
-	CString msg;
+	CString pass;
+	int max = 126;
+	int min = 33;
+	int range = max - min + 1;
 
-	CByteArray Bytes;
-
-	CImage image;
-	HRESULT hr = image.Load(srcimage);
-	if (hr == S_OK)
+	for (int i = 0; i < len; i++)
 	{
-		//int h = image.GetHeight();
-		//int w = image.GetWidth();
-
-		COLORREF col;
-		col = image.GetPixel(0, 0);
-		int r = GetRValue(col);
-		int g = GetGValue(col);
-		int b = GetBValue(col);
-
-		//extract msg bits
-		r = r & 7;
-		g = g & 7;
-		b = b & 7;
-
-		BYTE bt = (b << 6) | (g << 3) | r;
-
-		return TRUE;
+		int num = rand() % range + min;
+		pass.AppendChar((WCHAR)num);
 	}
 
-	return FALSE;
+	return pass;
+}
+
+int CCryptHelper::GetPasswordStrength(CString pass)
+{
+	if (pass.IsEmpty()) return 0;
+
+	TCHAR nums[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+		L'०', L'१', L'२', L'३', L'४', L'५', L'६', L'७', L'८', L'९' }; //L'x' is necessary
+
+	TCHAR spl[] = { '~', '`', '!', '@', '#', '$', '%', '^', '&', '*',
+		'(', ')', '-', '_', '+', '=', '|', '\\', '{', '[', '}', ']',
+		':', ';', '\"', '\'', '<', ',', '>', '.', '?', '/' }; //32
+
+	BOOL hasnum = FALSE;
+	BOOL hasspl = FALSE;
+	BOOL repeatpattern = FALSE;
+
+	for (int i = 0; i < 20; i++)
+	{
+		if (pass.Find(nums[i]) >= 0)
+		{
+			hasnum = TRUE;
+			break;
+		}
+	}
+
+	for (int i = 0; i < 32; i++)
+	{
+		if (pass.Find(spl[i]) >= 0)
+		{
+			hasspl = TRUE;
+			break;
+		}
+	}
+
+	//repeating patterns
+	int passlen = pass.GetLength();
+	CString pattern;
+
+	for (int i = 0; i < passlen; i++)
+	{
+		TCHAR tc = pass.GetAt(i);
+		pattern.Empty();
+		pattern.Format(_T("%c%c%c"), tc, tc, tc);
+		if (pass.Find(pattern) >= 0) repeatpattern = TRUE;
+	}
+
+	int passstrength = 0;
+
+	//these are arbitrary criteria
+	passstrength = passlen * 5 + hasnum * 25 + hasspl * 25 - repeatpattern * 20;
+	
+	return passstrength;
 }

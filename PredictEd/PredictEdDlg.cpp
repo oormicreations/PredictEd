@@ -106,6 +106,7 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_ENCRYPTION_CONVERTTO, &CPredictEdDlg::OnEncryptionConvertto)
 	ON_COMMAND(ID_BASE64_ENCODE, &CPredictEdDlg::OnBase64Encode)
 	ON_COMMAND(ID_BASE64_DECODE, &CPredictEdDlg::OnBase64Decode)
+	ON_COMMAND(ID_ENCRYPTION_STEG, &CPredictEdDlg::OnEncryptionSteg)
 END_MESSAGE_MAP()
 
 
@@ -141,9 +142,6 @@ BOOL CPredictEdDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-	CCryptHelper crypthelper;
-	crypthelper.PredictEdStegEncode();
-	crypthelper.PredictEdStegDecode();
 
 	m_Menu.LoadMenu(IDR_MENU_TOP);
 	SetMenu(&m_Menu);
@@ -1003,4 +1001,11 @@ void CPredictEdDlg::OnBase64Decode()
 		}
 		else AfxMessageBox(_T("Base64 decoding failed!"), MB_ICONERROR);
 	}
+}
+
+
+void CPredictEdDlg::OnEncryptionSteg()
+{
+	CStegEncDlg sdlg;
+	sdlg.DoModal();
 }
