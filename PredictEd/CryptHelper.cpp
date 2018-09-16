@@ -1128,10 +1128,14 @@ BOOL CCryptHelper::PredictEdStegDecode(CString encimage, CString datafilepath, C
 		}
 
 		//convert filename bytes to unicode string
-		CStringA stra;
-		stra.SetString((LPCSTR)m_FileNameBytes.GetData(), nfnameBytes);
+		int output_size = MultiByteToWideChar(CP_UTF8, 0, (LPCCH)m_FileNameBytes.GetData(), nfnameBytes, NULL, 0);
+		assert(0<output_size);
+		TCHAR *converted_buf = new TCHAR[output_size+1];
+		int size = MultiByteToWideChar(CP_UTF8, 0, (LPCCH)m_FileNameBytes.GetData(), nfnameBytes, converted_buf, output_size);
+		assert(output_size == size);
+		converted_buf[output_size] = 0;
 
-		CString filename = CA2CT(stra);
+		CString filename(converted_buf);
 		filename.Replace(_T("."), _T("_dec."));
 		filename = datafilepath + _T("\\") + filename;
 
@@ -1153,6 +1157,7 @@ BOOL CCryptHelper::PredictEdStegDecode(CString encimage, CString datafilepath, C
 			return FALSE;
 		}
 
+		delete[] converted_buf;
 		dfile.Close();
 		free(data);
 		m_OutputFile = filename;

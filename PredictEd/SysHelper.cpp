@@ -371,8 +371,14 @@ BOOL CSysHelper::SaveAsTextFile(CString content)
 
 BOOL CSysHelper::GetFileNameToOpen(CString filetype, CString caption)
 {
+	m_FileName.Empty();
+	m_FileTitle.Empty();
+	m_FileExt.Empty();
+	m_FileNameNoPath.Empty();
+	m_FilePath.Empty();
+
 	CFileDialog DataFileOpenDialog(true, _T(""), _T(""), OFN_FILEMUSTEXIST, filetype);
-	DataFileOpenDialog.m_ofn.lpstrTitle = caption;// _T("Select a file ...");
+	DataFileOpenDialog.m_ofn.lpstrTitle = caption;
 
 	INT_PTR res = DataFileOpenDialog.DoModal();
 	if (res != IDCANCEL)
@@ -383,7 +389,8 @@ BOOL CSysHelper::GetFileNameToOpen(CString filetype, CString caption)
 		m_FileExt = DataFileOpenDialog.GetFileExt();
 		m_FileNameNoPath = DataFileOpenDialog.GetFileName();
 		m_FilePath = DataFileOpenDialog.GetFolderPath();
+		return TRUE;
 	}
 
-	return TRUE;
+	return FALSE;
 }
