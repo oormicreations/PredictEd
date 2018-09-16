@@ -13,6 +13,8 @@
 #include "AESDecryptDlg.h"
 #include "HashDlg.h"
 #include "StegEncDlg.h"
+#include "StegDecDlg.h"
+
 
 // Register FindReplace window message.
 static UINT WM_FINDREPLACE = ::RegisterWindowMessage(FINDMSGSTRING);
@@ -115,4 +117,6 @@ public:
 	afx_msg void OnBase64Encode();
 	afx_msg void OnBase64Decode();
 	afx_msg void OnEncryptionSteg();
+	afx_msg void OnStegEncode();
+	afx_msg void OnStegDecode();
 };

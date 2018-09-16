@@ -15,13 +15,13 @@ public:
 	virtual ~CStegEncDlg();
 
 	CSysHelper m_SysHelper;
-	CString m_ImageFile, m_DataFile;
+	CString m_ImageFile, m_DataFile, m_DataFilePath;
 	CString m_Password;
 	CCryptHelper m_CryptHelper;
 	CProgressCtrl m_PassStrengthBar;
 	BOOL m_UsePass;
 
-
+	CString GetPass();
 
 
 

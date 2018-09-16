@@ -22,6 +22,8 @@ typedef LONG NTSTATUS, *PNSTATUS;
 const DWORD CHUNK_SIZE = 16;
 
 #define SYMM_KEY_SIZE_SECRET 16
+#define SET_PASS_BYTES 1
+#define SET_FILENAME_BYTES 2
 
 //Set IV
 static const BYTE rgbIV[] =
@@ -74,6 +76,9 @@ public:
 	CString m_sError;
 	CString m_OutputFile;
 
+	//steg
+	CByteArray m_PassBytes, m_FileNameBytes;
+
 	bool OpenMSPrimitiveProviderAES();
 	//bool CreateSymmetricKey_AES_CBC(DWORD &cbKeyObject, DWORD &cbIV);
 	bool CreateSymmetricKey_SHA1_Hash(PCWSTR pwszText, DWORD cbKeyObj);
@@ -88,11 +93,13 @@ public:
 	static bool is_base64(unsigned char c);
 	BOOL B64Encode(CString sfilename);
 	BOOL B64Decode(CString sfilename);
-	BOOL PredictEdStegEncode(CString srcimage, CString datafile, CString pass);
-	BOOL PredictEdStegDecode(CString encimage, CString datafile, CString pass);
+	BOOL PredictEdStegEncode(CString srcimage, CString datafile, CString datafilepath, CString pass);
+	BOOL PredictEdStegDecode(CString encimage, CString datafilepath, CString pass);
 
 	CString PasswordGen(int len = 10);
 	int GetPasswordStrength(CString pass);
+
+	int GetBytesFromString(CString str, int type);
 
 
 	void Cleanup();

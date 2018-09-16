@@ -874,23 +874,56 @@ BOOL CCryptHelper::B64Decode(CString sfilename)
 	return FALSE;
 }
 
-BOOL CCryptHelper::PredictEdStegEncode(CString srcimage, CString datafile, CString pass)
+
+int CCryptHelper::GetBytesFromString(CString str, int type)
 {
-	CByteArray passBytes;
-	UINT npassBytes = 0;
-	if (!pass.IsEmpty())
+	UINT nbytes = 0;
+
+	if (!str.IsEmpty())
 	{
 		//convert unicode cstring to bytes
-		CStringA stra = CW2A(pass, CP_UTF8);
-		npassBytes = sizeof(CStringA::XCHAR) * stra.GetLength();
-		passBytes.SetSize(npassBytes);
-		memcpy(passBytes.GetData(), (LPVOID)stra.GetString(), npassBytes);
+		CStringA stra = CW2A(str, CP_UTF8);
+		nbytes = sizeof(CStringA::XCHAR) * stra.GetLength();
+
+		if (type == SET_PASS_BYTES)
+		{
+			m_PassBytes.SetSize(nbytes);
+			memcpy(m_PassBytes.GetData(), (LPVOID)stra.GetString(), nbytes);
+		}
+		if (type == SET_FILENAME_BYTES)
+		{
+			m_FileNameBytes.SetSize(nbytes);
+			memcpy(m_FileNameBytes.GetData(), (LPVOID)stra.GetString(), nbytes);
+		}
+
 	}
 
-	CString encimage = srcimage;
-	encimage.Replace(_T("jpeg"), _T("jpg"));
-	encimage.Replace(_T(".jpg"), _T("_StegEnc.png"));
+	return nbytes;
+}
 
+BOOL CCryptHelper::PredictEdStegEncode(CString srcimage, CString datafile, CString datafilepath, CString pass)
+{
+	m_OutputFile.Empty();
+
+	//CByteArray passBytes;
+	UINT npassBytes = GetBytesFromString(pass, SET_PASS_BYTES);//0;
+	UINT nfnameBytes = GetBytesFromString(datafile, SET_FILENAME_BYTES);
+	
+	//if (!pass.IsEmpty())
+	//{
+	//	//convert unicode cstring to bytes
+	//	CStringA stra = CW2A(pass, CP_UTF8);
+	//	npassBytes = sizeof(CStringA::XCHAR) * stra.GetLength();
+	//	passBytes.SetSize(npassBytes);
+	//	memcpy(passBytes.GetData(), (LPVOID)stra.GetString(), npassBytes);
+	//}
+
+	CString encimage; 
+	/*= srcimage;
+	encimage.Replace(_T("jpeg"), _T("jpg"));
+	encimage.Replace(_T(".jpg"), _T("_StegEnc.png"));*/
+	encimage.Format(_T("%s\\%d.png"), datafilepath, rand());
+	datafile = datafilepath + _T("\\") + datafile;
 
 	CImage image;
 	HRESULT hr = image.Load(srcimage);
@@ -901,6 +934,8 @@ BOOL CCryptHelper::PredictEdStegEncode(CString srcimage, CString datafile, CStri
 
 		ULONGLONG npix = h*w;
 		int npixdatasz = sizeof(ULONGLONG); // number of pix needed to store data size
+		int nfilenamesz = 2; //number of pix needed to store size of filename bytes
+		int totalheadersz = npixdatasz + nfilenamesz + nfnameBytes;
 
 		//open and check data size
 		CFile sfile;
@@ -909,10 +944,10 @@ BOOL CCryptHelper::PredictEdStegEncode(CString srcimage, CString datafile, CStri
 			ULONGLONG slen = sfile.GetLength();
 			if (slen > 0)
 			{
-				if (slen > npix + npixdatasz)
+				if (slen > npix + totalheadersz)
 				{
 					CString tmp;
-					tmp.Format(_T("Error: Data size is too big to fit inside the chosen image.\r\n\r\nData size: %I64u\r\nNumber of pixels: %I64u\r\nNumber of pixels needed: %I64u"), slen, npix, (slen + npixdatasz));
+					tmp.Format(_T("Error: Data size is too big to fit inside the chosen image.\r\n\r\nData size: %I64u\r\nNumber of pixels: %I64u\r\nNumber of pixels needed: %I64u"), slen, npix, (slen + totalheadersz));
 					AfxMessageBox(tmp, MB_ICONERROR);
 					sfile.Close();
 					return FALSE;
@@ -928,26 +963,47 @@ BOOL CCryptHelper::PredictEdStegEncode(CString srcimage, CString datafile, CStri
 
 					COLORREF col;
 					int n = 0;
+					int m = 0;
 					int p = 0;
 					BYTE bt;
-					ULONGLONG totalbytes = npixdatasz + slen;
+					ULONGLONG totalbytes = totalheadersz + slen;
 
 
 					for (int y = 0; y < h; y++)
 					{
 						for (int x = 0; x < w; x++)
 						{
-							if (n < npixdatasz) bt = slen >> (n * 8); //embed data length
-							else bt = data[n]; //embed data
+							if (n < npixdatasz)
+							{
+								bt = slen >> (n * 8); //embed data length
+							}
+							else if ((n >= npixdatasz) && (n < (npixdatasz + nfilenamesz)))
+							{
+								m = n - npixdatasz;
+								bt = nfnameBytes >> (m * 8); //embed filename length
+							}
+							else if ((n >= (npixdatasz + nfilenamesz)) && (n < totalheadersz))
+							{
+								m = n - (npixdatasz + nfilenamesz);
+								bt = m_FileNameBytes[m]; //embed filename
+							}
+							else if (n < totalbytes)
+							{
+								m = n - totalheadersz;
+								bt = data[m]; //embed data
+							}
+							else bt = rand(); //fill the rest of pixels with random data to disable noise analysis of encoded image
 
-							if (n >= totalbytes) bt = rand(); //fill the rest of pixels with random data to disable noise analysis of encoded image
 							//int k = (int)bt;
 							n++;
 
 							//xor encrypt, repeat password bytes in sequence
-							bt = bt ^ passBytes[p];
-							p++;
-							if (p >= npassBytes)p = 0;
+							if (npassBytes > 0)
+							{
+								bt = bt ^ m_PassBytes[p];
+								p++;
+								if (p >= npassBytes)p = 0;
+							}
 
 							col = image.GetPixel(x, y);
 							int r = GetRValue(col);
@@ -972,6 +1028,9 @@ BOOL CCryptHelper::PredictEdStegEncode(CString srcimage, CString datafile, CStri
 
 					image.Save(encimage);
 				}
+
+				free(data);
+
 			}
 			else
 			{
@@ -981,7 +1040,7 @@ BOOL CCryptHelper::PredictEdStegEncode(CString srcimage, CString datafile, CStri
 			}
 		}
 
-
+		m_OutputFile = encimage;
 		return TRUE;
 	}
 	else AfxMessageBox(_T("Error: Failed to load the image"), MB_ICONERROR);
@@ -990,13 +1049,12 @@ BOOL CCryptHelper::PredictEdStegEncode(CString srcimage, CString datafile, CStri
 }
 
 
-BOOL CCryptHelper::PredictEdStegDecode(CString encimage, CString datafile, CString pass)
+BOOL CCryptHelper::PredictEdStegDecode(CString encimage, CString datafilepath, CString pass)
 {
-	//CString srcimage = _T("C:\\Users\\Sanjeev\\Documents\\Oormi Creations\\PredictEd dev\\stegenc.png");
-	//CString msg;
+	m_OutputFile.Empty();
 
-	CByteArray Bytes;
-	int nBytes = 900;
+	CByteArray passBytes;
+	UINT npassBytes = GetBytesFromString(pass, SET_PASS_BYTES);
 
 	CImage image;
 	HRESULT hr = image.Load(encimage);
@@ -1004,9 +1062,19 @@ BOOL CCryptHelper::PredictEdStegDecode(CString encimage, CString datafile, CStri
 	{
 		int h = image.GetHeight();
 		int w = image.GetWidth();
+		ULONGLONG npix = h*w;
+
+		int npixdatasz = sizeof(ULONGLONG); // number of pix needed to store data size
+		int nfilenamesz = 2; //number of pix needed to store size of filename bytes
 
 		COLORREF col;
 		int n = 0;
+		int m = 0;
+		ULONGLONG filesz = 0;
+		UINT nfnameBytes = 0;
+		ULONGLONG totalbytes = 0;
+		int totalheadersz = npixdatasz + nfilenamesz + nfnameBytes;
+		BYTE *data = NULL;
 
 		for (int y = 0; y < h; y++)
 		{
@@ -1019,16 +1087,79 @@ BOOL CCryptHelper::PredictEdStegDecode(CString encimage, CString datafile, CStri
 
 				//extract msg bits
 				BYTE bt = ((b & 7) << 6) | ((g & 7) << 3) | (r & 7);
-				//msg.AppendChar((WCHAR)bt);
+				
+				if (n < npixdatasz)
+				{
+					filesz = filesz | (bt << (n * 8)); //embeded data length
+				}
+				else if ((n >= npixdatasz) && (n < (npixdatasz + nfilenamesz)))
+				{
+					m = n - npixdatasz;
+					nfnameBytes = nfnameBytes | (bt << (m * 8));//embeded filename length
+					totalheadersz = npixdatasz + nfilenamesz + nfnameBytes;
+				}
+				else if ((n >= (npixdatasz + nfilenamesz)) && (n < totalheadersz))
+				{
+					m = n - (npixdatasz + nfilenamesz);
+					if (m == 0)m_FileNameBytes.SetSize(nfnameBytes);
+					m_FileNameBytes[m] = bt; //embeded filename
+					totalbytes = totalheadersz + filesz;
+				}
+				else if (n < totalbytes)
+				{
+					m = n - totalheadersz;
+					if (m == 0)
+					{
+						data = (BYTE*)malloc(filesz);
+						if (!data)
+						{
+							AfxMessageBox(_T("Error: Failed to allocate memory while decoding."), MB_ICONERROR);
+							return FALSE;
+						}
+					}
+
+					data[m] = bt; //embeded data
+				}
 
 				n++;
-				if (n >= nBytes) break;
+				if ((n >= totalbytes) && (n > totalheadersz)) break;
 			}
-			if (n >= nBytes) break;
+			if ((n >= totalbytes) && (n > totalheadersz)) break;
 		}
+
+		//convert filename bytes to unicode string
+		CStringA stra;
+		stra.SetString((LPCSTR)m_FileNameBytes.GetData(), nfnameBytes);
+
+		CString filename = CA2CT(stra);
+		filename.Replace(_T("."), _T("_dec."));
+		filename = datafilepath + _T("\\") + filename;
+
+		if (filename.IsEmpty())
+		{
+			AfxMessageBox(_T("Error: Failed to read filename while decoding."), MB_ICONERROR);
+			return FALSE;
+		}
+
+		//save data
+		CFile dfile;
+		if (dfile.Open(filename, CFile::modeWrite | CFile::modeCreate | CFile::typeBinary))
+		{
+			dfile.Write(data, filesz);
+		}
+		else
+		{
+			AfxMessageBox(_T("Error: Failed to save data while decoding."), MB_ICONERROR);
+			return FALSE;
+		}
+
+		dfile.Close();
+		free(data);
+		m_OutputFile = filename;
 
 		return TRUE;
 	}
+	else AfxMessageBox(_T("Error: Failed to load the image"), MB_ICONERROR);
 
 	return FALSE;
 }

@@ -107,6 +107,8 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_BASE64_ENCODE, &CPredictEdDlg::OnBase64Encode)
 	ON_COMMAND(ID_BASE64_DECODE, &CPredictEdDlg::OnBase64Decode)
 	ON_COMMAND(ID_ENCRYPTION_STEG, &CPredictEdDlg::OnEncryptionSteg)
+	ON_COMMAND(ID_STEG_ENCODE, &CPredictEdDlg::OnStegEncode)
+	ON_COMMAND(ID_STEG_DECODE, &CPredictEdDlg::OnStegDecode)
 END_MESSAGE_MAP()
 
 
@@ -1006,6 +1008,18 @@ void CPredictEdDlg::OnBase64Decode()
 
 void CPredictEdDlg::OnEncryptionSteg()
 {
-	CStegEncDlg sdlg;
-	sdlg.DoModal();
+}
+
+
+void CPredictEdDlg::OnStegEncode()
+{
+	CStegEncDlg esdlg;
+	esdlg.DoModal();
+}
+
+
+void CPredictEdDlg::OnStegDecode()
+{
+	CStegDecDlg dsdlg;
+	dsdlg.DoModal();
 }

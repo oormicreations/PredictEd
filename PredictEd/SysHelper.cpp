@@ -382,6 +382,7 @@ BOOL CSysHelper::GetFileNameToOpen(CString filetype, CString caption)
 		m_FileTitle = DataFileOpenDialog.GetFileTitle();
 		m_FileExt = DataFileOpenDialog.GetFileExt();
 		m_FileNameNoPath = DataFileOpenDialog.GetFileName();
+		m_FilePath = DataFileOpenDialog.GetFolderPath();
 	}
 
 	return TRUE;
