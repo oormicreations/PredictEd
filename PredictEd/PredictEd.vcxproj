@@ -196,6 +196,7 @@
     <ClInclude Include="PredictEdSettingsDlg.h" />
     <ClInclude Include="PreWordsDlg.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SpellCheckDlg.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StegDecDlg.h" />
     <ClInclude Include="StegEncDlg.h" />
@@ -217,6 +218,7 @@
     <ClCompile Include="PredictEdDlg.cpp" />
     <ClCompile Include="PredictEdSettingsDlg.cpp" />
     <ClCompile Include="PreWordsDlg.cpp" />
+    <ClCompile Include="SpellCheckDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

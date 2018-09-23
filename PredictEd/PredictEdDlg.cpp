@@ -109,6 +109,9 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_ENCRYPTION_STEG, &CPredictEdDlg::OnEncryptionSteg)
 	ON_COMMAND(ID_STEG_ENCODE, &CPredictEdDlg::OnStegEncode)
 	ON_COMMAND(ID_STEG_DECODE, &CPredictEdDlg::OnStegDecode)
+	ON_COMMAND(ID_EDIT_SPELLINGCHECK, &CPredictEdDlg::OnEditSpellingcheck)
+	ON_MESSAGE(WM_SELMISSPELLED, &CPredictEdDlg::OnSelectMisspell)
+	ON_MESSAGE(WM_SETSPELLSUGGESTION, &CPredictEdDlg::OnSelectSpellSuggestion)
 END_MESSAGE_MAP()
 
 
@@ -1022,4 +1025,50 @@ void CPredictEdDlg::OnStegDecode()
 {
 	CStegDecDlg dsdlg;
 	dsdlg.DoModal();
+}
+
+
+void CPredictEdDlg::OnEditSpellingcheck()
+{
+	CSpellCheckDlg spelldlg;
+
+	if (!spelldlg.LoadDictionary())
+	{
+		AfxMessageBox(_T("Error reading the Dictionary file."), MB_ICONERROR);
+		return;
+	}
+
+	m_Ed.GetWindowText(spelldlg.m_Content);
+	spelldlg.m_Content.Replace(_T("\n"), _T("")); //GetSel/SetSel counts NL as one char, so remove \n
+
+	spelldlg.DoModal();
+}
+
+LONG CPredictEdDlg::OnSelectMisspell(WPARAM wParam, LPARAM lParam)
+{
+	CString* pstr = (CString*)wParam;
+
+	long nStartChar, nEndChar, n;
+	m_Ed.GetSel(nStartChar, nEndChar);
+
+	FINDTEXTEX ft;
+	ft.chrg.cpMin = nEndChar;
+	ft.chrg.cpMax = -1;
+	ft.lpstrText = pstr->GetString();
+
+		n = m_Ed.FindText(FR_WHOLEWORD|FR_DOWN, &ft);
+		if (n != -1)
+		{
+			m_Ed.SetSel(ft.chrgText);
+		}
+		else m_Ed.SetSel(0, 0); //find from top again
+
+	return 0;
+}
+
+LONG CPredictEdDlg::OnSelectSpellSuggestion(WPARAM wParam, LPARAM lParam)
+{
+	CString* pstr = (CString*)wParam;
+	if (!m_Ed.GetSelText().IsEmpty()) m_Ed.ReplaceSel(pstr->GetString());
+	return 0;
 }

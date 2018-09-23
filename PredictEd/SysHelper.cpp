@@ -233,6 +233,7 @@ CString CSysHelper::GetPredictEdFileName(UINT type)
 		if (type == PREDICTED_LTM_FILE)		fname = _T("\\PredictEd_LTM.txt");
 		if (type == PREDICTED_STM_FILE)		fname = _T("\\PredictEd_STM.txt");
 		if (type == PREDICTED_DEC_FILE)		fname = _T("\\PredictEd_tmp.dec");
+		if (type == PREDICTED_DIC_FILE)		fname = _T("\\Dictionary\\EN-US\\en-us.txt");
 
 		if (fname.IsEmpty()) return _T("");
 

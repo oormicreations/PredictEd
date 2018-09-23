@@ -14,6 +14,7 @@
 #include "HashDlg.h"
 #include "StegEncDlg.h"
 #include "StegDecDlg.h"
+#include "SpellCheckDlg.h"
 
 
 // Register FindReplace window message.
@@ -75,7 +76,6 @@ public:
 	void SetButtons();
 	void BackupMemories();
 
-
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
@@ -119,4 +119,7 @@ public:
 	afx_msg void OnEncryptionSteg();
 	afx_msg void OnStegEncode();
 	afx_msg void OnStegDecode();
+	afx_msg void OnEditSpellingcheck();
+	afx_msg LONG OnSelectMisspell(WPARAM wParam, LPARAM lParam);
+	afx_msg LONG OnSelectSpellSuggestion(WPARAM wParam, LPARAM lParam);
 };
