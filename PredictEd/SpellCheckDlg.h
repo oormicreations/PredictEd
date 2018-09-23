@@ -4,7 +4,7 @@
 #define WM_SELMISSPELLED WM_APP + 128
 #define WM_SETSPELLSUGGESTION WM_APP + 129
 
-#define MAX_SPELL_SUGGESTIONS 40
+#define MAX_SPELL_SUGGESTIONS 100
 
 // CSpellCheckDlg dialog
 
@@ -16,18 +16,21 @@ public:
 	CSpellCheckDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CSpellCheckDlg();
 
-	CString m_Content, m_Word;
-	int m_Position, m_LastPosition;
-	CString m_Suggestions[MAX_SPELL_SUGGESTIONS], m_SelSuggestion;
+	CString m_Content, m_Word, m_LastAdded;
+	int m_Position;
+	CString m_Suggestions[MAX_SPELL_SUGGESTIONS];
 	CSysHelper m_SysHelper;
-	CStringArray m_DicWords;
+	CStringArray m_DicWords, m_AddedDicWords;
 	float m_SuggestionsProbs[MAX_SPELL_SUGGESTIONS];
+	int m_DispSuggestion;
 
 	BOOL SpellCheck();
 	BOOL LoadDictionary();
 	void GetSpellingSuggestions();
 	void ClearSuggestions();
 	void SortSuggestions();
+	BOOL UpdateDictionary();
+	void ShowSuggestions();
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
@@ -41,4 +44,11 @@ protected:
 public:
 	afx_msg void OnBnClickedButtonNxtmisspell();
 	afx_msg void OnBnClickedButtonSpell1();
+	afx_msg void OnBnClickedButtonSpell2();
+	afx_msg void OnBnClickedButtonSpell3();
+	afx_msg void OnBnClickedButtonSpell4();
+	afx_msg void OnBnClickedButtonAddtodic();
+	afx_msg void OnBnClickedCancel();
+	afx_msg void OnBnClickedButtonSpellprev();
+	afx_msg void OnBnClickedButtonSpellnxt();
 };
