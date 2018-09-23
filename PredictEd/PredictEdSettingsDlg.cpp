@@ -33,6 +33,8 @@ BEGIN_MESSAGE_MAP(CPredictEdSettingsDlg, CDialog)
 	ON_EN_CHANGE(IDC_EDIT_SET_MARGINS, &CPredictEdSettingsDlg::OnEnChangeEditSetMargins)
 	ON_BN_CLICKED(IDC_BUTTON_SET_DEFFONT, &CPredictEdSettingsDlg::OnBnClickedButtonSetDeffont)
 	ON_BN_CLICKED(IDC_BUTTON_SET_RESET, &CPredictEdSettingsDlg::OnBnClickedButtonSetReset)
+	ON_BN_CLICKED(IDC_BUTTON_SET_DEFDIC, &CPredictEdSettingsDlg::OnBnClickedButtonSetDefdic)
+	ON_BN_CLICKED(IDC_BUTTON_SET_DEFCON, &CPredictEdSettingsDlg::OnBnClickedButtonSetDefcon)
 END_MESSAGE_MAP()
 
 
@@ -118,6 +120,8 @@ void CPredictEdSettingsDlg::Reset()
 	m_Margins = 30;
 	m_BkColor = RGB(255, 253, 245);
 	m_DefFont = {};
+	m_DictionaryFile = m_SysHelper.GetPredictEdFileName(PREDICTED_DIC_FILE);
+	m_ContextFile = m_SysHelper.GetPredictEdFileName(PREDICTED_CON_FILE);
 }
 
 void CPredictEdSettingsDlg::OnBnClickedButtonSetReset()
@@ -140,6 +144,11 @@ void CPredictEdSettingsDlg::SetParams()
 	str.Format(_T("%d"), m_Margins);
 	SetDlgItemText(IDC_EDIT_SET_MARGINS, str);
 
+	str = _T("Dictionary: ") + m_SysHelper.GetFileNameFromPath(m_DictionaryFile);
+	SetDlgItemText(IDC_BUTTON_SET_DEFDIC, str);
+	str = _T("Context: ") + m_SysHelper.GetFileNameFromPath(m_ContextFile);
+	SetDlgItemText(IDC_BUTTON_SET_DEFCON, str);
+
 	m_ColorButton.SetColor(m_BkColor);
 
 	if (m_DefFont.lfHeight == 0) SetDefaultFont();
@@ -152,4 +161,24 @@ void CPredictEdSettingsDlg::OnOK()
 	m_BkColor = m_ColorButton.GetColor();
 
 	CDialog::OnOK();
+}
+
+
+void CPredictEdSettingsDlg::OnBnClickedButtonSetDefdic()
+{
+	if (m_SysHelper.GetFileNameToOpen(_T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"), _T("Select a dictionary file")))
+	{
+		m_DictionaryFile = m_SysHelper.m_FileName;
+		SetDlgItemText(IDC_BUTTON_SET_DEFDIC, _T("Dictionary: ") + m_SysHelper.m_FileTitle);
+	}
+}
+
+
+void CPredictEdSettingsDlg::OnBnClickedButtonSetDefcon()
+{
+	if (m_SysHelper.GetFileNameToOpen(_T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"), _T("Select a context file")))
+	{
+		m_ContextFile = m_SysHelper.m_FileName;
+		SetDlgItemText(IDC_BUTTON_SET_DEFCON, _T("Context: ") + m_SysHelper.m_FileTitle);
+	}
 }

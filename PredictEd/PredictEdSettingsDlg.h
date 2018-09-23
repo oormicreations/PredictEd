@@ -1,6 +1,6 @@
 #pragma once
 #include "afxcolorbutton.h"
-
+#include "SysHelper.h"
 
 // CPredictEdSettingsDlg dialog
 
@@ -16,6 +16,8 @@ public:
 	COLORREF m_BkColor, m_TxtColor;
 	LOGFONT m_DefFont;
 	CMFCColorButton m_ColorButton;
+	CString m_DictionaryFile, m_ContextFile;
+	CSysHelper m_SysHelper;
 
 	void SetDefaultFont();
 	void Reset();
@@ -38,4 +40,6 @@ public:
 	afx_msg void OnBnClickedButtonSetDeffont();
 	afx_msg void OnBnClickedButtonSetReset();
 	virtual void OnOK();
+	afx_msg void OnBnClickedButtonSetDefdic();
+	afx_msg void OnBnClickedButtonSetDefcon();
 };

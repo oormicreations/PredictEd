@@ -5,6 +5,7 @@
 #define PREDICTED_STM_FILE 3
 #define PREDICTED_DEC_FILE 4
 #define PREDICTED_DIC_FILE 5
+#define PREDICTED_CON_FILE 6
 
 #define TWIPS_PER_PT 20
 
@@ -31,5 +32,6 @@ public:
 	BOOL GetSaveFileNameType();
 	BOOL SaveAsTextFile(CString content);
 	BOOL GetFileNameToOpen(CString filetype, CString caption);
+	CString GetFileNameFromPath(CString filepath);
 };
 

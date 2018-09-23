@@ -234,6 +234,7 @@ CString CSysHelper::GetPredictEdFileName(UINT type)
 		if (type == PREDICTED_STM_FILE)		fname = _T("\\PredictEd_STM.txt");
 		if (type == PREDICTED_DEC_FILE)		fname = _T("\\PredictEd_tmp.dec");
 		if (type == PREDICTED_DIC_FILE)		fname = _T("\\Dictionary\\EN-US\\en-us.txt");
+		if (type == PREDICTED_CON_FILE)		fname = _T("\\Contexts\\en-general.txt");
 
 		if (fname.IsEmpty()) return _T("");
 
@@ -394,4 +395,9 @@ BOOL CSysHelper::GetFileNameToOpen(CString filetype, CString caption)
 	}
 
 	return FALSE;
+}
+
+CString CSysHelper::GetFileNameFromPath(CString filepath)
+{
+	return filepath.Right(filepath.GetLength() - filepath.ReverseFind('\\') - 1);
 }

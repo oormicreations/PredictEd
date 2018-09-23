@@ -45,11 +45,11 @@ END_MESSAGE_MAP()
 
 BOOL CSpellCheckDlg::LoadDictionary()
 {
-	CString dicfilename = m_SysHelper.GetPredictEdFileName(PREDICTED_DIC_FILE);
-	if (dicfilename.IsEmpty()) return FALSE;
+	if(m_DicFile.IsEmpty()) m_DicFile = m_SysHelper.GetPredictEdFileName(PREDICTED_DIC_FILE);
+	if(m_DicFile.IsEmpty()) return FALSE;
 
 	CStdioFile dfile;
-	if(!dfile.Open(dicfilename, CStdioFile::modeRead)) return FALSE;
+	if(!dfile.Open(m_DicFile, CStdioFile::modeRead)) return FALSE;
 
 	CString line;
 	

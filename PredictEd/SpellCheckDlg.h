@@ -16,7 +16,7 @@ public:
 	CSpellCheckDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CSpellCheckDlg();
 
-	CString m_Content, m_Word, m_LastAdded;
+	CString m_Content, m_Word, m_LastAdded, m_DicFile;
 	int m_Position;
 	CString m_Suggestions[MAX_SPELL_SUGGESTIONS];
 	CSysHelper m_SysHelper;

@@ -51,7 +51,7 @@ public:
 	CPredictEdCtrl m_Ed;
 	CMenu m_Menu;
 	BOOL m_IsShellOpen/*, m_Saved*/, m_SaveCanceled;
-	//CString m_FileName;
+	CString m_DictionaryFile, m_ContextFile;
 	CSysHelper m_SysHelper;
 	UINT m_Timer;
 	CTime m_StartTime;
@@ -60,12 +60,15 @@ public:
 	CFindReplaceDialog * m_pFRDlg;
 	UINT m_PredictEdVersionMaj, m_PredictEdVersionMin;
 	CNetHelper m_NetHelper;
+	CToolTipCtrl* m_ToolTip;
 
 	typedef struct tagPREDICTEDSET
 	{
 		UINT m_LTMSz, m_STMSz, m_MaxLimit, m_Margins;
 		COLORREF m_BkColor, m_TxtColor;
 		LOGFONT m_DefFont;
+		TCHAR m_DictionaryFileTch[MAX_PATH+1];
+		TCHAR m_ContextFileTch[MAX_PATH+1];
 	} PREDICTEDSET;
 
 	void InitEd();
@@ -75,6 +78,8 @@ public:
 	void InitFindReplaceDlg();
 	void SetButtons();
 	void BackupMemories();
+	void SetToolTips();
+
 
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedCancel();
@@ -122,4 +127,7 @@ public:
 	afx_msg void OnEditSpellingcheck();
 	afx_msg LONG OnSelectMisspell(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnSelectSpellSuggestion(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnContextsLoadcontext();
+	afx_msg void OnContextsSavecontext();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

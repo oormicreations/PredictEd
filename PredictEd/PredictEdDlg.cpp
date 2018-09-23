@@ -112,6 +112,8 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_EDIT_SPELLINGCHECK, &CPredictEdDlg::OnEditSpellingcheck)
 	ON_MESSAGE(WM_SELMISSPELLED, &CPredictEdDlg::OnSelectMisspell)
 	ON_MESSAGE(WM_SETSPELLSUGGESTION, &CPredictEdDlg::OnSelectSpellSuggestion)
+	ON_COMMAND(ID_CONTEXTS_LOADCONTEXT, &CPredictEdDlg::OnContextsLoadcontext)
+	ON_COMMAND(ID_CONTEXTS_SAVECONTEXT, &CPredictEdDlg::OnContextsSavecontext)
 END_MESSAGE_MAP()
 
 
@@ -147,6 +149,8 @@ BOOL CPredictEdDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	m_PredictEdVersionMaj = 1;
+	m_PredictEdVersionMin = 1;
 
 	m_Menu.LoadMenu(IDR_MENU_TOP);
 	SetMenu(&m_Menu);
@@ -168,10 +172,9 @@ BOOL CPredictEdDlg::OnInitDialog()
 	m_Timer = SetTimer(WM_USER + 100, 5000, NULL);
 	m_pFRDlg = NULL;
 
-	m_PredictEdVersionMaj = 1;
-	m_PredictEdVersionMin = 1;
 	m_NetHelper.ReportUsage(_T("PredictEd"), m_PredictEdVersionMaj*10 + m_PredictEdVersionMin);
 
+	SetToolTips();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -253,9 +256,11 @@ HCURSOR CPredictEdDlg::OnQueryDragIcon()
 void CPredictEdDlg::InitEd()
 {
 	UINT n;
-	PREDICTEDSET *pps;
+	PREDICTEDSET *pps = NULL;
+	CString profile;
+	profile.Format(_T("%d%d"), m_PredictEdVersionMaj, m_PredictEdVersionMin);
 
-	if (AfxGetApp()->GetProfileBinary(_T("PredictEd"), _T("Settings"), (LPBYTE*)&pps, &n))
+	if (AfxGetApp()->GetProfileBinary(_T("PredictEd"), _T("Settings") + profile, (LPBYTE*)&pps, &n))
 	{
 		if (n == sizeof(PREDICTEDSET))
 		{
@@ -280,8 +285,17 @@ void CPredictEdDlg::InitEd()
 
 			m_Ed.SetDefaultCharFormat(cf);
 
+			m_ContextFile.SetString(pps->m_ContextFileTch);
+			m_DictionaryFile.SetString(pps->m_DictionaryFileTch);
+
+
 		}
-		delete[] pps;
+		else
+		{
+			SetDefaultStyle();
+		}
+
+		if(pps) delete[] pps;
 	}
 	else
 	{
@@ -417,6 +431,8 @@ void CPredictEdDlg::OnFileExit()
 			return;
 		}
 	}
+
+	if (m_ToolTip) delete m_ToolTip;
 
 	KillTimer(m_Timer);
 	EndDialog(IDOK);
@@ -788,18 +804,22 @@ void CPredictEdDlg::OnOptionsSettings()
 	CPredictEdSettingsDlg setdlg;
 	UINT n;
 	PREDICTEDSET ps, *pps;
+	CString profile;
+	profile.Format(_T("%d%d"), m_PredictEdVersionMaj, m_PredictEdVersionMin);
 
-	if (AfxGetApp()->GetProfileBinary(_T("PredictEd"), _T("Settings"), (LPBYTE*)&pps, &n))
+	if (AfxGetApp()->GetProfileBinary(_T("PredictEd"), _T("Settings") + profile, (LPBYTE*)&pps, &n))
 	{
 		if (n == sizeof(PREDICTEDSET))
 		{
-			setdlg.m_BkColor = pps->m_BkColor;
-			setdlg.m_LTMSz = pps->m_LTMSz;
-			setdlg.m_STMSz = pps->m_STMSz;
-			setdlg.m_MaxLimit = pps->m_MaxLimit;
-			setdlg.m_Margins = pps->m_Margins;
-			setdlg.m_TxtColor = pps->m_TxtColor;
-			setdlg.m_DefFont = pps->m_DefFont;
+			setdlg.m_BkColor		= pps->m_BkColor;
+			setdlg.m_LTMSz			= pps->m_LTMSz;
+			setdlg.m_STMSz			= pps->m_STMSz;
+			setdlg.m_MaxLimit		= pps->m_MaxLimit;
+			setdlg.m_Margins		= pps->m_Margins;
+			setdlg.m_TxtColor		= pps->m_TxtColor;
+			setdlg.m_DefFont		= pps->m_DefFont;
+			setdlg.m_DictionaryFile = m_DictionaryFile;
+			setdlg.m_ContextFile	= m_ContextFile;
 
 		}
 		else setdlg.Reset();
@@ -809,15 +829,31 @@ void CPredictEdDlg::OnOptionsSettings()
 
 	if (setdlg.DoModal() == IDOK)
 	{
-		ps.m_BkColor = setdlg.m_BkColor;
-		ps.m_LTMSz = setdlg.m_LTMSz;
-		ps.m_STMSz = setdlg.m_STMSz;
-		ps.m_MaxLimit = setdlg.m_MaxLimit;
-		ps.m_Margins = setdlg.m_Margins;
-		ps.m_TxtColor = setdlg.m_TxtColor;
-		ps.m_DefFont = setdlg.m_DefFont;
+		ps.m_BkColor		= setdlg.m_BkColor;
+		ps.m_LTMSz			= setdlg.m_LTMSz;
+		ps.m_STMSz			= setdlg.m_STMSz;
+		ps.m_MaxLimit		= setdlg.m_MaxLimit;
+		ps.m_Margins		= setdlg.m_Margins;
+		ps.m_TxtColor		= setdlg.m_TxtColor;
+		ps.m_DefFont		= setdlg.m_DefFont;
 
-		AfxGetApp()->WriteProfileBinary(_T("PredictEd"), _T("Settings"), (LPBYTE)&ps, sizeof(ps));
+		for (int i = 0; i < MAX_PATH+1; i++)
+		{
+			ps.m_DictionaryFileTch[i] = 0;
+			ps.m_ContextFileTch[i] = 0;
+		}
+		for (int i = 0; i < setdlg.m_DictionaryFile.GetLength(); i++)
+		{
+			ps.m_DictionaryFileTch[i] = setdlg.m_DictionaryFile.GetAt(i);
+		}
+		for (int i = 0; i < setdlg.m_ContextFile.GetLength(); i++)
+		{
+			ps.m_ContextFileTch[i] = setdlg.m_ContextFile.GetAt(i);
+		}
+
+
+
+		AfxGetApp()->WriteProfileBinary(_T("PredictEd"), _T("Settings") + profile, (LPBYTE)&ps, sizeof(ps));
 
 		InitEd();
 	}
@@ -1031,6 +1067,7 @@ void CPredictEdDlg::OnStegDecode()
 void CPredictEdDlg::OnEditSpellingcheck()
 {
 	CSpellCheckDlg spelldlg;
+	spelldlg.m_DicFile = m_DictionaryFile;
 
 	if (!spelldlg.LoadDictionary())
 	{
@@ -1071,4 +1108,44 @@ LONG CPredictEdDlg::OnSelectSpellSuggestion(WPARAM wParam, LPARAM lParam)
 	CString* pstr = (CString*)wParam;
 	if (!m_Ed.GetSelText().IsEmpty()) m_Ed.ReplaceSel(pstr->GetString());
 	return 0;
+}
+
+void CPredictEdDlg::OnContextsLoadcontext()
+{
+	// TODO: Add your command handler code here
+}
+
+
+void CPredictEdDlg::OnContextsSavecontext()
+{
+	// TODO: Add your command handler code here
+}
+
+void CPredictEdDlg::SetToolTips()
+{
+	m_ToolTip = new CToolTipCtrl();
+	m_ToolTip->Create(this);
+
+	int buttonids[] = { IDC_BUTTON_NEW, IDC_BUTTON_OPEN,IDC_BUTTON_SAVE,IDC_BUTTON_SAVEAS,IDC_BUTTON_COPY,IDC_BUTTON_PASTE,IDC_BUTTON_FONTS,IDC_BUTTON_CLEAR,IDC_BUTTON_TRAIN };
+	CString tips[] = { _T("New File"), _T("Open File"),  _T("Save File"),  _T("Save File As"),  _T("Copy"),  _T("Paste"), _T("Set Fonts"), _T("Clear Text Formatting"), _T("Train using text files") };
+	int nbuttons = 9;
+
+	for (int i = 0; i < nbuttons; i++)
+	{
+		CWnd* pWnd = GetDlgItem(buttonids[i]);
+		m_ToolTip->AddTool(pWnd, tips[i]);
+	}
+
+	m_ToolTip->Activate(TRUE);
+
+	//m_ToolTip->SetTipBkColor(RGB(0,255,0));
+	//m_ToolTip->SetTipTextColor(RGB(255, 0, 0));
+}
+
+BOOL CPredictEdDlg::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	if (m_ToolTip != NULL)
+		m_ToolTip->RelayEvent(pMsg);
+	return CDialogEx::PreTranslateMessage(pMsg);
 }
