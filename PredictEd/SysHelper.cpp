@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "SysHelper.h"
 
+CString CSysHelper::m_LTMHeader;
+CString CSysHelper::m_STMHeader;
 
 CSysHelper::CSysHelper()
 {
@@ -102,30 +104,33 @@ BOOL CSysHelper::SetClipboardText(CString text)
 
 CString CSysHelper::ReadStringFromFile(CString filename)
 {
+	CString content;
 	CFile file;
-	file.Open(filename, CFile::modeRead);
 
-	int len = file.GetLength();
-	char * buf = new char[len + 1];
-
-	file.Read(buf, len);
-	file.Close();
-
-	buf[len] = 0;
-
-	CString uni;
-	int cc = 0;
-	// get length (cc) of the new widechar excluding the \0 terminator first
-	if ((cc = MultiByteToWideChar(CP_UTF8, 0, buf, -1, NULL, 0) - 1) > 0)
+	if (file.Open(filename, CFile::modeRead))
 	{
-		// convert
-		wchar_t *buf1 = uni.GetBuffer(cc);
-		if (buf1) MultiByteToWideChar(CP_UTF8, 0, buf, -1, buf1, cc);
-		uni.ReleaseBuffer();
+		int len = file.GetLength();
+		char * buf = new char[len + 1];
+
+		file.Read(buf, len);
+		file.Close();
+
+		buf[len] = 0;
+
+		int cc = 0;
+		// get length (cc) of the new widechar excluding the \0 terminator first
+		if ((cc = MultiByteToWideChar(CP_UTF8, 0, buf, -1, NULL, 0) - 1) > 0)
+		{
+			// convert
+			wchar_t *buf1 = content.GetBuffer(cc);
+			if (buf1) MultiByteToWideChar(CP_UTF8, 0, buf, -1, buf1, cc);
+			content.ReleaseBuffer();
+		}
+
+		delete[] buf;
 	}
 
-	delete[] buf;
-	return uni;
+	return content;
 }
 
 CString CSysHelper::GetFileContent()
@@ -141,9 +146,9 @@ CString CSysHelper::GetFileContent()
 	m_FileExt = DataFileOpenDialog.GetFileExt();
 
 	m_FileTitle = DataFileOpenDialog.GetFileTitle();
-	if (m_FileTitle.GetLength() > 10)
+	if (m_FileTitle.GetLength() > 20)
 	{
-		m_FileTitle.Truncate(10);
+		m_FileTitle.Truncate(20);
 		m_FileTitle = m_FileTitle + _T("...");
 	}
 
@@ -229,16 +234,16 @@ CString CSysHelper::GetPredictEdFileName(UINT type)
 	if (!path.IsEmpty())
 	{
 		CString fname;
-		if (type == PREDICTED_AUTOBK_FILE)	fname = _T("\\PredictEd_AutoBackup.rtf");
-		if (type == PREDICTED_LTM_FILE)		fname = _T("\\PredictEd_LTM.txt");
-		if (type == PREDICTED_STM_FILE)		fname = _T("\\PredictEd_STM.txt");
-		if (type == PREDICTED_DEC_FILE)		fname = _T("\\PredictEd_tmp.dec");
-		if (type == PREDICTED_DIC_FILE)		fname = _T("\\Dictionary\\EN-US\\en-us.txt");
-		if (type == PREDICTED_CON_FILE)		fname = _T("\\Contexts\\en-general.txt");
+		if (type == PREDICTED_AUTOBK_FILE)	fname = PREDICTED_AUTOBK_FILE_NAME;
+		if (type == PREDICTED_LTM_FILE)		fname = PREDICTED_LTM_FILE_NAME;
+		if (type == PREDICTED_STM_FILE)		fname = PREDICTED_STM_FILE_NAME;
+		if (type == PREDICTED_DEC_FILE)		fname = PREDICTED_DEC_FILE_NAME;
+		if (type == PREDICTED_DIC_FILE)		fname = PREDICTED_DIC_FILE_NAME;
+		if (type == PREDICTED_CON_FILE)		fname = PREDICTED_CON_FILE_NAME;
 
 		if (fname.IsEmpty()) return _T("");
 
-		path = path + fname;
+		path = path + _T("\\") + fname;
 		return path;
 	}
 
@@ -373,11 +378,7 @@ BOOL CSysHelper::SaveAsTextFile(CString content)
 
 BOOL CSysHelper::GetFileNameToOpen(CString filetype, CString caption)
 {
-	m_FileName.Empty();
-	m_FileTitle.Empty();
-	m_FileExt.Empty();
-	m_FileNameNoPath.Empty();
-	m_FilePath.Empty();
+	EmptyFileData();
 
 	CFileDialog DataFileOpenDialog(true, _T(""), _T(""), OFN_FILEMUSTEXIST, filetype);
 	DataFileOpenDialog.m_ofn.lpstrTitle = caption;
@@ -397,7 +398,98 @@ BOOL CSysHelper::GetFileNameToOpen(CString filetype, CString caption)
 	return FALSE;
 }
 
+void CSysHelper::EmptyFileData()
+{
+	m_FileName.Empty();
+	m_FileTitle.Empty();
+	m_FileExt.Empty();
+	m_FileNameNoPath.Empty();
+	m_FilePath.Empty();
+
+}
+
+BOOL CSysHelper::SysGetFileNameToSave(BOOL isopen, CString caption, CString initialdir, CString ext1, CString ext2, CString ext3 )
+{
+	EmptyFileData();
+
+	CString filetype;
+
+	if (!ext1.IsEmpty())filetype = filetype + ext1 + _T(" files (*.") + ext1 + _T(")|*.") + ext1 + _T("|");
+	if (!ext2.IsEmpty())filetype = filetype + ext2 + _T(" files (*.") + ext2 + _T(")|*.") + ext2 + _T("|");
+	if (!ext3.IsEmpty())filetype = filetype + ext3 + _T(" files (*.") + ext3 + _T(")|*.") + ext3 + _T("|");
+	filetype = filetype + _T("|");
+
+	CFileDialog DataFileOpenDialog(isopen, _T(""), _T(""), OFN_OVERWRITEPROMPT, filetype);
+	DataFileOpenDialog.m_ofn.lpstrTitle = caption;
+	DataFileOpenDialog.m_ofn.lpstrInitialDir = initialdir;
+
+	INT_PTR res = DataFileOpenDialog.DoModal();
+	if (res != IDCANCEL)
+	{
+		m_FileName = DataFileOpenDialog.GetPathName();
+		if (m_FileName.IsEmpty()) return FALSE;
+		m_FileTitle = DataFileOpenDialog.GetFileTitle();
+		m_FileExt = DataFileOpenDialog.GetFileExt();
+		m_FileNameNoPath = DataFileOpenDialog.GetFileName();
+		m_FilePath = DataFileOpenDialog.GetFolderPath();
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+
 CString CSysHelper::GetFileNameFromPath(CString filepath)
 {
 	return filepath.Right(filepath.GetLength() - filepath.ReverseFind('\\') - 1);
+}
+
+
+bool CSysHelper::SHCopy(LPCTSTR from, LPCTSTR to)
+{
+	SHFILEOPSTRUCT fileOp = { 0 };
+	fileOp.wFunc = FO_COPY;
+	TCHAR newFrom[MAX_PATH];
+	_tcscpy_s(newFrom, from);
+	newFrom[_tcsclen(from) + 1] = NULL;
+	fileOp.pFrom = newFrom;
+	TCHAR newTo[MAX_PATH];
+	_tcscpy_s(newTo, to);
+	newTo[_tcsclen(to) + 1] = NULL;
+	fileOp.pTo = newTo;
+	fileOp.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_NOCONFIRMMKDIR;
+
+	int result = SHFileOperation(&fileOp);
+
+	return result == 0;
+}
+
+bool CSysHelper::SHDelete(LPCTSTR from)
+{
+	SHFILEOPSTRUCT fileOp = { 0 };
+	fileOp.wFunc = FO_DELETE;
+	TCHAR newFrom[MAX_PATH];
+	_tcscpy_s(newFrom, from);
+	newFrom[_tcsclen(from) + 1] = NULL;
+	fileOp.pFrom = newFrom;
+	fileOp.fFlags = FOF_FILESONLY | FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_NORECURSION;
+
+	int result = SHFileOperation(&fileOp);
+
+	return result == 0;
+}
+
+CString CSysHelper::GetHeader(int type)
+{
+	if (type == LTM_HEADER)return CSysHelper::m_LTMHeader;
+	if (type == STM_HEADER)return CSysHelper::m_STMHeader;
+	return _T("");
+}
+
+void CSysHelper::SetHeaders(int vmaj, int vmin)
+{
+	CSysHelper::m_LTMHeader.Format(_T("PredictEd Knowledge Map,Version,%d,LTM\r\n"), vmaj * 10 + vmin);
+	CSysHelper::m_STMHeader = m_LTMHeader;
+	CSysHelper::m_STMHeader.Replace(_T("LTM"), _T("STM"));
 }

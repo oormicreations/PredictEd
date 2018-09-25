@@ -134,7 +134,7 @@ void CHashDlg::OnBnClickedButtonHashfile()
 		CFile file;
 		if (file.Open(m_SysHelper.m_FileName, CFile::modeRead | CFile::typeBinary))
 		{
-			ULONG fsz = file.GetLength();
+			ULONG fsz = (ULONG)file.GetLength();
 			if (fsz < 1)
 			{
 				AfxMessageBox(_T("File has no data!"), MB_ICONERROR);

@@ -191,6 +191,7 @@
     <ClInclude Include="KeyWordMap.h" />
     <ClInclude Include="NetHelper.h" />
     <ClInclude Include="PredictEd.h" />
+    <ClInclude Include="PredictEdContext.h" />
     <ClInclude Include="PredictEdCtrl.h" />
     <ClInclude Include="PredictEdDlg.h" />
     <ClInclude Include="PredictEdSettingsDlg.h" />
@@ -214,6 +215,7 @@
     <ClCompile Include="KeyWordMap.cpp" />
     <ClCompile Include="NetHelper.cpp" />
     <ClCompile Include="PredictEd.cpp" />
+    <ClCompile Include="PredictEdContext.cpp" />
     <ClCompile Include="PredictEdCtrl.cpp" />
     <ClCompile Include="PredictEdDlg.cpp" />
     <ClCompile Include="PredictEdSettingsDlg.cpp" />

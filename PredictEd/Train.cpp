@@ -6,7 +6,7 @@
 #include "Train.h"
 #include "afxdialogex.h"
 
-#define TRAIN_THREAD_NOTIFY (WM_APP + 1)
+#define TRAIN_THREAD_NOTIFY (WM_APP + 131)
 
 //CString content;
 

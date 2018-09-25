@@ -114,6 +114,8 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_MESSAGE(WM_SETSPELLSUGGESTION, &CPredictEdDlg::OnSelectSpellSuggestion)
 	ON_COMMAND(ID_CONTEXTS_LOADCONTEXT, &CPredictEdDlg::OnContextsLoadcontext)
 	ON_COMMAND(ID_CONTEXTS_SAVECONTEXT, &CPredictEdDlg::OnContextsSavecontext)
+	ON_WM_CTLCOLOR()
+	ON_MESSAGE(WM_PREDICTED_UPDATEWORDCOUNT, OnUpdateWordCount)
 END_MESSAGE_MAP()
 
 
@@ -152,10 +154,13 @@ BOOL CPredictEdDlg::OnInitDialog()
 	m_PredictEdVersionMaj = 1;
 	m_PredictEdVersionMin = 1;
 
+	m_SysHelper.SetHeaders(m_PredictEdVersionMaj, m_PredictEdVersionMin);
+
 	m_Menu.LoadMenu(IDR_MENU_TOP);
 	SetMenu(&m_Menu);
 	SetButtons();
 
+	m_Abort = FALSE;
 	m_IsShellOpen = FALSE;
 	m_SaveCanceled = FALSE;
 
@@ -163,18 +168,27 @@ BOOL CPredictEdDlg::OnInitDialog()
 	m_Margin = 30;
 	m_DefaultFontSz = 12;
 
+	m_TipDuration = 0;
+	m_TipNum = 0;
+
 	InitEd();
+	InitContext();
+	InitTips();
 
 	m_StartTime = CTime::GetCurrentTime();
 	m_SysHelper.m_FileTitle = _T("Untitled");
-	ShowMessage();
 
-	m_Timer = SetTimer(WM_USER + 100, 5000, NULL);
+
+	m_Timer = SetTimer(WM_USER + 100, PREDICTED_CLOCK_INTERVEL * 1000, NULL);
 	m_pFRDlg = NULL;
 
 	m_NetHelper.ReportUsage(_T("PredictEd"), m_PredictEdVersionMaj*10 + m_PredictEdVersionMin);
 
 	SetToolTips();
+	ShowMessage();
+	ShowDuration();
+	ShowTips();
+
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -182,11 +196,11 @@ BOOL CPredictEdDlg::OnInitDialog()
 void CPredictEdDlg::SetButtons()
 {
 	UINT id[] = { IDC_BUTTON_NEW, IDC_BUTTON_OPEN, IDC_BUTTON_SAVE, IDC_BUTTON_SAVEAS, IDC_BUTTON_COPY,
-		IDC_BUTTON_PASTE, IDC_BUTTON_FONTS, IDC_BUTTON_CLEAR, IDC_BUTTON_TRAIN, IDC_BUTTON_INS };
+		IDC_BUTTON_PASTE, IDC_BUTTON_FONTS, IDC_BUTTON_CLEAR, IDC_BUTTON_TRAIN };
 	UINT bm[] = { IDB_BITMAP_NEW, IDB_BITMAP_OPEN, IDB_BITMAP_SAVE, IDB_BITMAP_SAVEAS, IDB_BITMAP_COPY,
-		IDB_BITMAP_PASTE, IDB_BITMAP_FONTS, IDB_BITMAP_CLEAR, IDB_BITMAP_INS, IDB_BITMAP_TRAIN };
+		IDB_BITMAP_PASTE, IDB_BITMAP_FONTS, IDB_BITMAP_CLEAR, IDB_BITMAP_INS };
 
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 9; i++)
 	{
 		CBitmap bmp;
 		bmp.LoadBitmap(bm[i]);
@@ -281,7 +295,7 @@ void CPredictEdDlg::InitEd()
 			cf.yHeight = ht * TWIPS_PER_PT; // pt to twips 
 
 			cf.crTextColor = pps->m_TxtColor;
-			cf.wWeight = pps->m_DefFont.lfWeight;
+			cf.wWeight = (WORD)pps->m_DefFont.lfWeight;
 
 			m_Ed.SetDefaultCharFormat(cf);
 
@@ -330,6 +344,21 @@ void CPredictEdDlg::SetDefaultStyle()
 	m_Ed.SetBackgroundColor(0, RGB(255, 253, 245));
 
 }
+
+void CPredictEdDlg::InitContext()
+{
+	m_Context.SetVersion(m_PredictEdVersionMaj, m_PredictEdVersionMin);
+	if (m_ContextFile.IsEmpty())
+	{
+		m_ContextFile = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + PREDICTED_CONTEXT_DEFAULT_CONTEXT;
+	}
+	m_Context.m_sContextFile = m_ContextFile;
+
+	m_Context.m_bAutoLoad = TRUE;
+	OnContextsLoadcontext();
+	m_Context.m_bAutoLoad = FALSE;
+}
+
 
 void CPredictEdDlg::InsertText(CString text, COLORREF color, bool bold, bool italic)
 {
@@ -465,6 +494,8 @@ void CPredictEdDlg::OnFileOpen32771()
 	}
 
 	m_StartTime = CTime::GetCurrentTime();
+	m_CurFileTitle = m_SysHelper.m_FileTitle;
+
 	ShowMessage();
 
 	m_Ed.SetFocus();
@@ -491,6 +522,9 @@ void CPredictEdDlg::OnFileSave32772()
 	else m_Ed.GetWindowText(content);
 
 	m_Ed.m_Saved = (m_SysHelper.SetFileContent(content));
+
+	m_CurFileTitle = m_SysHelper.m_FileTitle;
+	ShowMessage();
 }
 
 
@@ -511,11 +545,11 @@ void CPredictEdDlg::BackupMemories()
 {
 	CString backupname = m_Ed.m_LTMFileName;
 	backupname.Replace(_T(".txt"), _T("_Backup.txt"));
-	m_Ed.m_LTM.SaveMap(backupname, LTM_HEADER);
+	m_Ed.m_LTM.SaveMap(backupname, m_SysHelper.GetHeader(LTM_HEADER));
 
 	backupname = m_Ed.m_STMFileName;
 	backupname.Replace(_T(".txt"), _T("_Backup.txt"));
-	m_Ed.m_STM.SaveMap(backupname, STM_HEADER);
+	m_Ed.m_STM.SaveMap(backupname, m_SysHelper.GetHeader(STM_HEADER));
 
 }
 
@@ -525,7 +559,7 @@ void CPredictEdDlg::OnOptionsTrain()
 
 	CTrain traindlg;
 	traindlg.m_FileName = m_Ed.m_LTMFileName;
-	traindlg.m_FileHeader = LTM_HEADER;
+	traindlg.m_FileHeader = m_SysHelper.GetHeader(LTM_HEADER);
 	traindlg.DoModal();
 	if (traindlg.m_Result)
 	{
@@ -741,6 +775,7 @@ void CPredictEdDlg::OnFileNewfile()
 	m_StartTime = CTime::GetCurrentTime();
 	m_SysHelper.m_FileTitle = _T("Untitled");
 	m_SysHelper.m_FileName = _T("");
+	m_CurFileTitle = m_SysHelper.m_FileTitle;
 	ShowMessage();
 }
 
@@ -862,21 +897,47 @@ void CPredictEdDlg::OnOptionsSettings()
 
 void CPredictEdDlg::ShowMessage()
 {
+	CString str;
+	str.Format(_T("Context: %s | File: %s | Words: %d | Lines: %d"), m_Context.m_sContextName, m_SysHelper.m_FileTitle, m_Ed.GetWordCount(), m_Ed.GetLineCount());
+	GetDlgItem(IDC_EDIT_PRE)->SetWindowText(str);
+}
+
+void CPredictEdDlg::ShowDuration()
+{
 	CString str, duration;
+
 	CTime t = CTime::GetCurrentTime();
 	CTimeSpan diff = t - m_StartTime;
 	duration = diff.Format(_T("%H:%M:%S"));
 
-	str.Format(_T("%s | Words: %d | Lines: %d | Duration: %s"), m_SysHelper.m_FileTitle, m_Ed.GetWordCount(), m_Ed.GetLineCount(), duration);
-	GetDlgItem(IDC_EDIT_PRE)->SetWindowTextW(str);
+	str.Format(_T("Duration: %s"), duration);
+	GetDlgItem(IDC_EDIT_DUR)->SetWindowText(str);
 }
 
+void CPredictEdDlg::ShowTips()
+{
+	if (m_Tips[m_TipNum].IsEmpty()) m_TipNum = 0;
+	GetDlgItem(IDC_EDIT_TIPS)->SetWindowText(m_Tips[m_TipNum]);
+}
 
 void CPredictEdDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	if (nIDEvent == m_Timer)
 	{
-		ShowMessage();
+		ShowDuration();
+
+		m_TipDuration += PREDICTED_CLOCK_INTERVEL;
+
+		if (m_TipDuration >= PREDICTED_TIP_INTERVEL)
+		{
+			ShowTips();
+			m_TipNum++;
+			if (m_TipNum >= PREDICTED_MAX_TIPS)
+			{
+				m_TipNum = 0;
+			}
+			m_TipDuration = 0;
+		}
 	}
 
 	CDialogEx::OnTimer(nIDEvent);
@@ -1112,13 +1173,60 @@ LONG CPredictEdDlg::OnSelectSpellSuggestion(WPARAM wParam, LPARAM lParam)
 
 void CPredictEdDlg::OnContextsLoadcontext()
 {
-	// TODO: Add your command handler code here
+	if (m_Context.LoadContext())
+	{
+		BOOL success = TRUE;
+
+		//load knowledge
+		success = success && m_Ed.m_LTM.LoadMap(m_Context.m_sLTMFile);
+		success = success && m_Ed.m_STM.LoadMap(m_Context.m_sSTMFile);
+		success = success && (!m_Context.m_sDictionary.IsEmpty());
+
+		if(!success)
+		{
+			AfxMessageBox(_T("Error: Context loading failed."), MB_ICONERROR);
+			//try to fall back
+			m_Ed.m_LTM.LoadMap(m_Ed.m_LTMFileName); 
+			m_Ed.m_STM.LoadMap(m_Ed.m_STMFileName); 
+			return;
+		}
+
+		m_DictionaryFile = m_Context.m_sDictionary;
+
+		//point to new knowledge files
+		m_Ed.m_LTMFileName = m_Context.m_sLTMFile;
+		m_Ed.m_STMFileName = m_Context.m_sSTMFile;
+
+	}
+	else
+	{
+		//try to load the default context
+		if (m_Abort)
+		{
+			AfxMessageBox(_T("Error: Context loading failed. \r\nPredictEd will attempt to create a default context.\r\nIf that fails, please reinstall PredictEd."), MB_ICONERROR);
+			if (!m_Context.CreateDefaultContext()) EndDialog(IDOK); 
+		}
+		else
+		{
+			m_Abort = TRUE;
+			m_ContextFile.Empty();
+			InitContext();
+		}
+
+	}
 }
 
 
 void CPredictEdDlg::OnContextsSavecontext()
 {
-	// TODO: Add your command handler code here
+	if (m_Context.GetNewContextName())
+	{
+		m_Context.m_sLTMFile = m_Ed.m_LTMFileName;
+		m_Context.m_sSTMFile = m_Ed.m_STMFileName;
+		m_Context.m_sDictionary = m_DictionaryFile;
+
+		m_Context.CreateContext();
+	}
 }
 
 void CPredictEdDlg::SetToolTips()
@@ -1144,8 +1252,59 @@ void CPredictEdDlg::SetToolTips()
 
 BOOL CPredictEdDlg::PreTranslateMessage(MSG* pMsg)
 {
-	// TODO: Add your specialized code here and/or call the base class
 	if (m_ToolTip != NULL)
+	{
 		m_ToolTip->RelayEvent(pMsg);
+	}
+
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+HBRUSH CPredictEdDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = CDialogEx::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	// TODO:  Change any attributes of the DC here
+	if (pWnd->GetDlgCtrlID() == IDC_EDIT_TIPS)
+	{
+		pDC->SetTextColor(RGB(150, 150, 150));
+	}
+
+	if (pWnd->GetDlgCtrlID() == IDC_EDIT_DUR)
+	{
+		pDC->SetTextColor(RGB(150, 0, 0));
+	}
+
+	if (pWnd->GetDlgCtrlID() == IDC_EDIT_WORDS)
+	{
+		pDC->SetTextColor(RGB(90, 90, 90));
+	}
+
+	if (pWnd->GetDlgCtrlID() == IDC_EDIT_PRE)
+	{
+		pDC->SetTextColor(RGB(50, 50, 50));
+	}
+	// TODO:  Return a different brush if the default is not desired
+	return hbr;
+}
+
+void CPredictEdDlg::InitTips()
+{
+	m_Tips[0] = _T("Press TAB to cycle through suggestions.");
+	m_Tips[1] = _T("You can type **your text** to make it bold.");
+	m_Tips[2] = _T("You can type //your text// to make it italics.");
+	m_Tips[3] = _T("You can type __your text__ to underline text.");
+	m_Tips[4] = _T("You can type **__your text__** to make it underlined bold.");
+	m_Tips[5] = _T("For best result train PredictEd using your own writings.");
+	m_Tips[6] = _T("Save a context to save the context specific knowledge.");
+	m_Tips[7] = _T("Load a context to get suggestions specific to a context.");
+	m_Tips[8] = _T("The duration counter helps to stop and relax periodically.");
+	//m_Tips[] = _T("");
+}
+
+LRESULT CPredictEdDlg::OnUpdateWordCount(WPARAM, LPARAM)
+{
+	ShowMessage();
+	return 0;
 }

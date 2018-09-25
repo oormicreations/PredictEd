@@ -140,10 +140,14 @@ BOOL CWordList::LoadMap(CString filename)
 	BOOL res1 = file.ReadString(line);
 	if (!res1) return FALSE;
 
-	if (line.Find(_T("PredictEd Knowledge Map,Version,1")) < 0)
+	if (line.Find(_T("PredictEd Knowledge Map,Version,11")) < 0)
 	{
+		AfxMessageBox(_T("Error: The Knowledge Map belongs to a different version."), MB_ICONERROR);
 		return FALSE;
 	}
+
+	//in case a context is loaded, old data is cleared
+	InitList();
 
 	int row = 0;
 

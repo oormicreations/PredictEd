@@ -4,8 +4,7 @@
 #include "WordList.h"
 #include "PreWordsDlg.h"
 
-#define LTM_HEADER _T("PredictEd Knowledge Map,Version,1,LTM\r\n")
-#define STM_HEADER _T("PredictEd Knowledge Map,Version,1,STM\r\n")
+#define WM_PREDICTED_UPDATEWORDCOUNT WM_APP + 130
 
 // CPredictEdCtrl
 

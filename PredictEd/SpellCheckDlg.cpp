@@ -48,17 +48,16 @@ BOOL CSpellCheckDlg::LoadDictionary()
 	if(m_DicFile.IsEmpty()) m_DicFile = m_SysHelper.GetPredictEdFileName(PREDICTED_DIC_FILE);
 	if(m_DicFile.IsEmpty()) return FALSE;
 
-	CStdioFile dfile;
-	if(!dfile.Open(m_DicFile, CStdioFile::modeRead)) return FALSE;
+	CString content = m_SysHelper.ReadStringFromFile(m_DicFile);
 
 	CString line;
-	
-	while (dfile.ReadString(line))
+	int pos = 0;
+	while (pos >= 0)
 	{
+		line = content.Tokenize(_T("\r\n"), pos);
 		m_DicWords.Add(line);
 	}
 
-	dfile.Close();
 	return TRUE;
 }
 
@@ -123,6 +122,8 @@ void CSpellCheckDlg::GetSpellingSuggestions()
 
 		int lenw = m_Word.GetLength();
 		int lens = spell.GetLength();
+
+		if ((lenw < 1) || (lens < 1))continue;
 
 		//1gram matches
 		for (int i = 0; i < lenw; i++)

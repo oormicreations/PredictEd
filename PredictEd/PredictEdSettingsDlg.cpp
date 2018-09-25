@@ -120,8 +120,13 @@ void CPredictEdSettingsDlg::Reset()
 	m_Margins = 30;
 	m_BkColor = RGB(255, 253, 245);
 	m_DefFont = {};
-	m_DictionaryFile = m_SysHelper.GetPredictEdFileName(PREDICTED_DIC_FILE);
+
 	m_ContextFile = m_SysHelper.GetPredictEdFileName(PREDICTED_CON_FILE);
+	m_DictionaryFile = m_SysHelper.GetPredictEdFileName(PREDICTED_DIC_FILE);
+
+	if (!PathFileExists(m_ContextFile)) m_ContextFile = _T("");
+	if (!PathFileExists(m_DictionaryFile)) m_DictionaryFile = _T("");
+
 }
 
 void CPredictEdSettingsDlg::OnBnClickedButtonSetReset()

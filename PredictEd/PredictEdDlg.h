@@ -15,7 +15,11 @@
 #include "StegEncDlg.h"
 #include "StegDecDlg.h"
 #include "SpellCheckDlg.h"
+#include "PredictEdContext.h"
 
+#define PREDICTED_CLOCK_INTERVEL 5 //sec
+#define PREDICTED_MAX_TIPS 100
+#define PREDICTED_TIP_INTERVEL PREDICTED_CLOCK_INTERVEL * 12 //sec
 
 // Register FindReplace window message.
 static UINT WM_FINDREPLACE = ::RegisterWindowMessage(FINDMSGSTRING);
@@ -61,6 +65,11 @@ public:
 	UINT m_PredictEdVersionMaj, m_PredictEdVersionMin;
 	CNetHelper m_NetHelper;
 	CToolTipCtrl* m_ToolTip;
+	CPredictEdContext m_Context;
+	CString m_CurFileTitle;
+	CString m_Tips[PREDICTED_MAX_TIPS];
+	int m_TipDuration, m_TipNum;
+	BOOL m_Abort;
 
 	typedef struct tagPREDICTEDSET
 	{
@@ -74,11 +83,16 @@ public:
 	void InitEd();
 	void InsertText(CString text, COLORREF color = RGB(0, 0, 0), bool bold = false, bool italic = false);
 	void ShowMessage();
+	void ShowDuration();
+	void ShowTips();
+
 	void SetDefaultStyle();
 	void InitFindReplaceDlg();
 	void SetButtons();
 	void BackupMemories();
 	void SetToolTips();
+	void InitContext();
+	void InitTips();
 
 
 	afx_msg void OnBnClickedButton1();
@@ -130,4 +144,7 @@ public:
 	afx_msg void OnContextsLoadcontext();
 	afx_msg void OnContextsSavecontext();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg LRESULT OnUpdateWordCount(WPARAM, LPARAM);
+
 };

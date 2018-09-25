@@ -32,25 +32,25 @@ CPredictEdCtrl::CPredictEdCtrl()
 
 	m_AutoBackupFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_AUTOBK_FILE);
 
-	m_LTMFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_LTM_FILE);
-	if (!m_LTMFileName.IsEmpty())
-	{
-		if(!m_SysHelper.CreateFileAndInit(m_LTMFileName, LTM_HEADER)) m_LTMFileName = _T("");
-	}
-	if (!m_LTMFileName.IsEmpty())
-	{
-		if (!m_LTM.LoadMap(m_LTMFileName)) AfxMessageBox(_T("Error: LTM could not be loaded!"));
-	}
+	//m_LTMFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_LTM_FILE);
+	//if (!m_LTMFileName.IsEmpty())
+	//{
+	//	if(!m_SysHelper.CreateFileAndInit(m_LTMFileName, LTM_HEADER)) m_LTMFileName = _T("");
+	//}
+	//if (!m_LTMFileName.IsEmpty())
+	//{
+	//	if (!m_LTM.LoadMap(m_LTMFileName)) AfxMessageBox(_T("Error: LTM could not be loaded!"));
+	//}
 
-	m_STMFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_STM_FILE);
-	if (!m_STMFileName.IsEmpty())
-	{
-		if (!m_SysHelper.CreateFileAndInit(m_STMFileName, STM_HEADER)) m_STMFileName = _T("");
-	}
-	if (!m_STMFileName.IsEmpty())
-	{
-		if (!m_STM.LoadMap(m_STMFileName)) AfxMessageBox(_T("Error: STM could not be loaded!"));
-	}
+	//m_STMFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_STM_FILE);
+	//if (!m_STMFileName.IsEmpty())
+	//{
+	//	if (!m_SysHelper.CreateFileAndInit(m_STMFileName, STM_HEADER)) m_STMFileName = _T("");
+	//}
+	//if (!m_STMFileName.IsEmpty())
+	//{
+	//	if (!m_STM.LoadMap(m_STMFileName)) AfxMessageBox(_T("Error: STM could not be loaded!"));
+	//}
 
 
 }
@@ -440,7 +440,7 @@ void CPredictEdCtrl::Train(TCHAR c)
 		m_STM.CreateRelation(m_CharQueue.m_Words[1], m_CharQueue.m_Words[0]);
 
 		CString dispstr;
-		dispstr.Format(_T("KW Count - LTM:%d | STM:%d"), m_LTM.m_LastKeyWordIndex, m_STM.m_LastKeyWordIndex);
+		dispstr.Format(_T("LTM:%d | STM:%d"), m_LTM.m_LastKeyWordIndex, m_STM.m_LastKeyWordIndex);
 		//for (int i = 0; i < MAX_WORDS; i++)
 		//{
 		//	dispstr = dispstr + _T(" ") + m_CharQueue.m_Words[i];
@@ -454,6 +454,8 @@ void CPredictEdCtrl::UpdateStatusMessage(CString msg)
 {
 	CWnd * wnd = AfxGetApp()->GetMainWnd()->GetDlgItem(IDC_EDIT_WORDS);
 	wnd->SetWindowText(msg);
+
+	GetParent()->PostMessage(WM_PREDICTED_UPDATEWORDCOUNT, 0, 0);
 }
 
 void CPredictEdCtrl::Predict(TCHAR c)
@@ -500,34 +502,38 @@ void CPredictEdCtrl::Predict(TCHAR c)
 		if (m_TabCount >= (MAX_PREDICTION_COUNT)) prediction = m_Phrases[m_TabCount - MAX_PREDICTION_COUNT];
 		m_TabCount++;
 
-		if (prediction == _T("#"))
+		//if (prediction == _T("#"))
+		//{
+		//	m_TabCount = MAX_PREDICTION_COUNT;
+		//	prediction = m_Phrases[m_TabCount- MAX_PREDICTION_COUNT];
+		//	m_TabCount++;
+		//}
+
+		//if (prediction == _T("#"))
+		//{
+		//	m_TabCount = 0;
+		//	prediction = m_PredictionMap.m_Predictions[m_TabCount];
+		//	m_TabCount++;
+		//}
+
+		//if (prediction == _T("#")) prediction = _T(" "); 
+		if (prediction != _T("#"))
 		{
-			m_TabCount = MAX_PREDICTION_COUNT;
-			prediction = m_Phrases[m_TabCount- MAX_PREDICTION_COUNT];
-			m_TabCount++;
+			if (!prediction.IsEmpty()) if (m_ScCapitalize) prediction.SetAt(0, towupper(prediction[0]));
+			prediction = m_ScString + prediction;
+
+			m_LastPreLength = prediction.GetLength();
+			m_PreCaretEndPos = m_PreCaretEndPos + m_LastPreLength;
+
+
+			for (int i = 0; i < prediction.GetLength(); i++)
+			{
+				PostMessage(WM_CHAR, prediction.GetAt(i), 999); //999 is sent as repcount
+			}
 		}
+		else ReplaceSel(_T(""));
 
-		if (prediction == _T("#"))
-		{
-			m_TabCount = 0;
-			prediction = m_PredictionMap.m_Predictions[m_TabCount];
-			m_TabCount++;
-		}
-
-		if (prediction == _T("#")) prediction = _T("");
-		if(!prediction.IsEmpty()) if (m_ScCapitalize) prediction.SetAt(0, towupper(prediction[0]));
-		prediction = m_ScString + prediction;
-
-		m_LastPreLength = prediction.GetLength();
-		m_PreCaretEndPos = m_PreCaretEndPos + m_LastPreLength;
-
-
-		for (int i = 0; i < prediction.GetLength(); i++)
-		{
-			PostMessage(WM_CHAR, prediction.GetAt(i), 999); //999 is sent as repcount
-		}
-
-		m_pDialog->ShiftWords();
+		if (m_pDialog) m_pDialog->ShiftWords();
 	}
 
 	if (!((c == '\t') || (c == ' ') || (c == '\r'))) m_IsWordCommitted = FALSE;
@@ -771,7 +777,7 @@ void CPredictEdCtrl::Erase()
 		{
 			if (DeleteFile(m_LTMFileName))
 			{
-				if (!m_SysHelper.CreateFileAndInit(m_LTMFileName, LTM_HEADER)) m_LTMFileName = _T("");
+				if (!m_SysHelper.CreateFileAndInit(m_LTMFileName, m_SysHelper.GetHeader(LTM_HEADER))) m_LTMFileName = _T("");
 				else UpdateStatusMessage(_T("PredictEd Memories were erased."));
 			}
 			else UpdateStatusMessage(_T("Error: Erasure failed!"));
@@ -874,14 +880,14 @@ void CPredictEdCtrl::SavePredictions()
 
 	if (!m_LTMFileName.IsEmpty())
 	{
-		BOOL res = m_LTM.SaveMap(m_LTMFileName, LTM_HEADER);
+		BOOL res = m_LTM.SaveMap(m_LTMFileName, m_SysHelper.GetHeader(LTM_HEADER));
 		if (res) msg += (_T("Saved LTM..."));
 		else msg += (_T("Error: Save LTM failed!"));
 	}
 
 	if (!m_STMFileName.IsEmpty())
 	{
-		BOOL res = m_STM.SaveMap(m_STMFileName, STM_HEADER);
+		BOOL res = m_STM.SaveMap(m_STMFileName, m_SysHelper.GetHeader(STM_HEADER));
 		if (res) msg += (_T("Saved STM..."));
 		else msg += (_T("Error: Save STM failed!"));
 	}
@@ -917,8 +923,8 @@ void CPredictEdCtrl::Merge()
 	}
 
 	m_STM.InitList(); //clear stm
-	m_STM.SaveMap(m_STMFileName, STM_HEADER);
-	tmp.SaveMap(m_LTMFileName, LTM_HEADER); //overwrite with merged list
+	m_STM.SaveMap(m_STMFileName, m_SysHelper.GetHeader(STM_HEADER));
+	tmp.SaveMap(m_LTMFileName, m_SysHelper.GetHeader(LTM_HEADER)); //overwrite with merged list
 	m_LTM.LoadMap(m_LTMFileName); //refresh
 
 	UpdateStatusMessage(_T("Merge complete. STM cleared."));
