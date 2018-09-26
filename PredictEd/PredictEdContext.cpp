@@ -21,7 +21,7 @@ void CPredictEdContext::SetVersion(int iVmaj, int iVmin)
 
 BOOL CPredictEdContext::LoadContext()
 {
-	m_sContextDir = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + PREDICTED_CONTEXT_DIR_NAME;
+	m_sContextDir = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + _T("\\") + PREDICTED_CONTEXT_DIR_NAME;
 
 	if (!m_bAutoLoad)
 	{
@@ -94,6 +94,7 @@ BOOL CPredictEdContext::LoadContext()
 	}
 	m_sDictionary = sValue;
 
+	m_sContextDir = m_sContextDir + _T("\\") + m_sContextName;
 
 	return TRUE;
 }
@@ -110,7 +111,7 @@ BOOL CPredictEdContext::GetNewContextName()
 	if (iRes == IDCANCEL) return FALSE;
 	m_bCopy = (iRes == IDYES);
 
-	m_sContextDir = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + PREDICTED_CONTEXT_DIR_NAME;
+	m_sContextDir = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + _T("\\") + PREDICTED_CONTEXT_DIR_NAME;
 
 	if (!m_SysHelper.SysGetFileNameToSave(FALSE, _T("Specify a filename for the context..."), m_sContextDir, _T("context")))
 	{
@@ -199,7 +200,7 @@ BOOL CPredictEdContext::CreateDefaultContext()
 	m_sContextDir = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER);
 	if (m_sContextDir.IsEmpty()) return FALSE;
 
-	m_sContextDir = m_sContextDir + PREDICTED_CONTEXT_DIR_NAME;
+	m_sContextDir = m_sContextDir + _T("\\") + PREDICTED_CONTEXT_DIR_NAME;
 
 	if (!PathFileExists(m_sContextDir))
 	{
@@ -217,3 +218,22 @@ BOOL CPredictEdContext::CreateDefaultContext()
 
 	return TRUE;
 }
+
+BOOL CPredictEdContext::UpdateContext()
+{
+	CString sContextInfo
+		= PREDICTED_CONTEXT_KEY1 + m_sVersion + _T("\r\n")
+		+ PREDICTED_CONTEXT_KEY2 + m_sContextName + _T("\r\n")
+		+ PREDICTED_CONTEXT_KEY3 + m_sContextDir + _T("\r\n")
+		+ PREDICTED_CONTEXT_KEY4 + m_sDictionary
+		;
+
+	if (!m_SysHelper.SaveString(m_sContextFile, sContextInfo))
+	{
+		AfxMessageBox(_T("Error: Failed to update the context file."), MB_ICONERROR);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+

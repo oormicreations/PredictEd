@@ -171,7 +171,7 @@ void CPredictEdSettingsDlg::OnOK()
 
 void CPredictEdSettingsDlg::OnBnClickedButtonSetDefdic()
 {
-	if (m_SysHelper.GetFileNameToOpen(_T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"), _T("Select a dictionary file")))
+	if(m_SysHelper.SysGetFileNameToSave(TRUE, _T("Select a dictionary file"), m_SysHelper.GetPredictEdFileName(PREDICTED_DIC_FOLDER), _T("txt"), _T("*")))
 	{
 		m_DictionaryFile = m_SysHelper.m_FileName;
 		SetDlgItemText(IDC_BUTTON_SET_DEFDIC, _T("Dictionary: ") + m_SysHelper.m_FileTitle);
@@ -181,7 +181,7 @@ void CPredictEdSettingsDlg::OnBnClickedButtonSetDefdic()
 
 void CPredictEdSettingsDlg::OnBnClickedButtonSetDefcon()
 {
-	if (m_SysHelper.GetFileNameToOpen(_T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"), _T("Select a context file")))
+	if (m_SysHelper.SysGetFileNameToSave(TRUE, _T("Select a context file"), m_SysHelper.GetPredictEdFileName(PREDICTED_CON_FOLDER), _T("context"), _T("*")))
 	{
 		m_ContextFile = m_SysHelper.m_FileName;
 		SetDlgItemText(IDC_BUTTON_SET_DEFCON, _T("Context: ") + m_SysHelper.m_FileTitle);

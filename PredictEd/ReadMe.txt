@@ -2,6 +2,12 @@ A rich edit control with text prediction and other smart features.
 =================================================================
 Release Notes
 =================================================================
+2018-09-26
+
+* spell check
+* contexts
+* encryption
+* bug fix: suggestions not scrolling in sync when some of them are empty
 
 2018-08-04
 

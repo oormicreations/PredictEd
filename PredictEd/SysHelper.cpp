@@ -240,6 +240,8 @@ CString CSysHelper::GetPredictEdFileName(UINT type)
 		if (type == PREDICTED_DEC_FILE)		fname = PREDICTED_DEC_FILE_NAME;
 		if (type == PREDICTED_DIC_FILE)		fname = PREDICTED_DIC_FILE_NAME;
 		if (type == PREDICTED_CON_FILE)		fname = PREDICTED_CON_FILE_NAME;
+		if (type == PREDICTED_DIC_FOLDER)	fname = PREDICTED_DIC_DIR_NAME;
+		if (type == PREDICTED_CON_FOLDER)	fname = PREDICTED_CONTEXT_DIR_NAME;
 
 		if (fname.IsEmpty()) return _T("");
 
@@ -266,7 +268,7 @@ CString CSysHelper::GetUserDocumentPath(UINT type)
 
 		if (type == PREDICTED_USER_FOLDER)
 		{
-			str = str + _T("\\Oormi Creations\\PredictEd dev");
+			str = str + _T("\\Oormi Creations Dev\\PredictEd Dev");
 		}
 
 		if (GetFileAttributes(str) == INVALID_FILE_ATTRIBUTES)
@@ -413,10 +415,20 @@ BOOL CSysHelper::SysGetFileNameToSave(BOOL isopen, CString caption, CString init
 	EmptyFileData();
 
 	CString filetype;
+	CString extname[3];
+	CString ext[] = { ext1, ext2, ext3 };
+	for (int n = 0; n < 3; n++)
+	{
+		if (ext[n] == _T("txt")) extname[n] = _T("Text");
+		if (ext[n] == _T("rtf")) extname[n] = _T("Rich Text");
+		if (ext[n] == _T("png")) extname[n] = _T("PNG Image");
+		if (ext[n] == _T("jpg")) extname[n] = _T("JPG Image");
+		if (ext[n] == _T("*"  )) extname[n] = _T("All");
+	}
 
-	if (!ext1.IsEmpty())filetype = filetype + ext1 + _T(" files (*.") + ext1 + _T(")|*.") + ext1 + _T("|");
-	if (!ext2.IsEmpty())filetype = filetype + ext2 + _T(" files (*.") + ext2 + _T(")|*.") + ext2 + _T("|");
-	if (!ext3.IsEmpty())filetype = filetype + ext3 + _T(" files (*.") + ext3 + _T(")|*.") + ext3 + _T("|");
+	if (!ext1.IsEmpty())filetype = filetype + extname[0] + _T(" files (*.") + ext1 + _T(")|*.") + ext1 + _T("|");
+	if (!ext2.IsEmpty())filetype = filetype + extname[1] + _T(" files (*.") + ext2 + _T(")|*.") + ext2 + _T("|");
+	if (!ext3.IsEmpty())filetype = filetype + extname[2] + _T(" files (*.") + ext3 + _T(")|*.") + ext3 + _T("|");
 	filetype = filetype + _T("|");
 
 	CFileDialog DataFileOpenDialog(isopen, _T(""), _T(""), OFN_OVERWRITEPROMPT, filetype);

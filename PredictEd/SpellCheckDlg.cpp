@@ -38,6 +38,7 @@ BEGIN_MESSAGE_MAP(CSpellCheckDlg, CDialog)
 	ON_BN_CLICKED(IDCANCEL, &CSpellCheckDlg::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_BUTTON_SPELLPREV, &CSpellCheckDlg::OnBnClickedButtonSpellprev)
 	ON_BN_CLICKED(IDC_BUTTON_SPELLNXT, &CSpellCheckDlg::OnBnClickedButtonSpellnxt)
+	ON_BN_CLICKED(IDC_BUTTON_LOADDIC, &CSpellCheckDlg::OnBnClickedButtonLoaddic)
 END_MESSAGE_MAP()
 
 
@@ -49,6 +50,7 @@ BOOL CSpellCheckDlg::LoadDictionary()
 	if(m_DicFile.IsEmpty()) return FALSE;
 
 	CString content = m_SysHelper.ReadStringFromFile(m_DicFile);
+	if (content.IsEmpty()) return FALSE;
 
 	CString line;
 	int pos = 0;
@@ -325,4 +327,37 @@ void CSpellCheckDlg::OnBnClickedButtonSpellnxt()
 	m_DispSuggestion += 4;
 	if (m_DispSuggestion > MAX_SPELL_SUGGESTIONS) m_DispSuggestion = 0;
 	ShowSuggestions();
+}
+
+
+void CSpellCheckDlg::OnBnClickedButtonLoaddic()
+{
+	CString olddic = m_DicFile;
+	if (m_SysHelper.SysGetFileNameToSave(TRUE, _T("Select a new dictionary..."), m_SysHelper.GetPredictEdFileName(PREDICTED_DIC_FOLDER), _T("txt"), _T("*")))
+	{
+		m_DicFile = m_SysHelper.m_FileName;
+		if (!LoadDictionary())
+		{
+			AfxMessageBox(_T("Error loading the Dictionary file."), MB_ICONERROR);
+			m_DicFile = olddic;
+			return;
+		}
+
+		m_IsDicChanged = TRUE;
+		m_Position = 0; //spell check will restart
+		SetDlgItemText(IDC_BUTTON_LOADDIC, _T("Dictionary: ") + m_SysHelper.m_FileTitle);
+	}
+}
+
+
+BOOL CSpellCheckDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	// TODO:  Add extra initialization here
+	m_IsDicChanged = FALSE;
+	SetDlgItemText(IDC_BUTTON_LOADDIC, _T("Dictionary: ") + m_SysHelper.GetFileNameFromPath(m_DicFile));
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+				  // EXCEPTION: OCX Property Pages should return FALSE
 }

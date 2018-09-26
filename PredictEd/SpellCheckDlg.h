@@ -23,6 +23,7 @@ public:
 	CStringArray m_DicWords, m_AddedDicWords;
 	float m_SuggestionsProbs[MAX_SPELL_SUGGESTIONS];
 	int m_DispSuggestion;
+	BOOL m_IsDicChanged;
 
 	BOOL SpellCheck();
 	BOOL LoadDictionary();
@@ -51,4 +52,6 @@ public:
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnBnClickedButtonSpellprev();
 	afx_msg void OnBnClickedButtonSpellnxt();
+	afx_msg void OnBnClickedButtonLoaddic();
+	virtual BOOL OnInitDialog();
 };

@@ -350,13 +350,14 @@ void CPredictEdDlg::InitContext()
 	m_Context.SetVersion(m_PredictEdVersionMaj, m_PredictEdVersionMin);
 	if (m_ContextFile.IsEmpty())
 	{
-		m_ContextFile = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + PREDICTED_CONTEXT_DEFAULT_CONTEXT;
+		m_ContextFile = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + _T("\\") + PREDICTED_CONTEXT_DEFAULT_CONTEXT;
 	}
 	m_Context.m_sContextFile = m_ContextFile;
 
 	m_Context.m_bAutoLoad = TRUE;
 	OnContextsLoadcontext();
 	m_Context.m_bAutoLoad = FALSE;
+
 }
 
 
@@ -853,8 +854,9 @@ void CPredictEdDlg::OnOptionsSettings()
 			setdlg.m_Margins		= pps->m_Margins;
 			setdlg.m_TxtColor		= pps->m_TxtColor;
 			setdlg.m_DefFont		= pps->m_DefFont;
-			setdlg.m_DictionaryFile = m_DictionaryFile;
-			setdlg.m_ContextFile	= m_ContextFile;
+
+			setdlg.m_DictionaryFile.SetString(pps->m_DictionaryFileTch);
+			setdlg.m_ContextFile.SetString(pps->m_ContextFileTch);
 
 		}
 		else setdlg.Reset();
@@ -1128,7 +1130,7 @@ void CPredictEdDlg::OnStegDecode()
 void CPredictEdDlg::OnEditSpellingcheck()
 {
 	CSpellCheckDlg spelldlg;
-	spelldlg.m_DicFile = m_DictionaryFile;
+	spelldlg.m_DicFile = m_Context.m_sDictionary;
 
 	if (!spelldlg.LoadDictionary())
 	{
@@ -1140,6 +1142,12 @@ void CPredictEdDlg::OnEditSpellingcheck()
 	spelldlg.m_Content.Replace(_T("\n"), _T("")); //GetSel/SetSel counts NL as one char, so remove \n
 
 	spelldlg.DoModal();
+
+	if (spelldlg.m_IsDicChanged)
+	{
+		m_Context.m_sDictionary = spelldlg.m_DicFile;
+		m_Context.UpdateContext();
+	}
 }
 
 LONG CPredictEdDlg::OnSelectMisspell(WPARAM wParam, LPARAM lParam)

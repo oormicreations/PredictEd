@@ -28,5 +28,6 @@ public:
 	CString GetValue(CString sEntry, CString sKey);
 	BOOL CreateDefaultContext();
 	BOOL GetNewContextName();
+	BOOL UpdateContext();
 
 };
