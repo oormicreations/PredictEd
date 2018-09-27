@@ -21,11 +21,11 @@ void CPredictEdContext::SetVersion(int iVmaj, int iVmin)
 
 BOOL CPredictEdContext::LoadContext()
 {
-	m_sContextDir = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + _T("\\") + PREDICTED_CONTEXT_DIR_NAME;
+	m_sContextRootDir = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + _T("\\") + PREDICTED_CONTEXT_DIR_NAME;
 
 	if (!m_bAutoLoad)
 	{
-		if (!m_SysHelper.SysGetFileNameToSave(TRUE, _T("Specify a filename for the context..."), m_sContextDir, _T("context")))
+		if (!m_SysHelper.SysGetFileNameToSave(TRUE, _T("Specify a filename for the context..."), m_sContextRootDir, _T("context")))
 		{
 			return FALSE;
 		}
@@ -82,8 +82,17 @@ BOOL CPredictEdContext::LoadContext()
 		AfxMessageBox(_T("Error: Knowledge file path is missing."), MB_ICONERROR);
 		return FALSE;
 	}
-	m_sLTMFile = sValue + _T("\\") + PREDICTED_LTM_FILE_NAME;
-	m_sSTMFile = sValue + _T("\\") + PREDICTED_STM_FILE_NAME;
+
+	if (sValue == _T("Default"))
+	{
+		m_sLTMFile = m_sContextRootDir + _T("\\") + sValue + _T("\\") + PREDICTED_LTM_FILE_NAME;
+		m_sSTMFile = m_sContextRootDir + _T("\\") + sValue + _T("\\") + PREDICTED_STM_FILE_NAME;
+	}
+	else
+	{
+		m_sLTMFile = sValue + _T("\\") + PREDICTED_LTM_FILE_NAME;
+		m_sSTMFile = sValue + _T("\\") + PREDICTED_STM_FILE_NAME;
+	}
 
 	//dictionary file
 	sValue = GetValue(sLine[3], PREDICTED_CONTEXT_KEY4);
@@ -92,9 +101,14 @@ BOOL CPredictEdContext::LoadContext()
 		AfxMessageBox(_T("Error: Dictionary file path is missing."), MB_ICONERROR);
 		return FALSE;
 	}
-	m_sDictionary = sValue;
 
-	m_sContextDir = m_sContextDir + _T("\\") + m_sContextName;
+	if (sValue == _T("DefaultDict.txt"))
+	{
+		m_sDictionary = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + _T("\\") + PREDICTED_DIC_DIR_NAME + _T("\\Default\\")+ sValue;
+	}
+	else m_sDictionary = sValue;
+
+	m_sContextDir = m_sContextRootDir + _T("\\") + m_sContextName;
 
 	return TRUE;
 }
@@ -111,14 +125,14 @@ BOOL CPredictEdContext::GetNewContextName()
 	if (iRes == IDCANCEL) return FALSE;
 	m_bCopy = (iRes == IDYES);
 
-	m_sContextDir = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + _T("\\") + PREDICTED_CONTEXT_DIR_NAME;
+	m_sContextRootDir = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + _T("\\") + PREDICTED_CONTEXT_DIR_NAME;
 
-	if (!m_SysHelper.SysGetFileNameToSave(FALSE, _T("Specify a filename for the context..."), m_sContextDir, _T("context")))
+	if (!m_SysHelper.SysGetFileNameToSave(FALSE, _T("Specify a filename for the context..."), m_sContextRootDir, _T("context")))
 	{
 		return FALSE;
 	}
 
-	m_sContextDir = m_SysHelper.m_FilePath + _T("\\") + m_SysHelper.m_FileTitle;
+	m_sContextDir = m_sContextRootDir + _T("\\") + m_SysHelper.m_FileTitle;
 	m_sContextFile = m_SysHelper.m_FileName;
 	m_sContextName = m_SysHelper.m_FileTitle;
 
@@ -134,16 +148,19 @@ BOOL CPredictEdContext::CreateContext()
 		+ PREDICTED_CONTEXT_KEY4 + m_sDictionary
 		;
 
-	if (!m_SysHelper.CreateFileAndInit(m_sContextFile, sContextInfo))
+	if (!m_SysHelper.SaveString(m_sContextFile, sContextInfo))
 	{
 		AfxMessageBox(_T("Error: Failed to save context file."), MB_ICONERROR);
 		return FALSE;
 	}
 
-	if (!CreateDirectory(m_sContextDir, NULL))
+	if (!PathFileExists(m_sContextDir))
 	{
-		AfxMessageBox(_T("Error: Failed to create context folder.\r\nEnsure that the name is unique and you have write permissions."), MB_ICONERROR);
-		return FALSE;
+		if (!CreateDirectory(m_sContextDir, NULL))
+		{
+			AfxMessageBox(_T("Error: Failed to create context folder.\r\nEnsure that the name is unique and you have write permissions."), MB_ICONERROR);
+			return FALSE;
+		}
 	}
 
 	CString sNewLTMFile = m_sContextDir + _T("\\") + PREDICTED_LTM_FILE_NAME;
@@ -170,17 +187,17 @@ BOOL CPredictEdContext::CreateContext()
 	}
 	else
 	{
-		CString sHeader = m_SysHelper.GetHeader(LTM_HEADER);// _T("PredictEd Knowledge Map,Version,") + m_sVersion + (",LTM\r\n");
+		CString sHeader = m_SysHelper.GetHeader(LTM_HEADER);
 
-		if (!m_SysHelper.CreateFileAndInit(sNewLTMFile, sHeader))
+		if (!m_SysHelper.SaveString(sNewLTMFile, sHeader))
 		{
 			AfxMessageBox(_T("Error: Failed to create knowledge files."), MB_ICONERROR);
 			return FALSE;
 		}
 
-		sHeader= m_SysHelper.GetHeader(STM_HEADER);//.Replace(_T("LTM"), _T("STM"));
+		sHeader= m_SysHelper.GetHeader(STM_HEADER);
 
-		if (!m_SysHelper.CreateFileAndInit(sNewSTMFile, sHeader))
+		if (!m_SysHelper.SaveString(sNewSTMFile, sHeader))
 		{
 			AfxMessageBox(_T("Error: Failed to create knowledge files."), MB_ICONERROR);
 			return FALSE;
@@ -197,22 +214,22 @@ BOOL CPredictEdContext::CreateDefaultContext()
 {
 	//look for context folder
 	//GetUserDocumentPath will also create user folder if not present
-	m_sContextDir = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER);
-	if (m_sContextDir.IsEmpty()) return FALSE;
+	CString sUserDir = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER);
+	if (sUserDir.IsEmpty()) return FALSE;
 
-	m_sContextDir = m_sContextDir + _T("\\") + PREDICTED_CONTEXT_DIR_NAME;
+	m_sContextRootDir = sUserDir + _T("\\") + PREDICTED_CONTEXT_DIR_NAME;
 
-	if (!PathFileExists(m_sContextDir))
+	if (!PathFileExists(m_sContextRootDir))
 	{
-		if (!CreateDirectory(m_sContextDir, NULL)) return FALSE;
+		if (!CreateDirectory(m_sContextRootDir, NULL)) return FALSE;
 	}
 	
 	//create new context
 	m_bCopy = FALSE;
-	m_sContextFile = m_sContextDir + _T("\\Default.context");
+	m_sContextFile = m_sContextRootDir + _T("\\Default.context");
 	m_sDictionary = m_SysHelper.GetPredictEdFileName(PREDICTED_DIC_FILE);
 	m_sContextName = _T("Default");
-	m_sContextDir = m_sContextDir + _T("\\") + m_sContextName;
+	m_sContextDir = m_sContextRootDir + _T("\\") + m_sContextName;
 
 	if (!CreateContext()) return FALSE;
 

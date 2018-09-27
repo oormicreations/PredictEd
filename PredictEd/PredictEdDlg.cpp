@@ -1211,8 +1211,13 @@ void CPredictEdDlg::OnContextsLoadcontext()
 		//try to load the default context
 		if (m_Abort)
 		{
-			AfxMessageBox(_T("Error: Context loading failed. \r\nPredictEd will attempt to create a default context.\r\nIf that fails, please reinstall PredictEd."), MB_ICONERROR);
-			if (!m_Context.CreateDefaultContext()) EndDialog(IDOK); 
+			int res = AfxMessageBox(_T("Error: Context loading failed.\r\nThis can happen if some of the user folders are deleted, or when the program is launched as standalone without installation.\
+\r\n\r\nPredictEd will attempt to create a default context.\r\nIf that fails, please reinstall PredictEd.\r\n\r\nDo you wish to proceed?"), MB_ICONERROR|MB_YESNO);
+			if (res == IDYES)
+			{
+				if (!m_Context.CreateDefaultContext()) EndDialog(IDOK);
+			}
+			else EndDialog(IDOK);
 		}
 		else
 		{

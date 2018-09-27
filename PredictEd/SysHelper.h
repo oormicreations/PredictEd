@@ -29,7 +29,7 @@
 #define PREDICTED_LTM_FILE_NAME		_T("PredictEd_LTM.txt")
 #define PREDICTED_STM_FILE_NAME		_T("PredictEd_STM.txt")
 #define PREDICTED_DEC_FILE_NAME		_T("PredictEd_tmp.dec")
-#define PREDICTED_DIC_FILE_NAME		_T("Dictionary\\EN-US\\en-us.txt")
+#define PREDICTED_DIC_FILE_NAME		_T("Dictionary\\Default\\DefaultDict.txt")
 #define PREDICTED_CON_FILE_NAME		_T("Contexts\\Default.context")
 
 

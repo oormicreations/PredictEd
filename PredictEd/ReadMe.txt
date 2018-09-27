@@ -5,6 +5,7 @@ Release Notes
 2018-09-26
 
 * spell check
+* dictionaries
 * contexts
 * encryption
 * bug fix: suggestions not scrolling in sync when some of them are empty

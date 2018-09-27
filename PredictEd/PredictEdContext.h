@@ -14,6 +14,7 @@ public:
 	CString m_sContextFile;
 	CString m_sContextName;
 	CString m_sContextDir;
+	CString m_sContextRootDir;
 	CString m_sVersion;
 	CString m_sDictionary;
 	CString m_sLTMFile;
