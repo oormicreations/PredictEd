@@ -116,6 +116,7 @@ BEGIN_MESSAGE_MAP(CPredictEdDlg, CDialogEx)
 	ON_COMMAND(ID_CONTEXTS_SAVECONTEXT, &CPredictEdDlg::OnContextsSavecontext)
 	ON_WM_CTLCOLOR()
 	ON_MESSAGE(WM_PREDICTED_UPDATEWORDCOUNT, OnUpdateWordCount)
+	ON_WM_DROPFILES()
 END_MESSAGE_MAP()
 
 
@@ -182,12 +183,26 @@ BOOL CPredictEdDlg::OnInitDialog()
 	m_Timer = SetTimer(WM_USER + 100, PREDICTED_CLOCK_INTERVEL * 1000, NULL);
 	m_pFRDlg = NULL;
 
-	m_NetHelper.ReportUsage(_T("PredictEd"), m_PredictEdVersionMaj*10 + m_PredictEdVersionMin);
+	CString profile;
+	profile.Format(_T("%d%d"), m_PredictEdVersionMaj, m_PredictEdVersionMin);
+	m_NetHelper.ReportUsage(_T("PredictEd") + profile, m_PredictEdVersionMaj*10 + m_PredictEdVersionMin);
 
 	SetToolTips();
 	ShowMessage();
 	ShowDuration();
 	ShowTips();
+
+	//get the command line
+	CCommandLineInfo cinfo;
+	theApp.ParseCommandLine(cinfo);
+	m_ShellOpenFileName = cinfo.m_strFileName;
+
+	if (!m_ShellOpenFileName.IsEmpty())
+	{
+		m_IsShellOpen = TRUE;
+		OnFileOpen32771();
+		m_IsShellOpen = FALSE;
+	}
 
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -274,7 +289,7 @@ void CPredictEdDlg::InitEd()
 	CString profile;
 	profile.Format(_T("%d%d"), m_PredictEdVersionMaj, m_PredictEdVersionMin);
 
-	if (AfxGetApp()->GetProfileBinary(_T("PredictEd"), _T("Settings") + profile, (LPBYTE*)&pps, &n))
+	if (AfxGetApp()->GetProfileBinary(_T("PredictEd") + profile, _T("Settings"), (LPBYTE*)&pps, &n))
 	{
 		if (n == sizeof(PREDICTEDSET))
 		{
@@ -484,8 +499,9 @@ void CPredictEdDlg::OnFileOpen32771()
 
 		content = m_SysHelper.GetFileContent();
 	}
+	else content = m_SysHelper.ReadStringFromFile(m_ShellOpenFileName);
 
-	if (m_SysHelper.m_FileExt == _T("rtf"))
+	if ((m_SysHelper.m_FileExt == _T("rtf")) || (m_ShellOpenFileName.Find(_T(".rtf"))))
 	{
 		m_Ed.SetRTF(content);
 	}
@@ -843,7 +859,7 @@ void CPredictEdDlg::OnOptionsSettings()
 	CString profile;
 	profile.Format(_T("%d%d"), m_PredictEdVersionMaj, m_PredictEdVersionMin);
 
-	if (AfxGetApp()->GetProfileBinary(_T("PredictEd"), _T("Settings") + profile, (LPBYTE*)&pps, &n))
+	if (AfxGetApp()->GetProfileBinary(_T("PredictEd") + profile, _T("Settings"), (LPBYTE*)&pps, &n))
 	{
 		if (n == sizeof(PREDICTEDSET))
 		{
@@ -890,7 +906,7 @@ void CPredictEdDlg::OnOptionsSettings()
 
 
 
-		AfxGetApp()->WriteProfileBinary(_T("PredictEd"), _T("Settings") + profile, (LPBYTE)&ps, sizeof(ps));
+		AfxGetApp()->WriteProfileBinary(_T("PredictEd") + profile, _T("Settings"), (LPBYTE)&ps, sizeof(ps));
 
 		InitEd();
 	}
@@ -1321,4 +1337,35 @@ LRESULT CPredictEdDlg::OnUpdateWordCount(WPARAM, LPARAM)
 {
 	ShowMessage();
 	return 0;
+}
+
+void CPredictEdDlg::OnDropFiles(HDROP hDropInfo)
+{
+	CString sFile;
+	DWORD   nBuffer = 0;
+
+	// Get the number of files dropped 
+	int nFilesDropped = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
+
+	// Get the buffer size of the file. 
+	nBuffer = DragQueryFile(hDropInfo, 0, NULL, 0);
+
+	// Get path and name of the file 
+	DragQueryFile(hDropInfo, 0, sFile.GetBuffer(nBuffer + 1), nBuffer + 1);
+	sFile.ReleaseBuffer();
+
+	//open the file
+	m_ShellOpenFileName = sFile;
+	if (!m_ShellOpenFileName.IsEmpty())
+	{
+		m_IsShellOpen = TRUE;
+		OnFileOpen32771();
+		m_IsShellOpen = FALSE;
+	}
+
+
+	// Free the memory block containing the dropped-file information 
+	DragFinish(hDropInfo);
+
+	CDialogEx::OnDropFiles(hDropInfo);
 }

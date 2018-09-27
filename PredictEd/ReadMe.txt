@@ -3,10 +3,14 @@ A rich edit control with text prediction and other smart features.
 Release Notes
 =================================================================
 
-2018-09-26
+2018-09-27
 
 * Resizing
 * Default context & dict
+* Speed up training
+* drag and drop of files
+* shell open of files
+
 
 2018-09-26
 

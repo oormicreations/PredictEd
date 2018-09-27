@@ -67,7 +67,7 @@ LRESULT CTrain::OnTrainThreadNotify(WPARAM wp, LPARAM lp)
 
 	if ((int)lp == 2)
 	{
-		str.Format(_T("%d Words processed, %d Entries added"), m_Count, LTM.m_LastKeyWordIndex);
+		str.Format(_T("%d Tokens processed, %d Entries added"), m_Count, LTM.m_LastKeyWordIndex);
 		SetDlgItemText(IDC_EDIT_RES, str);
 	}
 
@@ -96,6 +96,7 @@ UINT TrainDataProc(LPVOID param)
 {
 	ThreadParam* p = static_cast<ThreadParam*> (param);
 	CTrain *ptrain = (CTrain*)p->ptrain;
+	int updatecount = 9999;
 
 	for (int i = 0; i < ptrain->m_FileCount; i++)
 	{
@@ -140,7 +141,13 @@ UINT TrainDataProc(LPVOID param)
 						ptrain->m_Count++;
 						//TRACE("%d\n", count);
 					}
-					::SendMessage(p->mDlg, TRAIN_THREAD_NOTIFY, 0, 2);
+
+					if (updatecount > 5000)//speedup significantly by updating less often
+					{
+						::SendMessage(p->mDlg, TRAIN_THREAD_NOTIFY, 0, 2);
+						updatecount = 0;
+					}
+					updatecount++;
 				}
 			}
 		}

@@ -70,6 +70,7 @@ public:
 	CString m_Tips[PREDICTED_MAX_TIPS];
 	int m_TipDuration, m_TipNum;
 	BOOL m_Abort;
+	CString m_ShellOpenFileName;
 
 	typedef struct tagPREDICTEDSET
 	{
@@ -147,4 +148,5 @@ public:
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg LRESULT OnUpdateWordCount(WPARAM, LPARAM);
 
+	afx_msg void OnDropFiles(HDROP hDropInfo);
 };

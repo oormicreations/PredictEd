@@ -46,10 +46,10 @@ void CNetHelper::ReportUsage(CString regSection, int ver)
 	unsigned char *c;// = new char;
 	UINT i;
 
-	if (!AfxGetApp()->GetProfileBinary(regSection, _T("VERSION"), (LPBYTE*)&c, &i))
+	if (!AfxGetApp()->GetProfileBinary(regSection, _T("Version"), (LPBYTE*)&c, &i))
 	{
 		CWinThread* hTh1 = AfxBeginThread(UsageProc, (LPVOID)&ver/*UsageProc receives this as param */, THREAD_PRIORITY_NORMAL);
-		AfxGetApp()->WriteProfileBinary(regSection, _T("VERSION"), (LPBYTE)&ver, sizeof(ver));
+		AfxGetApp()->WriteProfileBinary(regSection, _T("Version"), (LPBYTE)&ver, sizeof(ver));
 	}
 
 	//char x = c[0];
