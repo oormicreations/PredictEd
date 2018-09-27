@@ -207,6 +207,8 @@ void CSpellCheckDlg::OnBnClickedButtonNxtmisspell()
 			if (m_Position < 0)
 			{
 				SetDlgItemText(IDC_BUTTON_NXTMISSPELL, _T("Finished Spell Check"));
+				ClearSuggestions();
+				ShowSuggestions();
 				return;
 			}
 

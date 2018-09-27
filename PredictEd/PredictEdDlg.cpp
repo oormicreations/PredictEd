@@ -1205,6 +1205,7 @@ void CPredictEdDlg::OnContextsLoadcontext()
 		m_Ed.m_LTMFileName = m_Context.m_sLTMFile;
 		m_Ed.m_STMFileName = m_Context.m_sSTMFile;
 
+		ShowMessage();
 	}
 	else
 	{

@@ -2,6 +2,12 @@ A rich edit control with text prediction and other smart features.
 =================================================================
 Release Notes
 =================================================================
+
+2018-09-26
+
+* Resizing
+* Default context & dict
+
 2018-09-26
 
 * spell check

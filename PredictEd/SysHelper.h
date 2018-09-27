@@ -8,15 +8,18 @@
 #define PREDICTED_CON_FILE 6
 #define PREDICTED_DIC_FOLDER 7
 #define PREDICTED_CON_FOLDER 8
+#define PREDICTED_DOC_FOLDER 9
 
 #define TWIPS_PER_PT 20
 
 #define LTM_HEADER 1//_T("PredictEd Knowledge Map,Version,11,LTM\r\n")
 #define STM_HEADER 2//_T("PredictEd Knowledge Map,Version,11,STM\r\n")
 
-#define PREDICTED_CONTEXT_DIR_NAME		_T("Contexts")
-#define PREDICTED_DIC_DIR_NAME			_T("Dictionary")
 #define PREDICTED_CONTEXT_DEFAULT_CONTEXT	_T("Contexts\\Default.context")
+
+#define PREDICTED_CONTEXT_DIR_NAME	_T("Contexts")
+#define PREDICTED_DOC_DIR_NAME		_T("Documents")
+#define PREDICTED_DIC_DIR_NAME		_T("Dictionary")
 
 #define PREDICTED_CONTEXT_MAX_ENTRIES	4
 

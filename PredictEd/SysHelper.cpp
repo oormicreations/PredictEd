@@ -137,7 +137,8 @@ CString CSysHelper::GetFileContent()
 {
 	CFileDialog DataFileOpenDialog(true, _T("rtf"), _T(""), OFN_FILEMUSTEXIST, _T("Rich text Files (*.rtf)|*.rtf|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
 	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Load an RTF or Text File ...");
-	//DataFileOpenDialog.m_ofn.lpstrInitialDir = GetUserDocumentPath(PREDICTED_FOLDER);
+	CString inidir = GetPredictEdFileName(PREDICTED_DOC_FOLDER);
+	DataFileOpenDialog.m_ofn.lpstrInitialDir = inidir;
 
 	INT_PTR res = DataFileOpenDialog.DoModal();
 	if (res == IDCANCEL) return _T("");
@@ -159,7 +160,8 @@ BOOL CSysHelper::GetSaveFileNameType()
 {
 	CFileDialog DataFileOpenDialog(false, _T("rtf"), _T(""), OFN_OVERWRITEPROMPT, _T("Rich text Files (*.rtf)|*.rtf|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
 	DataFileOpenDialog.m_ofn.lpstrTitle = _T("Save an RTF or Text File ...");
-	//DataFileOpenDialog.m_ofn.lpstrInitialDir = GetUserDocumentPath(PREDICTED_FOLDER);
+	CString inidir = GetPredictEdFileName(PREDICTED_DOC_FOLDER);
+	DataFileOpenDialog.m_ofn.lpstrInitialDir = inidir;
 
 	INT_PTR res = DataFileOpenDialog.DoModal();
 	if (res == IDCANCEL) return FALSE;
@@ -242,6 +244,7 @@ CString CSysHelper::GetPredictEdFileName(UINT type)
 		if (type == PREDICTED_CON_FILE)		fname = PREDICTED_CON_FILE_NAME;
 		if (type == PREDICTED_DIC_FOLDER)	fname = PREDICTED_DIC_DIR_NAME;
 		if (type == PREDICTED_CON_FOLDER)	fname = PREDICTED_CONTEXT_DIR_NAME;
+		if (type == PREDICTED_DOC_FOLDER)	fname = PREDICTED_DOC_DIR_NAME;
 
 		if (fname.IsEmpty()) return _T("");
 
