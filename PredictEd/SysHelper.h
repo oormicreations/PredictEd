@@ -28,7 +28,7 @@
 #define PREDICTED_CONTEXT_KEY3 _T("Knowledge Dir,")
 #define PREDICTED_CONTEXT_KEY4 _T("Dictionary File,")
 
-#define PREDICTED_AUTOBK_FILE_NAME	_T("PredictEd_AutoBackup.rtf")
+#define PREDICTED_AUTOBK_FILE_NAME	_T("Documents\\PredictEd_AutoBackup.rtf")
 #define PREDICTED_LTM_FILE_NAME		_T("PredictEd_LTM.txt")
 #define PREDICTED_STM_FILE_NAME		_T("PredictEd_STM.txt")
 #define PREDICTED_DEC_FILE_NAME		_T("PredictEd_tmp.dec")
@@ -44,7 +44,7 @@ public:
 	~CSysHelper();
 
 	CString m_FileName, m_FileTitle, m_FileExt, m_FileNameNoPath, m_FilePath;
-	static CString m_LTMHeader, m_STMHeader; //remains same in all instances of this class
+	static CString m_UserFolder, m_LTMHeader, m_STMHeader; //remains same in all instances of this class
 
 	CString GetClipboardText();
 	BOOL SetClipboardText(CString text);
@@ -68,5 +68,6 @@ public:
 	bool SHDelete(LPCTSTR from);
 	void SetHeaders(int vmaj, int vmin);
 	CString GetHeader(int type);
+	void SysInitVersion(int vmaj, int vmin);
 };
 

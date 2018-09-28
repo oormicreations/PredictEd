@@ -30,29 +30,6 @@ CPredictEdCtrl::CPredictEdCtrl()
 	m_pDialog = NULL;
 	m_Saved = TRUE;
 
-	m_AutoBackupFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_AUTOBK_FILE);
-
-	//m_LTMFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_LTM_FILE);
-	//if (!m_LTMFileName.IsEmpty())
-	//{
-	//	if(!m_SysHelper.CreateFileAndInit(m_LTMFileName, LTM_HEADER)) m_LTMFileName = _T("");
-	//}
-	//if (!m_LTMFileName.IsEmpty())
-	//{
-	//	if (!m_LTM.LoadMap(m_LTMFileName)) AfxMessageBox(_T("Error: LTM could not be loaded!"));
-	//}
-
-	//m_STMFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_STM_FILE);
-	//if (!m_STMFileName.IsEmpty())
-	//{
-	//	if (!m_SysHelper.CreateFileAndInit(m_STMFileName, STM_HEADER)) m_STMFileName = _T("");
-	//}
-	//if (!m_STMFileName.IsEmpty())
-	//{
-	//	if (!m_STM.LoadMap(m_STMFileName)) AfxMessageBox(_T("Error: STM could not be loaded!"));
-	//}
-
-
 }
 
 CPredictEdCtrl::~CPredictEdCtrl()

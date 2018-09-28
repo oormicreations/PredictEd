@@ -155,7 +155,7 @@ BOOL CPredictEdDlg::OnInitDialog()
 	m_PredictEdVersionMaj = 1;
 	m_PredictEdVersionMin = 1;
 
-	m_SysHelper.SetHeaders(m_PredictEdVersionMaj, m_PredictEdVersionMin);
+	m_SysHelper.SysInitVersion(m_PredictEdVersionMaj, m_PredictEdVersionMin);
 
 	m_Menu.LoadMenu(IDR_MENU_TOP);
 	SetMenu(&m_Menu);
@@ -178,6 +178,7 @@ BOOL CPredictEdDlg::OnInitDialog()
 
 	m_StartTime = CTime::GetCurrentTime();
 	m_SysHelper.m_FileTitle = _T("Untitled");
+	m_Ed.m_AutoBackupFileName = m_SysHelper.GetPredictEdFileName(PREDICTED_AUTOBK_FILE);
 
 
 	m_Timer = SetTimer(WM_USER + 100, PREDICTED_CLOCK_INTERVEL * 1000, NULL);

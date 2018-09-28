@@ -3,6 +3,7 @@
 
 CString CSysHelper::m_LTMHeader;
 CString CSysHelper::m_STMHeader;
+CString CSysHelper::m_UserFolder;
 
 CSysHelper::CSysHelper()
 {
@@ -271,7 +272,7 @@ CString CSysHelper::GetUserDocumentPath(UINT type)
 
 		if (type == PREDICTED_USER_FOLDER)
 		{
-			str = str + _T("\\Oormi Creations Dev\\PredictEd Dev");
+			str = str + CSysHelper::m_UserFolder;//_T("\\Oormi Creations Dev\\PredictEd Dev");
 		}
 
 		if (GetFileAttributes(str) == INVALID_FILE_ATTRIBUTES)
@@ -507,4 +508,10 @@ void CSysHelper::SetHeaders(int vmaj, int vmin)
 	CSysHelper::m_LTMHeader.Format(_T("PredictEd Knowledge Map,Version,%d,LTM\r\n"), vmaj * 10 + vmin);
 	CSysHelper::m_STMHeader = m_LTMHeader;
 	CSysHelper::m_STMHeader.Replace(_T("LTM"), _T("STM"));
+}
+
+void CSysHelper::SysInitVersion(int vmaj, int vmin)
+{
+	CSysHelper::m_UserFolder.Format(_T("\\Oormi Creations\\PredictEd %d.%d.0"), vmaj, vmin);
+	SetHeaders(vmaj, vmin);
 }
