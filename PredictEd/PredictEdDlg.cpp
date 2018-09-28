@@ -502,7 +502,7 @@ void CPredictEdDlg::OnFileOpen32771()
 	}
 	else content = m_SysHelper.ReadStringFromFile(m_ShellOpenFileName);
 
-	if ((m_SysHelper.m_FileExt == _T("rtf")) || (m_ShellOpenFileName.Find(_T(".rtf"))))
+	if ((m_SysHelper.m_FileExt == _T("rtf")) || (m_ShellOpenFileName.Find(_T(".rtf"))>0))
 	{
 		m_Ed.SetRTF(content);
 	}
@@ -1157,6 +1157,8 @@ void CPredictEdDlg::OnEditSpellingcheck()
 
 	m_Ed.GetWindowText(spelldlg.m_Content);
 	spelldlg.m_Content.Replace(_T("\n"), _T("")); //GetSel/SetSel counts NL as one char, so remove \n
+
+	m_Ed.SetSel(0, 0); //find from top
 
 	spelldlg.DoModal();
 
