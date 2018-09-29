@@ -115,7 +115,7 @@ UINT TrainDataProc(LPVOID param)
 
 			if (!content.IsEmpty())
 			{
-				UINT len = content.GetLength();
+				ULONG len = content.GetLength();
 				CString word, lastword;
 
 				for (UINT np = 0; np < len; np++)

@@ -296,23 +296,24 @@ void CSpellCheckDlg::OnBnClickedCancel()
 
 BOOL CSpellCheckDlg::UpdateDictionary()
 {
-	CString dicfilename = m_SysHelper.GetPredictEdFileName(PREDICTED_DIC_FILE);
-	if (dicfilename.IsEmpty()) return FALSE;
-
-	CStdioFile dfile;
-	if (!dfile.Open(dicfilename, CStdioFile::modeWrite)) return FALSE;
-
-	dfile.SeekToEnd();
-
-	CString line;
-	for (int n = 0; n < m_AddedDicWords.GetCount(); n++)
+	if (m_AddedDicWords.GetCount() > 0)
 	{
-		line = m_AddedDicWords.GetAt(n);
-		dfile.WriteString(_T("\n"));
-		dfile.WriteString(line);
+		CStdioFile dfile;
+		if (!dfile.Open(m_DicFile, CStdioFile::modeWrite)) return FALSE;
+
+		dfile.SeekToEnd();
+
+		CString line;
+		for (int n = 0; n < m_AddedDicWords.GetCount(); n++)
+		{
+			line = m_AddedDicWords.GetAt(n);
+			dfile.WriteString(_T("\n"));
+			dfile.WriteString(line);
+		}
+
+		dfile.Close();
 	}
 
-	dfile.Close();
 	return TRUE;
 }
 

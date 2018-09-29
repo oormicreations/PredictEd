@@ -60,7 +60,7 @@ BOOL CPredictEdContext::LoadContext()
 
 	//ver check
 	CString sValue = GetValue(sLine[0], PREDICTED_CONTEXT_KEY1);
-	if (sValue != _T("11"))
+	if (!((sValue == _T("11")) || (sValue == _T("1"))))
 	{
 		AfxMessageBox(_T("Error: This context file belongs to a different version."), MB_ICONERROR);
 		return FALSE;
@@ -71,7 +71,7 @@ BOOL CPredictEdContext::LoadContext()
 	if (sValue.IsEmpty())
 	{
 		AfxMessageBox(_T("Error: This context has no name, assuming a temp name."), MB_ICONERROR);
-		m_sContextName = _T("Untitled Context");
+		m_sContextName = _T("UntitledContext");
 	}
 	else m_sContextName = sValue;
 
@@ -83,16 +83,16 @@ BOOL CPredictEdContext::LoadContext()
 		return FALSE;
 	}
 
-	if (sValue == _T("Default"))
-	{
+	//if (sValue == _T("Default"))
+	//{
 		m_sLTMFile = m_sContextRootDir + _T("\\") + sValue + _T("\\") + PREDICTED_LTM_FILE_NAME;
 		m_sSTMFile = m_sContextRootDir + _T("\\") + sValue + _T("\\") + PREDICTED_STM_FILE_NAME;
-	}
-	else
-	{
-		m_sLTMFile = sValue + _T("\\") + PREDICTED_LTM_FILE_NAME;
-		m_sSTMFile = sValue + _T("\\") + PREDICTED_STM_FILE_NAME;
-	}
+	//}
+	//else
+	//{
+	//	m_sLTMFile = sValue + _T("\\") + PREDICTED_LTM_FILE_NAME;
+	//	m_sSTMFile = sValue + _T("\\") + PREDICTED_STM_FILE_NAME;
+	//}
 
 	//dictionary file
 	sValue = GetValue(sLine[3], PREDICTED_CONTEXT_KEY4);
@@ -102,11 +102,11 @@ BOOL CPredictEdContext::LoadContext()
 		return FALSE;
 	}
 
-	if (sValue == _T("DefaultDict.txt"))
-	{
-		m_sDictionary = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + _T("\\") + PREDICTED_DIC_DIR_NAME + _T("\\Default\\")+ sValue;
-	}
-	else m_sDictionary = sValue;
+	//if (sValue == _T("DefaultDict.txt"))
+	//{
+		m_sDictionary = m_SysHelper.GetUserDocumentPath(PREDICTED_USER_FOLDER) + _T("\\") + PREDICTED_DIC_DIR_NAME + _T("\\")+ sValue;
+	//}
+	//else m_sDictionary = sValue;
 
 	m_sContextDir = m_sContextRootDir + _T("\\") + m_sContextName;
 
@@ -144,8 +144,8 @@ BOOL CPredictEdContext::CreateContext()
 	CString sContextInfo
 		= PREDICTED_CONTEXT_KEY1 + m_sVersion		+ _T("\r\n")
 		+ PREDICTED_CONTEXT_KEY2 + m_sContextName	+ _T("\r\n")
-		+ PREDICTED_CONTEXT_KEY3 + m_sContextDir	+ _T("\r\n")
-		+ PREDICTED_CONTEXT_KEY4 + m_sDictionary
+		+ PREDICTED_CONTEXT_KEY3 + m_sContextName + _T("\r\n")
+		+ PREDICTED_CONTEXT_KEY4 + m_SysHelper.GetFileNameFromPath(m_sDictionary)
 		;
 
 	if (!m_SysHelper.SaveString(m_sContextFile, sContextInfo))
@@ -241,8 +241,8 @@ BOOL CPredictEdContext::UpdateContext()
 	CString sContextInfo
 		= PREDICTED_CONTEXT_KEY1 + m_sVersion + _T("\r\n")
 		+ PREDICTED_CONTEXT_KEY2 + m_sContextName + _T("\r\n")
-		+ PREDICTED_CONTEXT_KEY3 + m_sContextDir + _T("\r\n")
-		+ PREDICTED_CONTEXT_KEY4 + m_sDictionary
+		+ PREDICTED_CONTEXT_KEY3 + m_sContextName + _T("\r\n")
+		+ PREDICTED_CONTEXT_KEY4 + m_SysHelper.GetFileNameFromPath(m_sDictionary)
 		;
 
 	if (!m_SysHelper.SaveString(m_sContextFile, sContextInfo))

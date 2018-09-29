@@ -110,7 +110,12 @@ CString CSysHelper::ReadStringFromFile(CString filename)
 
 	if (file.Open(filename, CFile::modeRead))
 	{
-		int len = file.GetLength();
+		ULONG len = file.GetLength();
+		if (len > 500000000)//500MB
+		{
+			AfxMessageBox(_T("Warning: File is too big for this program to handle. Your may get out of memory errors!"));
+		}
+
 		char * buf = new char[len + 1];
 
 		file.Read(buf, len);

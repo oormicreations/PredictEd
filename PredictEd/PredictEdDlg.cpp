@@ -520,6 +520,8 @@ void CPredictEdDlg::OnFileOpen32771()
 	m_Ed.SetScrollPos(SB_VERT, 0);
 	m_Ed.SetCaretPos(CPoint(0, 0));
 	m_Ed.SetSel(0, 0);
+
+	m_ShellOpenFileName.Empty();
 }
 
 
@@ -1151,8 +1153,9 @@ void CPredictEdDlg::OnEditSpellingcheck()
 
 	if (!spelldlg.LoadDictionary())
 	{
-		AfxMessageBox(_T("Error reading the Dictionary file."), MB_ICONERROR);
-		return;
+		AfxMessageBox(_T("Error reading the Dictionary file.\r\nPlease set the Dictionary File by clicking the Dictionary button before spell check."), MB_ICONERROR);
+		spelldlg.m_DicFile.Empty();
+		//return;
 	}
 
 	m_Ed.GetWindowText(spelldlg.m_Content);
@@ -1225,6 +1228,9 @@ void CPredictEdDlg::OnContextsLoadcontext()
 		m_Ed.m_STMFileName = m_Context.m_sSTMFile;
 
 		ShowMessage();
+
+		m_Ed.SetSel(0, 0);
+
 	}
 	else
 	{
