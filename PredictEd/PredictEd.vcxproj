@@ -237,6 +237,7 @@
     <ResourceCompile Include="PredictEd.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\README.md" />
     <None Include="res\PredictEd.rc2" />
   </ItemGroup>
   <ItemGroup>

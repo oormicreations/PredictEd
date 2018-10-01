@@ -31,13 +31,16 @@ https://github.com/oormicreations/PredictEd/releases
 * Word and phrase completion.
 * Learns new words as you type.
 * Train using existing text files of your own.
+* Contexts for various subjects and languages.
 * Format as you type (basic).
 * Auto sentence case and paragraphs.
 * Auto saves the work.
 * Save and open RTF and Text files.
 * Usual editor functions like cut, copy, paste, font type, font size, find and replace, undo/redo etc.
+* Spelling check.
 * Background colors and text colors.
 * Unicode UTF-8 support. Works for many languages.
+* Encryption tools - AES, Base64, Steganography, SHA512 hash.
 * Supports MS Windows 7 onwards.
 
 ---

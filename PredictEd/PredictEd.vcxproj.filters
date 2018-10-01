@@ -156,6 +156,9 @@
     <None Include="res\PredictEd.rc2">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\README.md">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\PredictEd.ico">

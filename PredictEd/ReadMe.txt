@@ -3,6 +3,11 @@ A rich edit control with text prediction and other smart features.
 Release Notes
 =================================================================
 
+2018-10-02
+
+* Release 1.1.0
+
+
 2018-09-27
 
 * Resizing
