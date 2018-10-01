@@ -2,6 +2,7 @@
 
 
 ![Logo](https://github.com/oormicreations/PredictEd/blob/master/PredictEd/res/icon01.png)
+![Screenshot](https://oormi.in/software/predicted/images/screenshot.png)
 
 **PredictEd** is a text editor with text prediction and other smart features.
 
@@ -45,78 +46,35 @@ https://github.com/oormicreations/PredictEd/releases
 
 ---
 
-**For Users**
+PredictEd, is a free and open source predictive text editor application, for Microsoft windows.
 
-Download the installer and run it. Launch it from Desktop shortcut or from Start menu. Start typing.
+It suggests words for auto completion as you start typing. It suggests the next probable words when you finish typing a word, and when you press the space bar, or when you auto complete the word, and press space bar.
 
-The suggestions are shown as you type. Press TAB to select a suggestion. More TAB presses cycle through the suggestions. Three of the suggestions are phrases.
-When spacebar is pressed it shows a probable word that may occur next.
+Press the tab key to select a predicted word.
 
-Enter after a period (full stop) adds a new line and is a paragraph break.
-Type a formatting pair (like **, // or __ ) around the words to format as you type.
+It presents five such words and three phrases below your cursor. Pressing the tab key again selects the next word or phrase in the list.
 
-The installation comes with a built in word list (knowledge map), which was generated using some default text files. So it will immediately show suggestions, but it is highly recommended to train it using your own writings, so that you get most relevant suggestions. Anyhow it will learn as you type.
+PredictEd learns, as you type in real time, and creates a knowledge base unique to your style of writing, and your subject matter. You get the most relevant suggestions as it builds up its knowledge from the words and phrases you type. Gradually it becomes your personal typing assistant.
 
-This tool helps to speed up typing and ease the stress on fingers, especially for those with RSI or carpel tunnel etc. Initially it will appear as if you have slowed down because now you need to check the suggestions or predictions and decide whether to continue typing or press TAB. But gradually it becomes your habit and the typing will speed up. Takes a bit of practice and getting used to predictive typing.
+You can also feed it your own writings in the form of text files, and instantly get the same result. PredictEd keeps learning anyway, and builds up the knowledge, as you work.
 
-See the tutorial video or help document for more details (linked above).
+PredictEd can save the entire knowledge in a specific context, subject or language, and can load it back. This gives you the most suitable suggestions while typing. You can have as many contexts as you wish, each with its own unique and independent database.
 
----
+It also has some more smart features like formatting as you type. So that you have a basic formatted document as soon as you finish typing. It also capitalizes the words, inserts spaces after periods and inserts paragraph breaks after new lines. It saves the file after each paragraph automatically. It can save the text as a rich text file with formatting, or as a plain text file. And it can open those formats.
 
-**For Developers**
+PredictEd has the usual text editing features such as cut, copy, paste, setting fonts and text sizes, undo and redo, and find and replace functions, and spelling checks. You can also set a default font, text size and text colour, and background colour.
 
-PredictEd uses two lists (maps) to predict the next word or to provide autocomplete suggestions.
+It supports Unicode text, which means it will work for most of the languages. It learns in a similar way independently of the language and script being used.
 
-The first is the LTM (long term memory) which is a list made from feeding text files to it or appending the STM (short term memory) data, which is the second list. STM has data which is gathered while the user types in the editor.
+PredictEd is supported on Microsoft Windows 7 to 10.
 
-The entries in the list are in this form:
+To get you quickly started, the installation comes with several built in word lists (knowledge maps), generated using freely available text and books. So it will immediately show suggestions, but it is highly recommended to train it using your own writings, so that you get most relevant suggestions. Anyhow it will learn as you type.
 
-`keyword` | `frequency` | `prediction#1` | `prediction#2` | `...` | `prediction#N` | `prediction weight #1` | `prediction weight #2` | `...` | `prediction weight #N`
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+This tool helps to speed up typing and ease the stress on fingers, especially for those with repetitive stress injury, or carpel tunnel. Initially it will appear as if you have slowed down because now you need to check the suggestions or predictions and decide whether to continue typing or press TAB. But gradually it becomes your habit and the typing will speed up. Takes a bit of practice and getting used to predictive typing.
 
-Both the lists are sorted on Frequency. Frequency is the count of a word found during the training. More frequently used words are at the top.
+The source code of this application is available for anyone to improve, fork, contribute or for use in your own application, without any restrictions.
 
-Prediction#X is a word that was found to occur after the keyword. Prediction weight #X is the count of such consecutive occurances. So more weight means that word occurs with more probability after the specified keyword. The predictions are sorted on weights. Exactly five such predictions are presented when a space bar is pressed after a word, which becomes the keyword. Pressing the TAB puts the predicted word in the editor window. Pressing the TAB again puts the next most probable word in the editor in place of the previous word. 
-
-When a match is not found in LTM, the function searches the STM.
-
-When some letters are typed, a function searches the LTM for keywords beginning with those exact letters. Since the list is sorted, the output is matches with decreasing frequency. We get the most probable word at the top. Total 5 such words are suggested. 
-
-When no match is found in LTM, the function searches in STM.
-
-Currently both lists have 5000 entries. When the STM is full, the data is merged with LTM and STM is cleared. It is ready to receive new data via real time learning.
-
-If the LTM also gets filled up, only weights and frequencies get updated. So the LTM holds the knowledge as well as it builts up new relations as it takes new data from STM. Both LTM and STM are dynamic knowledge bases. LTM is less dynamic compared to STM.
-
-At any time one can erase the LTM and retrain it using text files. The good thing about PredictEd is that the knowledge can be customized by the user, it is not hard coded. This has advantages. For example a user writing mostly on the subject of Economics will get predictions and suggestions in that context, and another user writing on the subject of History will get relevant predictions, not something from Economics.
-
-Anyhow, because of STM, the knowledge base gradually acquires the user specific context. The whole knowledge gets biased according to the writing style and character of the user, and changes as the user shifts to different contexts. The user gets the right suggestions most of the time.
-
-Three of the suggestions are multiple words or phrases, which are recursively predicted using the last prediction as a keyword.
-
-_IDE:_
-
-MS Visual Studio Community 2015. C++ and MFC.
-
-_Classes:_
-
-CPredictEdDlg: Handles the main window, controls, menu and their messages.
-
-CPredictEdCtrl: Derived from RichEditControl 2.0, handles the typing, formation of word queue, formatting, sentence case, and prediction, real time training, autocompletion and other tasks.
-
-CPreWordsDlg: Displays the predicted words and handles the cycling of words from bottom to top.
-
-CWordList: It is the object that contains the word lists. Handles adding new entries, forming relations, sorting, returning the matches, saving and loading the lists in CSV format.
-
-CCharQueue: Object that maintains last 100 characters from the editor window as the user types and interacts with the text. The words are counted backwords from currect cursor position. Used for sentence case, capitalization, paragraph breaks etc.
-
-CKeyWordMap: This object holds a single entry of the word list. Adds, returns and sorts the prediction and weights.
-
-CTrain: Handles training of LTM from text input. Displays the training dialog.
-
-CSysHelper: Helper class for open, save, and all file/OS related functions.
-
-CNetHelper: Helper class for internet related functions.
+For details please read the help document linked above.
 
 ---
 
